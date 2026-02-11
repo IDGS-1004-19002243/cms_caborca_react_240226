@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import EditButton from '../componentes/EditButton';
 
 export default function EditarInicio() {
   const [modoEdicion, setModoEdicion] = useState(null); // null, 'carousel', 'productos', etc.
@@ -404,13 +405,7 @@ export default function EditarInicio() {
           </div>
 
           {/* Botón de edición flotante */}
-          <button
-            onClick={() => abrirEdicion('carousel', slideActual)}
-            className="absolute top-24 right-4 bg-blue-600 text-white p-3 rounded-lg shadow-2xl hover:bg-blue-700 transition-all opacity-0 group-hover:opacity-100"
-            title="Editar Carousel"
-          >
-            ✏️
-          </button>
+          <EditButton section={`carousel:${slideActual}`} onOpen={() => abrirEdicion('carousel', slideActual)} className="absolute top-24 right-4 opacity-0 group-hover:opacity-100" title="Editar Carousel" />
         </section>
 
         {/* SECCIÓN PRODUCTOS */}
@@ -450,26 +445,14 @@ export default function EditarInicio() {
           </div>
 
           {/* Botón de edición flotante */}
-          <button
-            onClick={() => abrirEdicion('productos-titulo')}
-            className="absolute top-4 right-4 bg-blue-600 text-white p-3 rounded-lg shadow-2xl hover:bg-blue-700 transition-all opacity-0 group-hover:opacity-100"
-          >
-            ✏️
-          </button>
+          <EditButton section="productos-titulo" onOpen={() => abrirEdicion('productos-titulo')} className="absolute top-4 right-4 opacity-0 group-hover:opacity-100" />
         </section>
 
         {/* SECCIÓN EL ARTE DE LA CREACIÓN */}
         <section data-cms-section="inicio-arte-creacion" className="relative py-12 sm:py-16" style={{ backgroundColor: '#ECE7DF' }}>
           <div className="max-w-7xl mx-auto px-4">
             {/* Botón de edición visible (arriba a la derecha del título) */}
-            <button
-              onClick={() => abrirEdicion('arte-creacion')}
-              title="Editar Arte de la Creación"
-              aria-label="Editar Arte de la Creación"
-              className="absolute top-6 right-6 bg-blue-600 text-white w-12 h-12 rounded-lg shadow-lg flex items-center justify-center hover:bg-blue-700 transition-colors z-20"
-            >
-              <span className="text-lg">✏️</span>
-            </button>
+            <EditButton section="arte-creacion" onOpen={() => abrirEdicion('arte-creacion')} className="absolute top-6 right-6 w-12 h-12 z-20" title="Editar Arte de la Creación" />
             <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center max-w-7xl mx-auto">
               {/* Imagen izquierda */}
               <div className="order-2 md:order-1 relative group">
@@ -531,12 +514,7 @@ export default function EditarInicio() {
           </div>
 
           {/* Botón de edición flotante */}
-          <button
-            onClick={() => abrirEdicion('arte-creacion')}
-            className="absolute top-4 right-4 bg-blue-600 text-white p-3 rounded-lg shadow-2xl hover:bg-blue-700 transition-all opacity-0 group-hover:opacity-100"
-          >
-            ✏️
-          </button>
+          <EditButton section="arte-creacion" onOpen={() => abrirEdicion('arte-creacion')} className="absolute top-4 right-4 opacity-0 group-hover:opacity-100" />
         </section>
 
         {/* SECCIÓN ¿DÓNDE COMPRAR? */}
@@ -577,12 +555,7 @@ export default function EditarInicio() {
           </div>
 
           {/* Botón de edición flotante */}
-          <button
-            onClick={() => abrirEdicion('donde-comprar')}
-            className="absolute top-4 right-4 bg-blue-600 text-white p-3 rounded-lg shadow-2xl hover:bg-blue-700 transition-all opacity-0 group-hover:opacity-100"
-          >
-            ✏️
-          </button>
+          <EditButton section="donde-comprar" onOpen={() => abrirEdicion('donde-comprar')} className="absolute top-4 right-4 opacity-0 group-hover:opacity-100" />
         </section>
 
         {/* SECCIÓN BANNER SUSTENTABILIDAD (igual que Portafolio) */}
@@ -643,35 +616,16 @@ export default function EditarInicio() {
             </div>
 
             {/* Botón de edición flotante (hover) */}
-            <button
-              onClick={() => abrirEdicion('sustentabilidad')}
-              className="absolute top-4 right-4 bg-blue-600 text-white p-3 rounded-lg shadow-2xl hover:bg-blue-700 transition-all opacity-0 group-hover:opacity-100 z-10"
-            >
-              ✏️
-            </button>
+            <EditButton section="sustentabilidad" onOpen={() => abrirEdicion('sustentabilidad')} className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 z-10" />
 
             {/* Botón de edición visible (pequeño cuadrado) */}
-            <button
-              onClick={() => abrirEdicion('sustentabilidad')}
-              title="Editar Sustentabilidad"
-              aria-label="Editar Sustentabilidad"
-              className="absolute top-6 right-6 bg-blue-600 text-white w-12 h-12 rounded-lg shadow-lg flex items-center justify-center hover:bg-blue-700 transition-colors z-20"
-            >
-              <span className="text-lg">✏️</span>
-            </button>
+            <EditButton section="sustentabilidad" onOpen={() => abrirEdicion('sustentabilidad')} className="absolute top-6 right-6 w-12 h-12 z-20" title="Editar Sustentabilidad" />
         </section>
 
         {/* SECCIÓN FORMULARIO DISTRIBUIDOR (igual que Portafolio) */}
         <section data-cms-section="inicio-form-distribuidor" className="relative py-8 sm:py-10" style={{backgroundColor: '#ECE7DF'}}>
             {/* Botón de edición visible (arriba derecha del título) */}
-            <button
-              onClick={() => abrirEdicion('form-distribuidor')}
-              title="Editar Formulario Distribuidor"
-              aria-label="Editar Formulario Distribuidor"
-              className="absolute top-6 right-6 bg-blue-600 text-white w-12 h-12 rounded-lg shadow-lg flex items-center justify-center hover:bg-blue-700 transition-colors z-20"
-            >
-              <span className="text-lg">✏️</span>
-            </button>
+            <EditButton section="form-distribuidor" onOpen={() => abrirEdicion('form-distribuidor')} className="absolute top-6 right-6 w-12 h-12 z-20" title="Editar Formulario Distribuidor" />
             <div className="container mx-auto px-4">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-5">

@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Configuracion() {
   const [guardando, setGuardando] = useState(false);
-  const [seccionActiva, setSeccionActiva] = useState('general');
+  const [seccionActiva, setSeccionActiva] = useState('redesSociales');
   const [idioma, setIdioma] = useState('es');
 
   useEffect(() => {
@@ -24,29 +24,32 @@ export default function Configuracion() {
       direccion: 'Av. Principal #123, Caborca, Sonora, México'
     },
     redesSociales: {
-      facebook: 'https://facebook.com/caborcaboots',
-      instagram: 'https://instagram.com/caborcaboots',
-      twitter: 'https://twitter.com/caborcaboots',
-      youtube: ''
+      instagram: { url: 'https://instagram.com/caborcaboots', show: true },
+      facebook: { url: 'https://facebook.com/caborcaboots', show: true },
+      twitter: { url: 'https://twitter.com/caborcaboots', show: false },
+      email: { url: 'contacto@caborcaboots.com', show: true },
+      youtube: { url: '', show: false },
+      tiktok: { url: 'https://tiktok.com/@caborca', show: false }
     },
-    seo: {
-      metaTitulo: 'Caborca Boots | Botas Artesanales Mexicanas',
-      metaDescripcion: 'Descubre las mejores botas artesanales de México. Tradición y calidad en cada par.',
-      palabrasClave: 'botas, calzado, artesanal, mexicano, vaquero, western'
+    emails: {
+      contacto: ['contacto@caborca.com'],
+      distribuidores: ['distribuidores@caborca.com']
     },
-    apariencia: {
-      colorPrimario: '#9B8674',
-      colorSecundario: '#D2B48C',
-      mostrarPrecios: true,
-      moneda: 'MXN'
+    distribuidoresMap: {
+      mapTitle: 'Encuentra a nuestros distribuidores',
+      mapText: 'Ubica los puntos de venta oficiales en el mapa',
+      mapSrc: ''
     }
+    ,
+    distribuidoresList: []
   });
 
   const secciones = [
-    { id: 'general', nombre: 'General', icono: '⚙️' },
-    { id: 'redesSociales', nombre: 'Redes Sociales', icono: '🌐' },
-    { id: 'seo', nombre: 'SEO', icono: '🔍' },
-    { id: 'apariencia', nombre: 'Apariencia', icono: '🎨' },
+    { id: 'redesSociales', nombre: 'Medio de contacto', icono: '📬' },
+    { id: 'emailsContacto', nombre: 'Emails Contacto', icono: '✉️' },
+    { id: 'emailsDistribuidores', nombre: 'Emails Distribuidores', icono: '📨' },
+    
+    { id: 'distribuidores', nombre: 'Gestión Distribuidores', icono: '📍' },
     { id: 'seguridad', nombre: 'Seguridad', icono: '🔒' }
   ];
 
@@ -54,6 +57,15 @@ export default function Configuracion() {
     setGuardando(true);
     try {
       console.log('Guardando configuración:', config);
+      try {
+        localStorage.setItem('cms:config:medioContacto', JSON.stringify(config.redesSociales));
+        localStorage.setItem('cms:config:general', JSON.stringify(config.general));
+        localStorage.setItem('cms:config:emails', JSON.stringify(config.emails));
+        localStorage.setItem('cms:config:distribuidoresMap', JSON.stringify(config.distribuidoresMap));
+        localStorage.setItem('cms:config:distribuidoresList', JSON.stringify(config.distribuidoresList || []));
+      } catch (e) {
+        console.warn('No se pudo persistir la configuración en localStorage', e);
+      }
       await new Promise(resolve => setTimeout(resolve, 1000));
       alert('✅ Configuración guardada correctamente');
     } catch (error) {
@@ -63,48 +75,113 @@ export default function Configuracion() {
     }
   };
 
+  // Cargar configuración persistida (si existe)
+  useEffect(() => {
+    try {
+      const storedRedes = localStorage.getItem('cms:config:medioContacto');
+      if (storedRedes) {
+        const parsed = JSON.parse(storedRedes);
+        if (parsed && typeof parsed === 'object') {
+          setConfig(prev => ({ ...prev, redesSociales: { ...prev.redesSociales, ...parsed } }));
+        }
+      }
+    } catch (e) {}
+    try {
+      const storedGeneral = localStorage.getItem('cms:config:general');
+      if (storedGeneral) {
+        const parsedG = JSON.parse(storedGeneral);
+        if (parsedG && typeof parsedG === 'object') {
+          setConfig(prev => ({ ...prev, general: { ...prev.general, ...parsedG } }));
+        }
+      }
+    } catch (e) {}
+    try {
+      const storedEmails = localStorage.getItem('cms:config:emails');
+      if (storedEmails) {
+        const parsedE = JSON.parse(storedEmails);
+        if (parsedE && typeof parsedE === 'object') {
+          setConfig(prev => ({ ...prev, emails: { ...prev.emails, ...parsedE } }));
+        }
+      }
+    } catch (e) {}
+    try {
+      const storedMap = localStorage.getItem('cms:config:distribuidoresMap');
+      if (storedMap) {
+        const parsedM = JSON.parse(storedMap);
+        if (parsedM && typeof parsedM === 'object') {
+          setConfig(prev => ({ ...prev, distribuidoresMap: { ...prev.distribuidoresMap, ...parsedM } }));
+        }
+      }
+    } catch (e) {}
+    try {
+      const storedList = localStorage.getItem('cms:config:distribuidoresList');
+      if (storedList) {
+        const parsedL = JSON.parse(storedList);
+        if (Array.isArray(parsedL)) {
+          setConfig(prev => ({ ...prev, distribuidoresList: parsedL }));
+        }
+      }
+    } catch (e) {}
+  }, []);
+
+  // Estados locales para formulario de distribuidores
+  const [distribuidorForm, setDistribuidorForm] = useState({
+    id: null,
+    contactoNombre: '',
+    negocioNombre: '',
+    pais: '',
+    estado: '',
+    ciudad: '',
+    colonia: '',
+    calle: '',
+    numeroExt: '',
+    numeroInt: '',
+    cp: '',
+    tipoVenta: '',
+    sitioWeb: '',
+    telefono: '',
+    email: ''
+  });
+  const [editIndex, setEditIndex] = useState(null);
+
+  const resetDistribuidorForm = () => setDistribuidorForm({
+    id: null, contactoNombre: '', negocioNombre: '', pais: '', estado: '', ciudad: '', colonia: '', calle: '', numeroExt: '', numeroInt: '', cp: '', tipoVenta: '', sitioWeb: '', telefono: '', email: ''
+  });
+
+  const saveDistribuidorLocal = (list) => {
+    try { localStorage.setItem('cms:config:distribuidoresList', JSON.stringify(list)); } catch (e) {}
+  };
+
+  const handleAddOrUpdateDistribuidor = () => {
+    const item = { ...distribuidorForm, id: distribuidorForm.id || Date.now() };
+    let next = [];
+    if (editIndex === null) {
+      next = [...(config.distribuidoresList || []), item];
+    } else {
+      next = (config.distribuidoresList || []).map((d, i) => i === editIndex ? item : d);
+    }
+    setConfig(prev => ({ ...prev, distribuidoresList: next }));
+    saveDistribuidorLocal(next);
+    resetDistribuidorForm();
+    setEditIndex(null);
+  };
+
+  const handleEditDistribuidor = (index) => {
+    const d = config.distribuidoresList[index];
+    if (!d) return;
+    setDistribuidorForm({ ...d });
+    setEditIndex(index);
+  };
+
+  const handleDeleteDistribuidor = (index) => {
+    const next = (config.distribuidoresList || []).filter((_, i) => i !== index);
+    setConfig(prev => ({ ...prev, distribuidoresList: next }));
+    saveDistribuidorLocal(next);
+    if (editIndex === index) { resetDistribuidorForm(); setEditIndex(null); }
+  };
+
   return (
     <>
-      <div className="sticky top-0 z-30">
-        <div className="bg-white border border-gray-200 shadow-sm rounded-2xl px-6 py-3">
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
-            <div className="flex items-center space-x-4">
-            <h3 className="text-lg font-semibold text-caborca-cafe">
-              Editor Visual - Configuración
-            </h3>
-            <div className="flex bg-gray-100 rounded-lg overflow-hidden">
-              <button
-                onClick={() => setIdioma('es')}
-                className={`px-3 py-1 text-sm transition-colors ${
-                  idioma === 'es'
-                    ? 'bg-caborca-cafe text-white'
-                    : 'text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                🇲🇽 ES
-              </button>
-              <button
-                onClick={() => setIdioma('en')}
-                className={`px-3 py-1 text-sm transition-colors ${
-                  idioma === 'en'
-                    ? 'bg-caborca-cafe text-white'
-                    : 'text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                🇺🇸 EN
-              </button>
-            </div>
-          </div>
-            <button
-              onClick={guardarCambios}
-              disabled={guardando}
-              className="px-6 py-2 bg-caborca-cafe text-white rounded-lg hover:bg-caborca-negro transition-colors disabled:opacity-50 font-semibold"
-            >
-              {guardando ? '⏳ Guardando...' : '💾 Guardar Cambios'}
-            </button>
-          </div>
-        </div>
-      </div>
 
       <div className="space-y-6">
         {/* Header */}
@@ -152,195 +229,204 @@ export default function Configuracion() {
         {/* Contenido */}
         <div className="lg:col-span-3">
           <div className="bg-white rounded-lg shadow-sm p-6">
-            {/* General */}
-            {seccionActiva === 'general' && (
-              <div className="space-y-6">
-                <h4 className="text-lg font-semibold text-caborca-cafe mb-4">⚙️ Configuración General</h4>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del sitio</label>
-                    <input
-                      type="text"
-                      value={config.general.nombreSitio}
-                      onChange={(e) => setConfig({...config, general: {...config.general, nombreSitio: e.target.value}})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email de contacto</label>
-                    <input
-                      type="email"
-                      value={config.general.email}
-                      onChange={(e) => setConfig({...config, general: {...config.general, email: e.target.value}})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    />
-                  </div>
-                </div>
+            
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-                  <textarea
-                    value={config.general.descripcion}
-                    onChange={(e) => setConfig({...config, general: {...config.general, descripcion: e.target.value}})}
-                    rows="2"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
-                    <input
-                      type="tel"
-                      value={config.general.telefono}
-                      onChange={(e) => setConfig({...config, general: {...config.general, telefono: e.target.value}})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
-                    <input
-                      type="text"
-                      value={config.general.direccion}
-                      onChange={(e) => setConfig({...config, general: {...config.general, direccion: e.target.value}})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Redes Sociales */}
+            {/* Medio de contacto */}
             {seccionActiva === 'redesSociales' && (
               <div className="space-y-6">
-                <h4 className="text-lg font-semibold text-caborca-cafe mb-4">🌐 Redes Sociales</h4>
-                
-                {Object.entries(config.redesSociales).map(([red, url]) => (
-                  <div key={red}>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">{red}</label>
-                    <input
-                      type="url"
-                      value={url}
-                      onChange={(e) => setConfig({
-                        ...config, 
-                        redesSociales: {...config.redesSociales, [red]: e.target.value}
-                      })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                      placeholder={`https://${red}.com/caborcaboots`}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+                <h4 className="text-lg font-semibold text-caborca-cafe mb-4">📬 Medio de contacto</h4>
 
-            {/* SEO */}
-            {seccionActiva === 'seo' && (
-              <div className="space-y-6">
-                <h4 className="text-lg font-semibold text-caborca-cafe mb-4">🔍 Optimización SEO</h4>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Meta Título</label>
-                  <input
-                    type="text"
-                    value={config.seo.metaTitulo}
-                    onChange={(e) => setConfig({...config, seo: {...config.seo, metaTitulo: e.target.value}})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">{config.seo.metaTitulo.length}/60 caracteres</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Meta Descripción</label>
-                  <textarea
-                    value={config.seo.metaDescripcion}
-                    onChange={(e) => setConfig({...config, seo: {...config.seo, metaDescripcion: e.target.value}})}
-                    rows="3"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">{config.seo.metaDescripcion.length}/160 caracteres</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Palabras Clave</label>
-                  <input
-                    type="text"
-                    value={config.seo.palabrasClave}
-                    onChange={(e) => setConfig({...config, seo: {...config.seo, palabrasClave: e.target.value}})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    placeholder="Separadas por comas"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Apariencia */}
-            {seccionActiva === 'apariencia' && (
-              <div className="space-y-6">
-                <h4 className="text-lg font-semibold text-caborca-cafe mb-4">🎨 Apariencia</h4>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Color Primario</label>
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="color"
-                        value={config.apariencia.colorPrimario}
-                        onChange={(e) => setConfig({...config, apariencia: {...config.apariencia, colorPrimario: e.target.value}})}
-                        className="w-12 h-12 rounded-lg cursor-pointer"
-                      />
-                      <input
-                        type="text"
-                        value={config.apariencia.colorPrimario}
-                        onChange={(e) => setConfig({...config, apariencia: {...config.apariencia, colorPrimario: e.target.value}})}
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Color Secundario</label>
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="color"
-                        value={config.apariencia.colorSecundario}
-                        onChange={(e) => setConfig({...config, apariencia: {...config.apariencia, colorSecundario: e.target.value}})}
-                        className="w-12 h-12 rounded-lg cursor-pointer"
-                      />
-                      <input
-                        type="text"
-                        value={config.apariencia.colorSecundario}
-                        onChange={(e) => setConfig({...config, apariencia: {...config.apariencia, colorSecundario: e.target.value}})}
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-                      />
-                    </div>
-                  </div>
-                </div>
+                <p className="text-sm text-gray-600">Elige qué iconos sociales se muestran en el pie de página y edita sus enlaces.</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Moneda</label>
-                    <select
-                      value={config.apariencia.moneda}
-                      onChange={(e) => setConfig({...config, apariencia: {...config.apariencia, moneda: e.target.value}})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    >
-                      <option value="MXN">MXN - Peso Mexicano</option>
-                      <option value="USD">USD - Dólar Estadounidense</option>
-                    </select>
+                  {Object.entries(config.redesSociales).map(([red, data]) => (
+                    <div key={red} className="border border-gray-100 rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700 capitalize">{red}</label>
+                        <label className="inline-flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={!!data.show}
+                            onChange={(e) => setConfig({
+                              ...config,
+                              redesSociales: { ...config.redesSociales, [red]: { ...data, show: e.target.checked } }
+                            })}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-xs text-gray-500">Mostrar</span>
+                        </label>
+                      </div>
+
+                          <div className="mt-2">
+                            <input
+                              type={red === 'email' ? 'email' : 'url'}
+                              value={data.url || ''}
+                              onChange={(e) => setConfig({
+                                ...config,
+                                redesSociales: { ...config.redesSociales, [red]: { ...data, url: e.target.value } }
+                              })}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                              placeholder={red === 'email' ? 'correo@ejemplo.com' : `https://${red}.com/tu-cuenta`}
+                            />
+                          </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Emails Contacto */}
+            {seccionActiva === 'emailsContacto' && (
+              <div className="space-y-6">
+                <h4 className="text-lg font-semibold text-caborca-cafe mb-4">✉️ Emails — Formulario Contacto</h4>
+                <p className="text-sm text-gray-600">Escribe una dirección de email por línea. Estos serán los destinatarios cuando se envíe el formulario de contacto.</p>
+                <textarea
+                  rows={6}
+                  value={(config.emails.contacto || []).join('\n')}
+                  onChange={(e) => setConfig({ ...config, emails: { ...config.emails, contacto: e.target.value.split('\n').map(s => s.trim()).filter(Boolean) } })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+            )}
+
+            {/* Emails Distribuidores */}
+            {seccionActiva === 'emailsDistribuidores' && (
+              <div className="space-y-6">
+                <h4 className="text-lg font-semibold text-caborca-cafe mb-4">📨 Emails — Formulario Distribuidores</h4>
+                <p className="text-sm text-gray-600">Escribe una dirección de email por línea. Estos serán los destinatarios cuando se envíe el formulario de distribuidores.</p>
+                <textarea
+                  rows={6}
+                  value={(config.emails.distribuidores || []).join('\n')}
+                  onChange={(e) => setConfig({ ...config, emails: { ...config.emails, distribuidores: e.target.value.split('\n').map(s => s.trim()).filter(Boolean) } })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+            )}
+
+            
+
+            {/* Gestión Distribuidores */}
+            {seccionActiva === 'distribuidores' && (
+              <div className="space-y-6">
+                <h4 className="text-lg font-semibold text-caborca-cafe mb-4">📍 Gestión de Distribuidores</h4>
+
+                <p className="text-sm text-gray-600">Administra distribuidores validados. Completa los datos para que aparezcan en el mapa y listados públicos.</p>
+
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <h5 className="font-medium text-sm mb-2">Distribuidores existentes</h5>
+                    {(config.distribuidoresList || []).length === 0 ? (
+                      <p className="text-xs text-gray-500">No hay distribuidores aún.</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {(config.distribuidoresList || []).map((d, i) => (
+                          <li key={d.id || i} className="flex items-start justify-between bg-white rounded-lg p-3 border">
+                            <div>
+                              <div className="font-medium">{d.negocioNombre || d.contactoNombre || 'Sin nombre'}</div>
+                              <div className="text-xs text-gray-500">{d.calle} {d.numeroExt}{d.numeroInt ? ' Int. ' + d.numeroInt : ''}, {d.colonia}, {d.ciudad}, {d.estado}, {d.pais} {d.cp}</div>
+                                {d.tipoVenta && <div className="inline-block mt-2 text-xs px-2 py-1 bg-caborca-beige-suave text-caborca-cafe rounded">{d.tipoVenta === 'tienda' ? 'Tienda física' : d.tipoVenta === 'online' ? 'Venta en línea' : d.tipoVenta === 'ambas' ? 'Tienda y en línea' : d.tipoVenta}</div>}
+                              {d.sitioWeb && <a href={d.sitioWeb} target="_blank" rel="noreferrer" className="text-xs text-caborca-cafe/80">{d.sitioWeb}</a>}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button onClick={() => handleEditDistribuidor(i)} className="px-3 py-1 bg-caborca-cafe text-white rounded">Editar</button>
+                              <button onClick={() => handleDeleteDistribuidor(i)} className="px-3 py-1 bg-red-500 text-white rounded">Eliminar</button>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
-                  <div className="flex items-center space-x-3 pt-8">
-                    <input
-                      type="checkbox"
-                      id="mostrarPrecios"
-                      checked={config.apariencia.mostrarPrecios}
-                      onChange={(e) => setConfig({...config, apariencia: {...config.apariencia, mostrarPrecios: e.target.checked}})}
-                      className="w-5 h-5"
-                    />
-                    <label htmlFor="mostrarPrecios" className="text-sm text-gray-700">Mostrar precios en el sitio</label>
+
+                  <div className="bg-white p-4 rounded-lg border">
+                    <h5 className="font-medium text-sm mb-3">{editIndex === null ? 'Agregar distribuidor' : 'Editar distribuidor'}</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Nombre de contacto</label>
+                        <input placeholder="Ej. Juan Pérez" value={distribuidorForm.contactoNombre} onChange={(e)=>setDistribuidorForm({...distribuidorForm, contactoNombre: e.target.value})} className="w-full px-3 py-2 border rounded" aria-label="Nombre de contacto" />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del negocio</label>
+                        <input placeholder="Ej. Zapatería López" value={distribuidorForm.negocioNombre} onChange={(e)=>setDistribuidorForm({...distribuidorForm, negocioNombre: e.target.value})} className="w-full px-3 py-2 border rounded" aria-label="Nombre del negocio" />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">País</label>
+                        <input placeholder="Ej. México" value={distribuidorForm.pais} onChange={(e)=>setDistribuidorForm({...distribuidorForm, pais: e.target.value})} className="w-full px-3 py-2 border rounded" aria-label="País" />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                        <input placeholder="Ej. Sonora" value={distribuidorForm.estado} onChange={(e)=>setDistribuidorForm({...distribuidorForm, estado: e.target.value})} className="w-full px-3 py-2 border rounded" aria-label="Estado" />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+                        <input placeholder="Ej. Caborca" value={distribuidorForm.ciudad} onChange={(e)=>setDistribuidorForm({...distribuidorForm, ciudad: e.target.value})} className="w-full px-3 py-2 border rounded" aria-label="Ciudad" />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de venta</label>
+                        <select value={distribuidorForm.tipoVenta} onChange={(e)=>setDistribuidorForm({...distribuidorForm, tipoVenta: e.target.value})} className="w-full px-3 py-2 border rounded" aria-label="Tipo de venta">
+                          <option value="">Seleccionar...</option>
+                          <option value="tienda">Tienda física</option>
+                          <option value="online">Venta en línea</option>
+                          <option value="ambas">Ambas</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Colonia</label>
+                        <input placeholder="Ej. Centro" value={distribuidorForm.colonia} onChange={(e)=>setDistribuidorForm({...distribuidorForm, colonia: e.target.value})} className="w-full px-3 py-2 border rounded" aria-label="Colonia" />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Calle</label>
+                        <input placeholder="Ej. Av. Principal" value={distribuidorForm.calle} onChange={(e)=>setDistribuidorForm({...distribuidorForm, calle: e.target.value})} className="w-full px-3 py-2 border rounded" aria-label="Calle" />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Número exterior</label>
+                        <input placeholder="Ej. 123" value={distribuidorForm.numeroExt} onChange={(e)=>setDistribuidorForm({...distribuidorForm, numeroExt: e.target.value})} className="w-full px-3 py-2 border rounded" aria-label="Número exterior" />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Número interior</label>
+                        <input placeholder="Ej. A" value={distribuidorForm.numeroInt} onChange={(e)=>setDistribuidorForm({...distribuidorForm, numeroInt: e.target.value})} className="w-full px-3 py-2 border rounded" aria-label="Número interior" />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Código postal</label>
+                        <input placeholder="Ej. 85000" value={distribuidorForm.cp} onChange={(e)=>setDistribuidorForm({...distribuidorForm, cp: e.target.value})} className="w-full px-3 py-2 border rounded" aria-label="Código postal" />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Sitio web</label>
+                        <input placeholder="https://ejemplo.com" value={distribuidorForm.sitioWeb} onChange={(e)=>setDistribuidorForm({...distribuidorForm, sitioWeb: e.target.value})} className="w-full px-3 py-2 border rounded" aria-label="Sitio web" />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                        <input placeholder="(662) 123-4567" value={distribuidorForm.telefono} onChange={(e)=>setDistribuidorForm({...distribuidorForm, telefono: e.target.value})} className="w-full px-3 py-2 border rounded" aria-label="Teléfono" />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input placeholder="correo@ejemplo.com" value={distribuidorForm.email} onChange={(e)=>setDistribuidorForm({...distribuidorForm, email: e.target.value})} className="w-full px-3 py-2 border rounded" aria-label="Email" />
+                      </div>
+                    </div>
+                    <div className="mt-3 flex gap-3">
+                      <button onClick={handleAddOrUpdateDistribuidor} className="px-4 py-2 bg-caborca-cafe text-white rounded">{editIndex === null ? 'Agregar' : 'Guardar'}</button>
+                      <button onClick={() => { resetDistribuidorForm(); setEditIndex(null); }} className="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
+
+            
+
+            
 
             {/* Seguridad */}
             {seccionActiva === 'seguridad' && (

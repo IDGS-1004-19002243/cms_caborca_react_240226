@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import EditButton from '../componentes/EditButton';
 
 export default function EditarResponsabilidad() {
   const defaultContent = {
@@ -190,13 +191,7 @@ export default function EditarResponsabilidad() {
                     <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto">{content.hero.subtitle}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => openEditor('hero')}
-                  title="Hero"
-                  className="absolute top-4 right-4 bg-blue-600 text-white p-3 rounded-lg shadow-lg hover:bg-blue-700 z-20"
-                >
-                  ✏️
-                </button>
+                <EditButton section="hero" onOpen={() => openEditor('hero')} className="absolute top-4 right-4 z-20" />
               </div>
             </div>
           </div>
@@ -236,13 +231,7 @@ export default function EditarResponsabilidad() {
                       <div className="text-xs text-caborca-negro/60 uppercase tracking-wide">Certificación</div>
                     </div>
                   </div>
-                    <button
-                        onClick={() => openEditor('compania')}
-                        title="Compañía"
-                        className="absolute top-4 right-4 bg-blue-600 text-white p-3 rounded-lg shadow-lg hover:bg-blue-700 z-20"
-                      >
-                        ✏️
-                      </button>
+                    <EditButton section="compania" onOpen={() => openEditor('compania')} className="absolute top-4 right-4 z-20" />
                 </div>
               </div>
             </div>
@@ -281,13 +270,7 @@ export default function EditarResponsabilidad() {
                       <div className="w-24 h-1 bg-yellow-400 mt-2"></div>
                     </div>
                     <div className="ml-4">
-                      <button
-                        onClick={() => openEditor('energia')}
-                        title="Energía"
-                        className="bg-blue-600 text-white p-3 rounded-lg shadow-lg hover:bg-blue-700 z-20"
-                      >
-                        ✏️
-                      </button>
+                      <EditButton section="energia" onOpen={() => openEditor('energia')} className="z-20" />
                     </div>
                   </div>
                   <div className="space-y-4 text-caborca-negro/80 leading-relaxed">
@@ -312,13 +295,7 @@ export default function EditarResponsabilidad() {
 
         {/* VIDEO */}
         <section data-cms-section="video" className="py-16 bg-caborca-cafe relative overflow-hidden">
-          <button
-            onClick={() => openEditor('video')}
-            title="Video"
-            className="absolute top-6 right-6 bg-blue-600 text-white p-3 rounded-lg shadow-lg hover:bg-blue-700 z-20"
-          >
-            ✏️
-          </button>
+          <EditButton section="video" onOpen={() => openEditor('video')} className="absolute top-6 right-6 z-20" />
           <div className="absolute inset-0 opacity-5">
             <div className="absolute top-0 left-1/4 w-96 h-96 bg-white rounded-full blur-3xl"></div>
             <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white rounded-full blur-3xl"></div>
@@ -351,13 +328,7 @@ export default function EditarResponsabilidad() {
 
         {/* PIELES LIBRES DE METALES PESADOS */}
         <section data-cms-section="pieles" className="py-24 bg-white relative">
-          <button
-            onClick={() => openEditor('pieles')}
-            title="Pieles"
-            className="absolute top-6 right-6 bg-blue-600 text-white p-3 rounded-lg shadow-lg hover:bg-blue-700 z-20"
-          >
-            ✏️
-          </button>
+          <EditButton section="pieles" onOpen={() => openEditor('pieles')} className="absolute top-6 right-6 z-20" />
           <div className="container mx-auto px-4">
             <div className="max-w-7xl mx-auto">
               <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -471,13 +442,7 @@ export default function EditarResponsabilidad() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => openEditor('shambhala')}
-                    title="Shambhala"
-                    className="absolute top-4 right-4 bg-blue-600 text-white p-3 rounded-lg shadow-lg hover:bg-blue-700 z-20"
-                  >
-                    ✏️
-                  </button>
+                  <EditButton section="shambhala" onOpen={() => openEditor('shambhala')} className="absolute top-4 right-4 z-20" />
                 </div>
               </div>
             </div>

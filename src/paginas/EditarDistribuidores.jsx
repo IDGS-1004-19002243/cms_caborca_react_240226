@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import EditButton from '../componentes/EditButton';
 
 const EditarDistribuidores = () => {
   const defaultContent = {
@@ -228,7 +229,7 @@ const EditarDistribuidores = () => {
                       {content.hero.subtitulo}
                     </p>
                   </div>
-                  <button onClick={() => openEditor('hero')} title="Hero" className="absolute top-6 right-6 bg-blue-600 text-white p-3 rounded-lg shadow-lg hover:bg-blue-700 z-20">✏️</button>
+                  <EditButton section="hero" onOpen={() => openEditor('hero')} className="absolute top-6 right-6 z-20" />
                 </div>
               </div>
             </div>
@@ -334,7 +335,7 @@ const EditarDistribuidores = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               <div className="bg-white rounded-2xl shadow-lg p-6 md:p-10 relative">
-                <button onClick={() => openEditor('counters')} title="Contadores" className="absolute top-2 right-4 bg-blue-600 text-white p-3 rounded-lg shadow-lg hover:bg-blue-700 z-20">✏️</button>
+                <EditButton section="counters" onOpen={() => openEditor('counters')} className="absolute top-2 right-4 z-20" />
                 <form onSubmit={manejarEnvioFormulario} className="space-y-6">
                   <div className="grid md:grid-cols-3 gap-6">
                     <div>

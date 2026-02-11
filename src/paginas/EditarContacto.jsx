@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Header from '../componentes/Header'
 import Footer from '../componentes/Footer'
+import EditButton from '../componentes/EditButton'
 
 export default function EditarContacto() {
   const [info, setInfo] = useState({
@@ -93,7 +94,7 @@ export default function EditarContacto() {
                     </p>
                   </div>
                 </div>
-                <button onClick={() => setEditarHero(true)} className="absolute top-4 right-4 bg-blue-600 text-white p-3 rounded-lg z-20">✏️</button>
+                <EditButton section="hero" onOpen={() => setEditarHero(true)} className="absolute top-4 right-4 z-20" />
               </div>
             </div>
           </div>
@@ -112,7 +113,7 @@ export default function EditarContacto() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {cards.map(card => (
                 <div key={card.id} className="bg-white p-5 rounded-lg shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow relative">
-                  <button onClick={() => { setActiveCard(card.id); setCardForm({ ...card, lines: [...card.lines] }); }} className="absolute top-3 right-3 bg-blue-600 text-white p-2 rounded-lg">✏️</button>
+                  <EditButton section={`card:${card.id}`} onOpen={() => { setActiveCard(card.id); setCardForm({ ...card, lines: [...card.lines] }); }} className="absolute top-3 right-3 z-10" size="sm" />
                   <div className="w-12 h-12 bg-caborca-cafe rounded-full flex items-center justify-center shrink-0">
                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
                   </div>
@@ -163,7 +164,7 @@ export default function EditarContacto() {
                 </form>
               </div>
             </div>
-            <button onClick={() => setEditarForm(true)} className="absolute top-4 right-4 bg-blue-600 text-white p-2 rounded-lg">✏️</button>
+            <EditButton section="form" onOpen={() => setEditarForm(true)} className="absolute top-4 right-4 z-10" size="sm" />
           </section>
         </main>
 

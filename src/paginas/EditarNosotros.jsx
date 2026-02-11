@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import EditButton from '../componentes/EditButton'
 
 const EditarNosotros = () => {
   const defaultContent = {
@@ -134,11 +135,7 @@ const EditarNosotros = () => {
                 />
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                   <div className="text-center text-white px-4 relative">
-                    <button onClick={() => openEditor('hero')} className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 p-2 rounded-full">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536M9 11l6-6L20 5l-6 6-6 6-4 1 1-4 6-6z" />
-                      </svg>
-                    </button>
+                    <EditButton section="hero" onOpen={() => openEditor('hero')} className="absolute top-4 right-4" size="sm" />
                     <div className="inline-block bg-caborca-cafe px-6 py-2 rounded-lg mb-6">
                       <p className="text-sm md:text-base font-medium tracking-widest uppercase text-white">
                         {content.hero.badge}
@@ -162,11 +159,7 @@ const EditarNosotros = () => {
               <div className="grid lg:grid-cols-2 gap-16 items-center">
                 <div>
                   <div className="inline-block bg-caborca-beige-suave px-4 py-2 rounded-full mb-6 relative">
-                    <button onClick={() => openEditor('origen')} className="absolute -right-12 top-0 bg-white p-2 rounded-full shadow hover:bg-white/90">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-caborca-cafe" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536M9 11l6-6L20 5l-6 6-6 6-4 1 1-4 6-6z" />
-                      </svg>
-                    </button>
+                    <EditButton section="origen" onOpen={() => openEditor('origen')} className="absolute -right-12 top-0" size="sm" />
                     <span className="text-caborca-cafe text-sm font-semibold tracking-wider">{content.origen.badge}</span>
                   </div>
                   <h2 className="text-4xl md:text-5xl font-serif mb-6 text-caborca-cafe">{content.origen.title}</h2>
@@ -202,11 +195,7 @@ const EditarNosotros = () => {
                 </div>
                 <div>
                   <div className="inline-block bg-white rounded-full px-4 py-2 mb-6 relative">
-                    <button onClick={() => openEditor('crecimiento')} className="absolute -right-12 top-0 bg-white p-2 rounded-full shadow hover:bg-white/90">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-caborca-cafe" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536M9 11l6-6L20 5l-6 6-6 6-4 1 1-4 6-6z" />
-                      </svg>
-                    </button>
+                    <EditButton section="crecimiento" onOpen={() => openEditor('crecimiento')} className="absolute -right-12 top-0" size="sm" />
                     <span className="text-sm font-semibold tracking-wider text-caborca-cafe">CRECIMIENTO</span>
                   </div>
                   <h2 className="text-5xl md:text-6xl font-serif mb-6 text-caborca-cafe">{content.crecimiento.title}</h2>
@@ -226,11 +215,7 @@ const EditarNosotros = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto text-center">
               <div className="relative">
-                <button onClick={() => openEditor('caborcaHoy')} className="absolute top-0 right-0 bg-white/10 hover:bg-white/20 p-2 rounded-full">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536M9 11l6-6L20 5l-6 6-6 6-4 1 1-4 6-6z" />
-                  </svg>
-                </button>
+                <EditButton section="caborcaHoy" onOpen={() => openEditor('caborcaHoy')} className="absolute top-0 right-0" size="sm" />
                 <h2 className="text-5xl font-serif mb-4">{content.caborcaHoy.title}</h2>
                 <p className="mb-12 text-lg text-white/80">{content.caborcaHoy.subtitle}</p>
               </div>
@@ -254,11 +239,7 @@ const EditarNosotros = () => {
               <div className="grid lg:grid-cols-2 gap-16 items-center">
                 <div>
                   <div className="inline-block bg-caborca-beige-suave px-4 py-2 rounded-full mb-6 relative">
-                    <button onClick={() => openEditor('artesania')} className="absolute -right-12 top-0 bg-white p-2 rounded-full shadow hover:bg-white/90">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-caborca-cafe" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536M9 11l6-6L20 5l-6 6-6 6-4 1 1-4 6-6z" />
-                      </svg>
-                    </button>
+                    <EditButton section="artesania" onOpen={() => openEditor('artesania')} className="absolute -right-12 top-0" size="sm" />
                     <span className="text-caborca-cafe text-sm font-semibold tracking-wider">{content.artesania.badge}</span>
                   </div>
                   <h2 className="text-5xl md:text-6xl font-serif mb-4 text-caborca-cafe">{content.artesania.title}</h2>
@@ -295,11 +276,7 @@ const EditarNosotros = () => {
                 </div>
                 <div>
                   <div className="inline-block bg-white rounded-full px-4 py-2 mb-6 relative">
-                    <button onClick={() => openEditor('proceso')} className="absolute -right-12 top-0 bg-white p-2 rounded-full shadow hover:bg-white/90">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-caborca-cafe" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536M9 11l6-6L20 5l-6 6-6 6-4 1 1-4 6-6z" />
-                      </svg>
-                    </button>
+                    <EditButton section="proceso" onOpen={() => openEditor('proceso')} className="absolute -right-12 top-0" size="sm" />
                     <span className="text-sm font-semibold tracking-wider text-caborca-cafe">{content.proceso.badge}</span>
                   </div>
                   <h2 className="text-5xl md:text-6xl font-serif mb-6 text-caborca-cafe">{content.proceso.title}</h2>
@@ -324,11 +301,7 @@ const EditarNosotros = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <div className="relative">
-                <button onClick={() => openEditor('legado')} className="absolute top-0 right-0 bg-white/10 hover:bg-white/20 p-2 rounded-full">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536M9 11l6-6L20 5l-6 6-6 6-4 1 1-4 6-6z" />
-                  </svg>
-                </button>
+                <EditButton section="legado" onOpen={() => openEditor('legado')} className="absolute top-0 right-0" size="sm" />
                 <h2 className="text-5xl font-serif mb-6">{content.legado.title}</h2>
               </div>
               {content.legado.paragraphs.map((p, i) => (

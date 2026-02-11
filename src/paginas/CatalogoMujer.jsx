@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 
 export default function CatalogoMujer() {
   const [productos, setProductos] = useState([
-    { id: 1, nombre: 'Bota Alta Elegante', precio: 4800, categoria: 'alta', stock: 20, destacado: false, imagen: '/images/bota-mujer-1.jpg' },
-    { id: 2, nombre: 'Botín Casual', precio: 2800, categoria: 'botin', stock: 35, destacado: false, imagen: '/images/bota-mujer-2.jpg' },
-    { id: 3, nombre: 'Bota Vaquera Femenina', precio: 4200, categoria: 'vaquera', stock: 15, destacado: false, imagen: '/images/bota-mujer-3.jpg' },
-    { id: 4, nombre: 'Bota de Moda', precio: 3500, categoria: 'moda', stock: 22, destacado: false, imagen: '/images/bota-mujer-4.jpg' },
+    { id: 1, nombre: 'Bota Alta Elegante', sku: 'MW-001', descripcion: 'Bota alta con diseño femenino y elegante.', materiales: ['piel'], marca: 'Caborca', categoria: 'alta', destacado: false, imagen: '/images/bota-mujer-1.jpg', imagenes: ['/images/bota-mujer-1.jpg'], tags: ['elegante'] },
+    { id: 2, nombre: 'Botín Casual', sku: 'MW-002', descripcion: 'Botín cómodo para uso diario.', materiales: ['piel','goma'], marca: 'Caborca', categoria: 'botin', destacado: false, imagen: '/images/bota-mujer-2.jpg', imagenes: ['/images/bota-mujer-2.jpg'], tags: ['casual'] },
+    { id: 3, nombre: 'Bota Vaquera Femenina', sku: 'MW-003', descripcion: 'Versión femenina de la clásica bota vaquera.', materiales: ['piel'], marca: 'Caborca', categoria: 'vaquera', destacado: false, imagen: '/images/bota-mujer-3.jpg', imagenes: ['/images/bota-mujer-3.jpg'], tags: ['vaquera'] },
+    { id: 4, nombre: 'Bota de Moda', sku: 'MW-004', descripcion: 'Bota de moda con acabado contemporáneo.', materiales: ['piel'], marca: 'Caborca', categoria: 'moda', destacado: false, imagen: '/images/bota-mujer-4.jpg', imagenes: ['/images/bota-mujer-4.jpg'], tags: ['moda'] },
   ]);
 
   const [filtro, setFiltro] = useState('todos');
@@ -30,14 +30,21 @@ export default function CatalogoMujer() {
     : productos.filter(p => p.categoria === filtro);
 
   const abrirModal = (producto = null) => {
-    setProductoEditando(producto || {
+    setProductoEditando(producto ? { ...producto, imagenes: producto.imagenes || (producto.imagen ? [producto.imagen] : []) } : {
       id: Date.now(),
       nombre: '',
-      precio: 0,
+      sku: '',
+      descripcion: '',
+      materiales: [],
+      marca: '',
+      dimension: '',
+      peso: '',
+      cuidado: '',
+      tags: [],
       categoria: 'alta',
-      stock: 0,
       destacado: false,
-      imagen: ''
+      imagen: '',
+      imagenes: []
     });
     setModalAbierto(true);
   };
@@ -92,20 +99,30 @@ export default function CatalogoMujer() {
   };
 
   const inputFileRef = useRef(null);
-  const manejarCargarImagen = (e) => {
-    const archivo = e.target.files && e.target.files[0];
-    if (!archivo) return;
-    const maxBytes = 1024 * 1024; // 1MB
-    if (archivo.size > maxBytes) {
-      alert('El archivo es demasiado grande. Máximo 1 MB.');
-      return;
+  const manejarCargarImagen = async (e) => {
+    const archivos = Array.from(e.target.files || []);
+    if (archivos.length === 0) return;
+    const maxFiles = 5;
+    const maxBytesPerFile = 2 * 1024 * 1024; // 2MB per image
+    const allowed = archivos.slice(0, maxFiles);
+    const readers = allowed.map(file => new Promise((res, rej) => {
+      if (file.size > maxBytesPerFile) return rej(new Error('Un archivo excede el tamaño máximo de 2 MB'));
+      const r = new FileReader();
+      r.onloadend = () => res(r.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    }));
+    try {
+      const dataUrls = await Promise.all(readers);
+      setProductoEditando(prev => ({ ...prev, imagenes: Array.from(new Set([...(prev.imagenes || []), ...dataUrls])).slice(0, maxFiles) }));
+    } catch (err) {
+      alert(err.message || 'Error al leer imágenes');
     }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const data = reader.result;
-      setProductoEditando(prev => ({ ...prev, imagen: data }));
-    };
-    reader.readAsDataURL(archivo);
+    if (inputFileRef.current) inputFileRef.current.value = null;
+  };
+
+  const eliminarImagen = (index) => {
+    setProductoEditando(prev => ({ ...prev, imagenes: (prev.imagenes || []).filter((_, i) => i !== index) }));
   };
 
   const eliminarProducto = (id) => {
@@ -185,9 +202,9 @@ export default function CatalogoMujer() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {productosFiltrados.map(producto => (
           <div key={producto.id} className="bg-white rounded-lg shadow-sm overflow-hidden group">
-            <div className="relative aspect-square bg-gray-200">
+              <div className="relative aspect-square bg-gray-200">
               <img
-                src={producto.imagen}
+                src={(producto.imagenes && producto.imagenes[0]) || producto.imagen}
                 alt={producto.nombre}
                 className="w-full h-full object-cover"
                 onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=Bota'; }}
@@ -220,16 +237,11 @@ export default function CatalogoMujer() {
             </div>
             <div className="p-4">
               <h4 className="font-semibold text-caborca-cafe mb-1">{producto.nombre}</h4>
-              <p className="text-lg font-bold text-caborca-negro mb-2">
-                ${producto.precio.toLocaleString('es-MX')}
-              </p>
               <div className="flex items-center justify-between text-sm">
                 <span className="px-2 py-1 bg-caborca-beige-suave text-caborca-cafe rounded capitalize">
                   {producto.categoria === 'botin' ? 'Botín' : producto.categoria}
                 </span>
-                <span className={producto.stock < 10 ? 'text-red-500' : 'text-caborca-verde'}>
-                  {producto.stock} en stock
-                </span>
+                <span className="text-xs text-gray-500">SKU: {producto.sku}</span>
               </div>
             </div>
           </div>
@@ -244,7 +256,7 @@ export default function CatalogoMujer() {
               {productoEditando?.nombre ? 'Producto' : 'Nuevo Producto'}
             </h3>
             
-            <div className="space-y-4">
+              <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
                 <input
@@ -254,28 +266,58 @@ export default function CatalogoMujer() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-caborca-cafe"
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
                   <input
-                    type="number"
-                    value={productoEditando?.precio || 0}
-                    onChange={(e) => setProductoEditando({...productoEditando, precio: parseInt(e.target.value)})}
+                    type="text"
+                    value={productoEditando?.sku || ''}
+                    onChange={(e) => setProductoEditando({...productoEditando, sku: e.target.value})}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-caborca-cafe"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Marca</label>
                   <input
-                    type="number"
-                    value={productoEditando?.stock || 0}
-                    onChange={(e) => setProductoEditando({...productoEditando, stock: parseInt(e.target.value)})}
+                    type="text"
+                    value={productoEditando?.marca || ''}
+                    onChange={(e) => setProductoEditando({...productoEditando, marca: e.target.value})}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-caborca-cafe"
                   />
                 </div>
               </div>
-              
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                <textarea
+                  rows={3}
+                  value={productoEditando?.descripcion || ''}
+                  onChange={(e) => setProductoEditando({...productoEditando, descripcion: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-caborca-cafe"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Materiales (separados por coma)</label>
+                <input
+                  type="text"
+                  value={(productoEditando?.materiales || []).join(', ')}
+                  onChange={(e) => setProductoEditando({...productoEditando, materiales: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-caborca-cafe"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Dimensiones / Peso / Cuidado (opcional)</label>
+                <input type="text" placeholder="Ej. 30x12x10 cm / 1.2kg / Limpiar con paño húmedo" value={productoEditando?.dimension || ''} onChange={(e)=>setProductoEditando({...productoEditando, dimension: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tags (separados por coma)</label>
+                <input type="text" value={(productoEditando?.tags || []).join(', ')} onChange={(e)=>setProductoEditando({...productoEditando, tags: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)})} className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
                 <select
@@ -289,7 +331,7 @@ export default function CatalogoMujer() {
                   <option value="moda">Moda</option>
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">URL de Imagen</label>
                 <div className="flex gap-2">
