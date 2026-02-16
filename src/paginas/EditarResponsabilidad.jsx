@@ -38,9 +38,9 @@ export default function EditarResponsabilidad() {
       image: 'https://blocks.astratic.com/img/general-img-landscape.png'
     },
     shambhala: {
-      title: 'Proyecto Agroecológico Shambhala',
+      title: 'Un lugar para renacer',
       subtitle: 'Un ecosistema biodiverso donde la naturaleza y la producción sostenible se encuentran en perfecta armonía',
-      
+
       missionTitle: 'Nuestra Misión',
       missionText: 'Shambhala es un proyecto que nació con el objetivo de convertirse en parte de los pulmones del planeta Tierra.',
       granjaTitle: 'Granja Biodinámica',
@@ -58,8 +58,9 @@ export default function EditarResponsabilidad() {
 
   const [content, setContent] = useState(defaultContent);
   const [activeEdit, setActiveEdit] = useState(null);
-  const [form, setForm] = useState({ title: '', p1: '', image: null, videoUrl: '',
-    
+  const [form, setForm] = useState({
+    title: '', p1: '', image: null, videoUrl: '',
+
     missionTitle: '', missionText: '', granjaTitle: '', granjaText: '', educTitle: '', educText: '', statNumber: '', statLabel: '', statDesc: '', thumb1: '', thumb2: ''
   });
 
@@ -73,13 +74,13 @@ export default function EditarResponsabilidad() {
       const qp = new URLSearchParams(window.location.search);
       const edit = qp.get('edit');
       if (edit && content[edit]) openEditor(edit);
-    } catch (e) {}
+    } catch (e) { }
     return () => window.removeEventListener('cms:edit-section', handler);
   }, [content]);
 
   const openEditor = (section) => {
     const data = content[section] || {};
-    
+
     setForm({
       title: data.title || data.badge || '',
       p1: data.p1 || data.subtitle || '',
@@ -171,16 +172,16 @@ export default function EditarResponsabilidad() {
     closeEditor();
   };
 
-  const renderTitle = (raw) => raw?.split('\n').map((line, i) => <span key={i}>{line}{i < raw.split('\n').length - 1 && <br/>}</span>);
+  const renderTitle = (raw) => raw?.split('\n').map((line, i) => <span key={i}>{line}{i < raw.split('\n').length - 1 && <br />}</span>);
 
   return (
     <div className="bg-white text-caborca-cafe font-sans">
       <main>
         {/* HERO */}
         <section data-cms-section="hero" className="relative bg-gray-50">
-          <div className="container mx-auto px-4">
-            <div className="max-w-7xl mx-auto">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+          <div className="w-full">
+            <div className="w-full">
+              <div className="relative overflow-hidden shadow-sm">
                 <img src={content.hero.image} alt="Responsabilidad Ambiental Caborca Boots" className="w-full h-[600px] object-cover" />
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                   <div className="text-center text-white px-4">
@@ -231,7 +232,7 @@ export default function EditarResponsabilidad() {
                       <div className="text-xs text-caborca-negro/60 uppercase tracking-wide">Certificación</div>
                     </div>
                   </div>
-                    <EditButton section="compania" onOpen={() => openEditor('compania')} className="absolute top-4 right-4 z-20" />
+                  <EditButton section="compania" onOpen={() => openEditor('compania')} className="absolute top-4 right-4 z-20" />
                 </div>
               </div>
             </div>
@@ -266,7 +267,7 @@ export default function EditarResponsabilidad() {
                   </div>
                   <div className="flex items-start justify-between">
                     <div>
-                      <h2 className="text-4xl md:text-5xl font-serif text-caborca-cafe leading-tight">Consumo de<br/>electricidad</h2>
+                      <h2 className="text-4xl md:text-5xl font-serif text-caborca-cafe leading-tight">Consumo de<br />electricidad</h2>
                       <div className="w-24 h-1 bg-yellow-400 mt-2"></div>
                     </div>
                     <div className="ml-4">
@@ -350,16 +351,16 @@ export default function EditarResponsabilidad() {
                   <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
                     <h4 className="font-semibold text-caborca-cafe mb-4 flex items-center gap-2">Sustancias eliminadas</h4>
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="flex items-center gap-2 text-sm text-caborca-negro/70"><span className="w-2 h-2 bg-red-400 rounded-full"/>Plomo</div>
-                      <div className="flex items-center gap-2 text-sm text-caborca-negro/70"><span className="w-2 h-2 bg-red-400 rounded-full"/>Arsénico</div>
-                      <div className="flex items-center gap-2 text-sm text-caborca-negro/70"><span className="w-2 h-2 bg-red-400 rounded-full"/>Cadmio</div>
-                      <div className="flex items-center gap-2 text-sm text-caborca-negro/70"><span className="w-2 h-2 bg-red-400 rounded-full"/>Cloroformo</div>
-                      <div className="flex items-center gap-2 text-sm text-caborca-negro/70"><span className="w-2 h-2 bg-red-400 rounded-full"/>Cromo hexavalente</div>
-                      <div className="flex items-center gap-2 text-sm text-caborca-negro/70"><span className="w-2 h-2 bg-red-400 rounded-full"/>Mercurio</div>
+                      <div className="flex items-center gap-2 text-sm text-caborca-negro/70"><span className="w-2 h-2 bg-red-400 rounded-full" />Plomo</div>
+                      <div className="flex items-center gap-2 text-sm text-caborca-negro/70"><span className="w-2 h-2 bg-red-400 rounded-full" />Arsénico</div>
+                      <div className="flex items-center gap-2 text-sm text-caborca-negro/70"><span className="w-2 h-2 bg-red-400 rounded-full" />Cadmio</div>
+                      <div className="flex items-center gap-2 text-sm text-caborca-negro/70"><span className="w-2 h-2 bg-red-400 rounded-full" />Cloroformo</div>
+                      <div className="flex items-center gap-2 text-sm text-caborca-negro/70"><span className="w-2 h-2 bg-red-400 rounded-full" />Cromo hexavalente</div>
+                      <div className="flex items-center gap-2 text-sm text-caborca-negro/70"><span className="w-2 h-2 bg-red-400 rounded-full" />Mercurio</div>
                     </div>
                   </div>
                 </div>
-                  <div className="relative">
+                <div className="relative">
                   <div className="absolute -top-8 -left-8 w-full h-full bg-caborca-cafe/5 rounded-2xl"></div>
                   <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                     <img src={content.pieles.image} alt="Pieles" className="w-full h-[500px] object-cover" />
@@ -376,7 +377,7 @@ export default function EditarResponsabilidad() {
             <div className="max-w-7xl mx-auto text-center">
               <div className="inline-flex items-center gap-3 mb-4 justify-center">
                 <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.5 6.5L21 9l-5 3.6L17.5 20 12 16.9 6.5 20 7 12.6 2 9l6.5-0.5L12 2z" fill="currentColor"/></svg>
+                  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.5 6.5L21 9l-5 3.6L17.5 20 12 16.9 6.5 20 7 12.6 2 9l6.5-0.5L12 2z" fill="currentColor" /></svg>
                 </div>
                 <span className="text-green-700 font-semibold tracking-wider text-sm uppercase">PROYECTO AGROECOLÓGICO</span>
               </div>
@@ -392,7 +393,7 @@ export default function EditarResponsabilidad() {
                   <div className="space-y-4">
                     <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 flex items-start gap-4">
                       <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center mt-1">
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.5 6.5L21 9l-5 3.6L17.5 20 12 16.9 6.5 20 7 12.6 2 9l6.5-0.5L12 2z" fill="currentColor"/></svg>
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.5 6.5L21 9l-5 3.6L17.5 20 12 16.9 6.5 20 7 12.6 2 9l6.5-0.5L12 2z" fill="currentColor" /></svg>
                       </div>
                       <div>
                         <h4 className="font-semibold text-caborca-cafe">Nuestra Misión</h4>
@@ -402,7 +403,7 @@ export default function EditarResponsabilidad() {
 
                     <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 flex items-start gap-4">
                       <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center mt-1">
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none"><path d="M4 12h16M12 4v16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none"><path d="M4 12h16M12 4v16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                       </div>
                       <div>
                         <h4 className="font-semibold text-caborca-cafe">Granja Biodinámica</h4>
@@ -412,7 +413,7 @@ export default function EditarResponsabilidad() {
 
                     <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 flex items-start gap-4">
                       <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center mt-1">
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 7 7 13 7 13s7-6 7-13c0-3.87-3.13-7-7-7z" fill="currentColor"/></svg>
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 7 7 13 7 13s7-6 7-13c0-3.87-3.13-7-7-7z" fill="currentColor" /></svg>
                       </div>
                       <div>
                         <h4 className="font-semibold text-caborca-cafe">Educación Ambiental</h4>
@@ -454,11 +455,16 @@ export default function EditarResponsabilidad() {
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-caborca-cafe">Sección: {activeEdit}</h3>
-                <button onClick={closeEditor} className="text-2xl text-gray-400 hover:text-gray-600">✕</button>
+                <h3 className="text-xl font-semibold text-caborca-cafe flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                  Sección: {activeEdit}
+                </h3>
+                <button onClick={closeEditor} className="text-gray-400 hover:text-gray-600">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
               </div>
               <div className="p-6 space-y-4">
-                
+
                 {activeEdit === 'video' && (
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">URL del video (embed)</label>
@@ -595,8 +601,14 @@ export default function EditarResponsabilidad() {
                 )}
               </div>
               <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex justify-end gap-3">
-                <button onClick={closeEditor} className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100">Cancelar</button>
-                <button onClick={saveChanges} className="px-6 py-2 bg-caborca-cafe text-white rounded-lg hover:bg-caborca-negro">Guardar</button>
+                <button onClick={closeEditor} className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                  Cancelar
+                </button>
+                <button onClick={saveChanges} className="px-6 py-2 bg-caborca-cafe text-white rounded-lg hover:bg-caborca-negro flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                  Guardar
+                </button>
               </div>
             </div>
           </div>

@@ -14,6 +14,8 @@ const EditarDistribuidores = () => {
       estados: '20+'
     },
     formulario: {
+      titulo: '¿Quieres ser distribuidor?',
+      subtitulo: 'Si estás interesado, déjanos tus datos y nuestro equipo se pondrá en contacto contigo.',
       submitLabel: 'ENVIAR SOLICITUD',
       responseMessage: '¡Gracias por tu interés! Nos pondremos en contacto contigo pronto.'
     },
@@ -39,7 +41,7 @@ const EditarDistribuidores = () => {
   const [tipoCompra, setTipoCompra] = useState('');
   const [estadoFiltro, setEstadoFiltro] = useState('');
   const [activeEdit, setActiveEdit] = useState(null);
-  const [form, setForm] = useState({ badge: '', titulo: '', subtitulo: '', imagen: null, submitLabel: '', responseMessage: '', mapSrc: '' });
+  const [form, setForm] = useState({ badge: '', titulo: '', subtitulo: '', imagen: null, submitLabel: '', responseMessage: '', mapSrc: '', distribuidores: '', estados: '' });
 
   // decorative hero: no button behavior required
 
@@ -69,7 +71,7 @@ const EditarDistribuidores = () => {
         mapText: storedText || prev.mapText,
         mapSrc: storedSrc || prev.mapSrc
       }));
-    } catch (e) {}
+    } catch (e) { }
   }, []);
 
   useEffect(() => {
@@ -86,8 +88,8 @@ const EditarDistribuidores = () => {
       const qp = new URLSearchParams(window.location.search);
       const edit = qp.get('edit');
       if (edit) openEditor(edit);
-    } catch (e) {}
-    try { const stored = localStorage.getItem('cms:editor:lang'); if (stored) setIdioma(stored); } catch (e) {}
+    } catch (e) { }
+    try { const stored = localStorage.getItem('cms:editor:lang'); if (stored) setIdioma(stored); } catch (e) { }
     return () => { window.removeEventListener('cms:edit-section', handler); window.removeEventListener('cms:editor:lang-changed', langHandler); };
   }, [content]);
 
@@ -98,19 +100,22 @@ const EditarDistribuidores = () => {
         titulo: content.hero.titulo || '',
         subtitulo: content.hero.subtitulo || '',
         imagen: content.hero.imagen || null,
-        submitLabel: '', responseMessage: '', mapSrc: ''
+        submitLabel: '', responseMessage: '', mapSrc: '', distribuidores: '', estados: ''
       });
     } else if (section === 'formulario') {
       setForm({
-        badge: '', titulo: '', subtitulo: '', imagen: null,
+        badge: '',
+        titulo: content.formulario?.titulo || '',
+        subtitulo: content.formulario?.subtitulo || '',
+        imagen: null,
         submitLabel: content.formulario?.submitLabel || 'ENVIAR SOLICITUD',
         responseMessage: content.formulario?.responseMessage || '¡Gracias por tu interés! Nos pondremos en contacto contigo pronto.',
-        mapSrc: ''
+        mapSrc: '',
+        distribuidores: content.counters?.distribuidores || '',
+        estados: content.counters?.estados || ''
       });
     } else if (section === 'mapa') {
       setForm({ badge: '', titulo: '', subtitulo: '', imagen: null, submitLabel: '', responseMessage: '', mapSrc: content.mapSrc || '', mapTitle: content.mapTitle || '', mapText: content.mapText || '' });
-    } else if (section === 'counters') {
-      setForm({ badge: '', titulo: '', subtitulo: '', imagen: null, submitLabel: '', responseMessage: '', mapSrc: '', distribuidores: content.counters?.distribuidores || '', estados: content.counters?.estados || '' });
     } else if (section === 'filtros') {
       setForm({ badge: '', titulo: '', subtitulo: '', imagen: null, submitLabel: '', responseMessage: '', mapSrc: '', purchasePlaceholder: content.filtros?.purchasePlaceholder || '', estadoPlaceholder: content.filtros?.estadoPlaceholder || '' });
     }
@@ -140,16 +145,28 @@ const EditarDistribuidores = () => {
     if (activeEdit === 'hero') {
       setContent(prev => ({ ...prev, hero: { ...prev.hero, badge: form.badge || prev.hero.badge, titulo: form.titulo || prev.hero.titulo, subtitulo: form.subtitulo || prev.hero.subtitulo, imagen: form.imagen || prev.hero.imagen } }));
     } else if (activeEdit === 'formulario') {
-      setContent(prev => ({ ...prev, formulario: { ...prev.formulario, submitLabel: form.submitLabel || prev.formulario?.submitLabel, responseMessage: form.responseMessage || prev.formulario?.responseMessage } }));
+      setContent(prev => ({
+        ...prev,
+        formulario: {
+          ...prev.formulario,
+          titulo: form.titulo,
+          subtitulo: form.subtitulo,
+          submitLabel: form.submitLabel || prev.formulario?.submitLabel,
+          responseMessage: form.responseMessage || prev.formulario?.responseMessage
+        },
+        counters: {
+          ...prev.counters,
+          distribuidores: form.distribuidores || prev.counters.distribuidores,
+          estados: form.estados || prev.counters.estados
+        }
+      }));
     } else if (activeEdit === 'mapa') {
       setContent(prev => ({ ...prev, mapSrc: form.mapSrc || prev.mapSrc, mapTitle: form.mapTitle || prev.mapTitle, mapText: form.mapText || prev.mapText }));
       try {
         localStorage.setItem('cms:page:distribuidores:mapTitle', form.mapTitle || content.mapTitle || '');
         localStorage.setItem('cms:page:distribuidores:mapText', form.mapText || content.mapText || '');
         localStorage.setItem('cms:page:distribuidores:mapSrc', form.mapSrc || content.mapSrc || '');
-      } catch (e) {}
-    } else if (activeEdit === 'counters') {
-      setContent(prev => ({ ...prev, counters: { ...prev.counters, distribuidores: form.distribuidores || prev.counters.distribuidores, estados: form.estados || prev.counters.estados } }));
+      } catch (e) { }
     } else if (activeEdit === 'filtros') {
       setContent(prev => ({ ...prev, filtros: { ...prev.filtros, purchasePlaceholder: form.purchasePlaceholder || prev.filtros.purchasePlaceholder, estadoPlaceholder: form.estadoPlaceholder || prev.filtros.estadoPlaceholder } }));
     }
@@ -195,9 +212,9 @@ const EditarDistribuidores = () => {
       <main>
         {/* HERO IMAGE SECTION */}
         <section data-cms-section="hero" className="relative bg-gray-50">
-          <div className="container mx-auto px-4">
-            <div className="max-w-7xl mx-auto">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+          <div className="w-full">
+            <div className="w-full">
+              <div className="relative overflow-hidden shadow-sm">
                 <img
                   src={content.hero.imagen}
                   alt="Distribuidores Caborca Boots"
@@ -205,7 +222,7 @@ const EditarDistribuidores = () => {
                 />
                 <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
                   <div className="text-center text-white px-6 flex flex-col items-center justify-center h-full">
-                    
+
                     <div className="inline-block mb-6 relative">
                       <span
                         style={{
@@ -269,8 +286,24 @@ const EditarDistribuidores = () => {
               {activeEdit === 'formulario' && (
                 <div className="space-y-4">
                   <label className="block">
+                    <div className="text-sm font-medium text-caborca-cafe mb-1">Título Formulario</div>
+                    <input name="titulo" value={form.titulo} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
+                  </label>
+                  <label className="block">
+                    <div className="text-sm font-medium text-caborca-cafe mb-1">Subtítulo Formulario</div>
+                    <textarea name="subtitulo" value={form.subtitulo} onChange={handleInput} className="w-full border px-3 py-2 rounded" rows="2" />
+                  </label>
+                  <label className="block">
                     <div className="text-sm font-medium text-caborca-cafe mb-1">Texto del botón</div>
                     <input name="submitLabel" value={form.submitLabel} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
+                  </label>
+                  <label className="block">
+                    <div className="text-sm font-medium text-caborca-cafe mb-1">Contador Distribuidores</div>
+                    <input name="distribuidores" value={form.distribuidores} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
+                  </label>
+                  <label className="block">
+                    <div className="text-sm font-medium text-caborca-cafe mb-1">Contador Estados</div>
+                    <input name="estados" value={form.estados} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
                   </label>
                   <label className="block">
                     <div className="text-sm font-medium text-caborca-cafe mb-1">Mensaje de respuesta</div>
@@ -280,15 +313,9 @@ const EditarDistribuidores = () => {
               )}
 
               {activeEdit === 'counters' && (
-                <div className="space-y-4">
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">Distribuidores</div>
-                    <input name="distribuidores" value={form.distribuidores} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
-                  </label>
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">Estados</div>
-                    <input name="estados" value={form.estados} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
-                  </label>
+                // Counters are now edited in 'formulario'
+                <div className="p-4 bg-yellow-50 text-yellow-800 rounded">
+                  Edita los contadores en la sección de Formulario.
                 </div>
               )}
 
@@ -335,19 +362,25 @@ const EditarDistribuidores = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               <div className="bg-white rounded-2xl shadow-lg p-6 md:p-10 relative">
-                <EditButton section="counters" onOpen={() => openEditor('counters')} className="absolute top-2 right-4 z-20" />
+                <EditButton section="formulario" onOpen={() => openEditor('formulario')} className="absolute top-2 right-4 z-20" />
+
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl md:text-4xl font-serif text-caborca-cafe mb-3">{content.formulario.titulo}</h2>
+                  <p className="text-caborca-cafe/80 text-lg max-w-2xl mx-auto">{content.formulario.subtitulo}</p>
+                </div>
+
                 <form onSubmit={manejarEnvioFormulario} className="space-y-6">
                   <div className="grid md:grid-cols-3 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-caborca-cafe mb-2">
                         Nombre completo
                       </label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="nombreCompleto"
                         value={formulario.nombreCompleto}
                         onChange={manejarCambioFormulario}
-                        placeholder="Ej: Juan Pérez" 
+                        placeholder="Ej: Juan Pérez"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-caborca-cafe focus:border-transparent"
                         required
                       />
@@ -356,12 +389,12 @@ const EditarDistribuidores = () => {
                       <label className="block text-sm font-medium text-caborca-cafe mb-2">
                         Correo electrónico
                       </label>
-                      <input 
-                        type="email" 
+                      <input
+                        type="email"
                         name="correoElectronico"
                         value={formulario.correoElectronico}
                         onChange={manejarCambioFormulario}
-                        placeholder="correo@ejemplo.com" 
+                        placeholder="correo@ejemplo.com"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-caborca-cafe focus:border-transparent"
                         required
                       />
@@ -370,12 +403,12 @@ const EditarDistribuidores = () => {
                       <label className="block text-sm font-medium text-caborca-cafe mb-2">
                         Teléfono
                       </label>
-                      <input 
-                        type="tel" 
+                      <input
+                        type="tel"
                         name="telefono"
                         value={formulario.telefono}
                         onChange={manejarCambioFormulario}
-                        placeholder="(123) 456-7890" 
+                        placeholder="(123) 456-7890"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-caborca-cafe focus:border-transparent"
                         required
                       />
@@ -387,12 +420,12 @@ const EditarDistribuidores = () => {
                       <label className="block text-sm font-medium text-caborca-cafe mb-2">
                         Ciudad
                       </label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="ciudad"
                         value={formulario.ciudad}
                         onChange={manejarCambioFormulario}
-                        placeholder="Ej: Guadalajara" 
+                        placeholder="Ej: Guadalajara"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-caborca-cafe focus:border-transparent"
                         required
                       />
@@ -401,28 +434,28 @@ const EditarDistribuidores = () => {
                       <label className="block text-sm font-medium text-caborca-cafe mb-1">
                         Mensaje
                       </label>
-                      <textarea 
-                        rows="1" 
+                      <textarea
+                        rows="1"
                         name="mensaje"
                         value={formulario.mensaje}
                         onChange={manejarCambioFormulario}
-                        placeholder="Cuéntanos sobre tu negocio..." 
+                        placeholder="Cuéntanos sobre tu negocio..."
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-caborca-cafe focus:border-transparent resize-none h-full"
                       ></textarea>
                     </div>
                   </div>
 
                   <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-4">
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       className="bg-caborca-cafe text-white px-8 py-3 rounded-lg font-semibold hover:bg-caborca-negro transition-colors"
                     >
                       {content.formulario?.submitLabel || 'ENVIAR SOLICITUD'}
                     </button>
                     <div className="flex items-center gap-3 text-caborca-cafe/70">
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
-                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                       </svg>
                       <span className="text-sm">Respuesta en 24-48 hrs</span>
                     </div>
@@ -433,7 +466,7 @@ const EditarDistribuidores = () => {
                       </div>
                       <div className="w-14 h-14 bg-caborca-cafe rounded-full flex items-center justify-center">
                         <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                          <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
                         </svg>
                       </div>
                       <div className="text-center">
@@ -457,9 +490,9 @@ const EditarDistribuidores = () => {
             <p className="text-center mb-8 text-black">
               {content.mapText || 'Visita nuestras tiendas y distribuidores autorizados en todo México.'}
             </p>
-              
+
             {/* Filtros de Búsqueda */}
-              <div className="bg-white rounded-lg shadow-lg p-6 mb-8 max-w-7xl mx-auto relative">
+            <div className="bg-white rounded-lg shadow-lg p-6 mb-8 max-w-7xl mx-auto relative">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Filtro por Tipo de Compra */}
                 <div className="flex flex-col">
@@ -469,8 +502,8 @@ const EditarDistribuidores = () => {
                     </svg>
                     Tipo de compra
                   </label>
-                  <select 
-                    id="purchaseType" 
+                  <select
+                    id="purchaseType"
                     value={tipoCompra}
                     onChange={(e) => setTipoCompra(e.target.value)}
                     className="border-2 border-gray-300 rounded py-2 px-4 focus:border-caborca-cafe focus:outline-none transition-colors w-full"
@@ -490,8 +523,8 @@ const EditarDistribuidores = () => {
                     </svg>
                     Ubicación por Estado
                   </label>
-                  <select 
-                    id="stateFilter" 
+                  <select
+                    id="stateFilter"
                     value={estadoFiltro}
                     onChange={(e) => setEstadoFiltro(e.target.value)}
                     className="border-2 border-gray-300 rounded py-2 px-4 focus:border-caborca-cafe focus:outline-none transition-colors w-full"
@@ -510,9 +543,9 @@ const EditarDistribuidores = () => {
 
                 {/* Botón Usar mi ubicación */}
                 <div className="flex flex-col justify-end">
-                  <button 
+                  <button
                     onClick={manejarUbicarme}
-                    className="bg-caborca-cafe text-white py-2 px-4 rounded hover:bg-caborca-cafe/80 transition-colors whitespace-nowrap w-full" 
+                    className="bg-caborca-cafe text-white py-2 px-4 rounded hover:bg-caborca-cafe/80 transition-colors whitespace-nowrap w-full"
                     title="Usar mi ubicación"
                   >
                     <svg className="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -526,37 +559,37 @@ const EditarDistribuidores = () => {
                 {/* Botones de acción */}
                 <div className="flex flex-col justify-end">
                   <div className="flex gap-2">
-                    <button 
+                    <button
                       onClick={manejarLimpiarFiltros}
-                      className="bg-gray-200 text-caborca-cafe py-2 px-3 rounded hover:bg-gray-300 transition-colors flex-1" 
+                      className="bg-gray-200 text-caborca-cafe py-2 px-3 rounded hover:bg-gray-300 transition-colors flex-1"
                       title="Limpiar filtros"
                     >
                       <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
-                    <button 
+                    <button
                       onClick={manejarAplicarFiltros}
-                      className="bg-caborca-cafe text-white py-2 px-3 rounded hover:bg-caborca-cafe/80 transition-colors flex-1" 
+                      className="bg-caborca-cafe text-white py-2 px-3 rounded hover:bg-caborca-cafe/80 transition-colors flex-1"
                       title="Buscar distribuidores"
                     >
                       <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
                     </button>
                   </div>
                 </div>
               </div>
             </div>
-            
-            <div className="bg-gray-200 rounded-lg overflow-hidden shadow-xl max-w-7xl mx-auto" style={{height: '500px'}}>
-              <iframe 
-                id="mapFrame" 
+
+            <div className="bg-gray-200 rounded-lg overflow-hidden shadow-xl max-w-7xl mx-auto" style={{ height: '500px' }}>
+              <iframe
+                id="mapFrame"
                 src={content.mapSrc}
-                width="100%" 
-                height="100%" 
-                style={{border: 0}} 
-                allowFullScreen 
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
                 loading="lazy"
                 title="Mapa de distribuidores"
               ></iframe>

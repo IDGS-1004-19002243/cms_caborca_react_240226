@@ -43,7 +43,7 @@ export default function EditarContacto() {
 
   useEffect(() => {
     const handler = (e) => { const l = e && e.detail && e.detail.lang; if (l) setIdioma(l); };
-    try { const stored = localStorage.getItem('cms:editor:lang'); if (stored) setIdioma(stored); } catch (e) {}
+    try { const stored = localStorage.getItem('cms:editor:lang'); if (stored) setIdioma(stored); } catch (e) { }
     window.addEventListener('cms:editor:lang-changed', handler);
     return () => window.removeEventListener('cms:editor:lang-changed', handler);
   }, []);
@@ -71,36 +71,36 @@ export default function EditarContacto() {
   return (
     <>
 
-        {/* HERO EDITABLE */}
-        <section className="relative bg-gray-50">
-          <div className="container mx-auto px-4">
-            <div className="max-w-7xl mx-auto">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                <img 
-                  src={hero.imagen} 
-                  alt="Hero contacto" 
-                  className="w-full h-[400px] md:h-[600px] object-cover"
-                />
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <div className="text-center text-white px-4">
-                    <div className="inline-block bg-caborca-cafe px-6 py-2 rounded-lg mb-6">
-                      <p className="text-sm md:text-base font-medium tracking-widest uppercase text-white">
-                        {hero.badge}
-                      </p>
-                    </div>
-                    <h1 className="text-5xl md:text-7xl font-serif mb-6">{hero.titulo}</h1>
-                    <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
-                      {hero.subtitulo}
+      {/* HERO EDITABLE */}
+      <section className="relative bg-gray-50">
+        <div className="w-full">
+          <div className="w-full">
+            <div className="relative overflow-hidden shadow-sm">
+              <img
+                src={hero.imagen}
+                alt="Hero contacto"
+                className="w-full h-[400px] md:h-[600px] object-cover"
+              />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <div className="text-center text-white px-4">
+                  <div className="inline-block bg-caborca-cafe px-6 py-2 rounded-lg mb-6">
+                    <p className="text-sm md:text-base font-medium tracking-widest uppercase text-white">
+                      {hero.badge}
                     </p>
                   </div>
+                  <h1 className="text-5xl md:text-7xl font-serif mb-6">{hero.titulo}</h1>
+                  <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
+                    {hero.subtitulo}
+                  </p>
                 </div>
-                <EditButton section="hero" onOpen={() => setEditarHero(true)} className="absolute top-4 right-4 z-20" />
               </div>
+              <EditButton section="hero" onOpen={() => setEditarHero(true)} className="absolute top-4 right-4 z-20" />
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <div className="max-w-7xl mx-auto px-4 py-8 mt-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 mt-8">
 
         <main className="space-y-12 mt-6">
           {/* Información de contacto */}
@@ -115,7 +115,7 @@ export default function EditarContacto() {
                 <div key={card.id} className="bg-white p-5 rounded-lg shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow relative">
                   <EditButton section={`card:${card.id}`} onOpen={() => { setActiveCard(card.id); setCardForm({ ...card, lines: [...card.lines] }); }} className="absolute top-3 right-3 z-10" size="sm" />
                   <div className="w-12 h-12 bg-caborca-cafe rounded-full flex items-center justify-center shrink-0">
-                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" /></svg>
                   </div>
                   <div>
                     <h3 className="font-bold text-caborca-cafe text-sm mb-1">{card.title}</h3>
@@ -127,7 +127,7 @@ export default function EditarContacto() {
           </section>
 
           {/* Formulario de contacto (estilo) */}
-          <section data-cms-section="contacto-form" className="py-10 sm:py-17 relative" style={{backgroundColor: '#ECE7DF'}}>
+          <section data-cms-section="contacto-form" className="py-10 sm:py-17 relative" style={{ backgroundColor: '#ECE7DF' }}>
             <div className="container mx-auto px-4 max-w-7xl">
               <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
                 <div className="text-center mb-6">
@@ -135,7 +135,7 @@ export default function EditarContacto() {
                   <p className="text-sm text-caborca-cafe">{formPreview.descripcion}</p>
                 </div>
 
-                <form onSubmit={(e)=>{e.preventDefault(); alert('Formulario enviado (demo)')}} className="space-y-6">
+                <form onSubmit={(e) => { e.preventDefault(); alert('Formulario enviado (demo)') }} className="space-y-6">
                   <div className="grid sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-caborca-cafe mb-2">Nombre Completo</label>
@@ -173,8 +173,13 @@ export default function EditarContacto() {
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-caborca-cafe">✏️ Información de Contacto</h3>
-                <button onClick={() => setEditarInfo(false)} className="text-2xl">✕</button>
+                <h3 className="text-lg font-semibold text-caborca-cafe flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                  Información de Contacto
+                </h3>
+                <button onClick={() => setEditarInfo(false)} className="text-gray-500 hover:text-gray-700">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
               </div>
               <div className="space-y-3">
                 <label className="block text-sm">Teléfono</label>
@@ -190,7 +195,10 @@ export default function EditarContacto() {
               </div>
               <div className="mt-4 flex justify-end gap-3">
                 <button onClick={() => setEditarInfo(false)} className="px-4 py-2 border rounded">Cancelar</button>
-                <button onClick={guardarCambios} className="px-4 py-2 bg-caborca-cafe text-white rounded">✓ Aplicar</button>
+                <button onClick={guardarCambios} className="px-4 py-2 bg-caborca-cafe text-white rounded flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                  Aplicar
+                </button>
               </div>
             </div>
           </div>
@@ -200,8 +208,13 @@ export default function EditarContacto() {
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-caborca-cafe">✏️ Formulario</h3>
-                <button onClick={() => setEditarForm(false)} className="text-2xl">✕</button>
+                <h3 className="text-lg font-semibold text-caborca-cafe flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                  Formulario
+                </h3>
+                <button onClick={() => setEditarForm(false)} className="text-gray-500 hover:text-gray-700">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
               </div>
               <div className="space-y-3">
                 <label className="block text-sm">Título</label>
@@ -211,7 +224,10 @@ export default function EditarContacto() {
               </div>
               <div className="mt-4 flex justify-end gap-3">
                 <button onClick={() => setEditarForm(false)} className="px-4 py-2 border rounded">Cancelar</button>
-                <button onClick={guardarCambios} className="px-4 py-2 bg-caborca-cafe text-white rounded">✓ Aplicar</button>
+                <button onClick={guardarCambios} className="px-4 py-2 bg-caborca-cafe text-white rounded flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                  Aplicar
+                </button>
               </div>
             </div>
           </div>
@@ -222,8 +238,13 @@ export default function EditarContacto() {
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-caborca-cafe">✏️ Editar tarjeta: {cardForm.title}</h3>
-                <button onClick={() => setActiveCard(null)} className="text-2xl">✕</button>
+                <h3 className="text-lg font-semibold text-caborca-cafe flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                  Editar tarjeta: {cardForm.title}
+                </h3>
+                <button onClick={() => setActiveCard(null)} className="text-gray-500 hover:text-gray-700">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
               </div>
               <div className="space-y-3">
                 <label className="block text-sm">Título</label>
@@ -237,7 +258,10 @@ export default function EditarContacto() {
                   setCards(prev => prev.map(c => c.id === cardForm.id ? { ...c, title: cardForm.title, lines: cardForm.lines } : c));
                   setActiveCard(null);
                   alert('✅ Cambios aplicados');
-                }} className="px-4 py-2 bg-caborca-cafe text-white rounded">✓ Aplicar</button>
+                }} className="px-4 py-2 bg-caborca-cafe text-white rounded flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                  Aplicar
+                </button>
               </div>
             </div>
           </div>
@@ -247,8 +271,13 @@ export default function EditarContacto() {
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-caborca-cafe">✏️ Hero</h3>
-                <button onClick={() => setEditarHero(false)} className="text-2xl">✕</button>
+                <h3 className="text-lg font-semibold text-caborca-cafe flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                  Hero
+                </h3>
+                <button onClick={() => setEditarHero(false)} className="text-gray-500 hover:text-gray-700">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
               </div>
               <div className="space-y-3">
                 <label className="block text-sm">Badge</label>
@@ -262,7 +291,10 @@ export default function EditarContacto() {
               </div>
               <div className="mt-4 flex justify-end gap-3">
                 <button onClick={() => setEditarHero(false)} className="px-4 py-2 border rounded">Cancelar</button>
-                <button onClick={aplicarHero} className="px-4 py-2 bg-caborca-cafe text-white rounded">✓ Aplicar</button>
+                <button onClick={aplicarHero} className="px-4 py-2 bg-caborca-cafe text-white rounded flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                  Aplicar
+                </button>
               </div>
             </div>
           </div>

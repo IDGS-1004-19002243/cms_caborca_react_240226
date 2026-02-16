@@ -125,12 +125,12 @@ const EditarNosotros = () => {
       <main>
         {/* HERO SECTION */}
         <section className="relative bg-gray-50">
-          <div className="container mx-auto px-4">
-            <div className="max-w-7xl mx-auto">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                <img 
-                  src="https://blocks.astratic.com/img/general-img-landscape.png" 
-                  alt="Nosotros Caborca Boots" 
+          <div className="w-full">
+            <div className="w-full">
+              <div className="relative overflow-hidden shadow-sm">
+                <img
+                  src="https://blocks.astratic.com/img/general-img-landscape.png"
+                  alt="Nosotros Caborca Boots"
                   className="w-full h-[600px] object-cover"
                 />
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -170,9 +170,9 @@ const EditarNosotros = () => {
                   </div>
                 </div>
                 <div className="relative">
-                  <img 
-                    src="https://blocks.astratic.com/img/general-img-landscape.png" 
-                    alt="Historia Caborca" 
+                  <img
+                    src="https://blocks.astratic.com/img/general-img-landscape.png"
+                    alt="Historia Caborca"
                     className="rounded-lg shadow-2xl"
                   />
                 </div>
@@ -317,8 +317,13 @@ const EditarNosotros = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-caborca-cafe">Sección: {activeEdit}</h3>
-                <button onClick={() => setActiveEdit(null)} className="text-gray-500 hover:text-gray-700">Cerrar</button>
+                <h3 className="text-lg font-semibold text-caborca-cafe flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                  Sección: {activeEdit}
+                </h3>
+                <button onClick={() => setActiveEdit(null)} className="text-gray-500 hover:text-gray-700">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
               </div>
 
               <div className="space-y-4">
@@ -338,14 +343,20 @@ const EditarNosotros = () => {
               </div>
 
               <div className="mt-6 flex justify-end gap-3">
-                <button onClick={() => setActiveEdit(null)} className="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
-                <button onClick={saveChanges} className="px-4 py-2 bg-caborca-cafe text-white rounded">Guardar</button>
+                <button onClick={() => setActiveEdit(null)} className="px-4 py-2 bg-gray-200 rounded flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                  Cancelar
+                </button>
+                <button onClick={saveChanges} className="px-4 py-2 bg-caborca-cafe text-white rounded flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                  Guardar
+                </button>
               </div>
             </div>
           </div>
         )}
 
-        </main>
+      </main>
     </div>
   )
 }
