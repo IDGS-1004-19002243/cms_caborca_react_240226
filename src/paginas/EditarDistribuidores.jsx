@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import EditButton from '../componentes/EditButton';
+import { useToast } from '../context/ToastContext';
 
 const EditarDistribuidores = () => {
+  const { success, error: toastError, info } = useToast();
+
   const defaultContent = {
     hero: {
       badge: 'ÚNETE A NOSOTROS',
@@ -17,7 +20,8 @@ const EditarDistribuidores = () => {
       titulo: '¿Quieres ser distribuidor?',
       subtitulo: 'Si estás interesado, déjanos tus datos y nuestro equipo se pondrá en contacto contigo.',
       submitLabel: 'ENVIAR SOLICITUD',
-      responseMessage: '¡Gracias por tu interés! Nos pondremos en contacto contigo pronto.'
+      responseMessage: '¡Gracias por tu interés! Nos pondremos en contacto contigo pronto.',
+      responseTime: 'Respuesta en 24-48 hrs'
     },
     filtros: {
       purchasePlaceholder: 'Tipo de compra',
@@ -41,7 +45,7 @@ const EditarDistribuidores = () => {
   const [tipoCompra, setTipoCompra] = useState('');
   const [estadoFiltro, setEstadoFiltro] = useState('');
   const [activeEdit, setActiveEdit] = useState(null);
-  const [form, setForm] = useState({ badge: '', titulo: '', subtitulo: '', imagen: null, submitLabel: '', responseMessage: '', mapSrc: '', distribuidores: '', estados: '' });
+  const [form, setForm] = useState({ badge: '', titulo: '', subtitulo: '', imagen: null, submitLabel: '', responseMessage: '', responseTime: '', mapSrc: '', distribuidores: '', estados: '' });
 
   // decorative hero: no button behavior required
 
@@ -56,29 +60,36 @@ const EditarDistribuidores = () => {
   const manejarEnvioFormulario = (evento) => {
     evento.preventDefault();
     console.log('Formulario enviado:', formulario);
-    alert('¡Gracias por tu interés! Nos pondremos en contacto contigo pronto.');
+    success('¡Gracias por tu interés! Nos pondremos en contacto contigo pronto.');
   };
 
   useEffect(() => {
     // Cargar valores persistidos (si existen) para que el editor muestre lo guardado
     try {
-      const storedTitle = localStorage.getItem('cms:page:distribuidores:mapTitle');
-      const storedText = localStorage.getItem('cms:page:distribuidores:mapText');
-      const storedSrc = localStorage.getItem('cms:page:distribuidores:mapSrc');
-      setContent(prev => ({
-        ...prev,
-        mapTitle: storedTitle || prev.mapTitle,
-        mapText: storedText || prev.mapText,
-        mapSrc: storedSrc || prev.mapSrc
-      }));
-    } catch (e) { }
+      const stored = localStorage.getItem('cms:distribuidores');
+      if (stored) {
+        setContent(prev => ({ ...prev, ...JSON.parse(stored) }));
+      } else {
+        // Fallback for old keys if new key doesn't exist
+        const storedTitle = localStorage.getItem('cms:page:distribuidores:mapTitle');
+        const storedText = localStorage.getItem('cms:page:distribuidores:mapText');
+        const storedSrc = localStorage.getItem('cms:page:distribuidores:mapSrc');
+        if (storedTitle || storedText || storedSrc) {
+          setContent(prev => ({
+            ...prev,
+            mapTitle: storedTitle || prev.mapTitle,
+            mapText: storedText || prev.mapText,
+            mapSrc: storedSrc || prev.mapSrc
+          }));
+        }
+      }
+    } catch (e) { console.error('Error loading content', e) }
   }, []);
 
   useEffect(() => {
     const handler = (e) => {
       const detail = e.detail || {};
       const section = detail.section || detail.sectionId || detail.id || detail.sectionName;
-      console.log('[cms] edit event received for section:', section, 'raw detail:', detail);
       if (section) openEditor(section);
     };
     const langHandler = (e) => { const l = e && e.detail && e.detail.lang; if (l) setIdioma(l); };
@@ -110,6 +121,7 @@ const EditarDistribuidores = () => {
         imagen: null,
         submitLabel: content.formulario?.submitLabel || 'ENVIAR SOLICITUD',
         responseMessage: content.formulario?.responseMessage || '¡Gracias por tu interés! Nos pondremos en contacto contigo pronto.',
+        responseTime: content.formulario?.responseTime || 'Respuesta en 24-48 hrs',
         mapSrc: '',
         distribuidores: content.counters?.distribuidores || '',
         estados: content.counters?.estados || ''
@@ -131,7 +143,7 @@ const EditarDistribuidores = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 1024 * 1024) {
-      alert('El archivo excede 1 MB. Elige una imagen más pequeña');
+      toastError('El archivo excede 1 MB. Elige una imagen más pequeña');
       return;
     }
     const reader = new FileReader();
@@ -142,41 +154,56 @@ const EditarDistribuidores = () => {
 
   const saveChanges = () => {
     if (!activeEdit) return;
+
+    let updatedContent = { ...content };
+
     if (activeEdit === 'hero') {
-      setContent(prev => ({ ...prev, hero: { ...prev.hero, badge: form.badge || prev.hero.badge, titulo: form.titulo || prev.hero.titulo, subtitulo: form.subtitulo || prev.hero.subtitulo, imagen: form.imagen || prev.hero.imagen } }));
+      updatedContent.hero = { ...updatedContent.hero, badge: form.badge || updatedContent.hero.badge, titulo: form.titulo || updatedContent.hero.titulo, subtitulo: form.subtitulo || updatedContent.hero.subtitulo, imagen: form.imagen || updatedContent.hero.imagen };
     } else if (activeEdit === 'formulario') {
-      setContent(prev => ({
-        ...prev,
-        formulario: {
-          ...prev.formulario,
-          titulo: form.titulo,
-          subtitulo: form.subtitulo,
-          submitLabel: form.submitLabel || prev.formulario?.submitLabel,
-          responseMessage: form.responseMessage || prev.formulario?.responseMessage
-        },
-        counters: {
-          ...prev.counters,
-          distribuidores: form.distribuidores || prev.counters.distribuidores,
-          estados: form.estados || prev.counters.estados
-        }
-      }));
+      updatedContent.formulario = {
+        ...updatedContent.formulario,
+        titulo: form.titulo,
+        subtitulo: form.subtitulo,
+        submitLabel: form.submitLabel || updatedContent.formulario?.submitLabel,
+        responseMessage: form.responseMessage || updatedContent.formulario?.responseMessage,
+        responseTime: form.responseTime || updatedContent.formulario?.responseTime
+      };
+      updatedContent.counters = {
+        ...updatedContent.counters,
+        distribuidores: form.distribuidores || updatedContent.counters.distribuidores,
+        estados: form.estados || updatedContent.counters.estados
+      };
     } else if (activeEdit === 'mapa') {
-      setContent(prev => ({ ...prev, mapSrc: form.mapSrc || prev.mapSrc, mapTitle: form.mapTitle || prev.mapTitle, mapText: form.mapText || prev.mapText }));
-      try {
-        localStorage.setItem('cms:page:distribuidores:mapTitle', form.mapTitle || content.mapTitle || '');
-        localStorage.setItem('cms:page:distribuidores:mapText', form.mapText || content.mapText || '');
-        localStorage.setItem('cms:page:distribuidores:mapSrc', form.mapSrc || content.mapSrc || '');
-      } catch (e) { }
+      updatedContent.mapSrc = form.mapSrc || updatedContent.mapSrc;
+      updatedContent.mapTitle = form.mapTitle || updatedContent.mapTitle;
+      updatedContent.mapText = form.mapText || updatedContent.mapText;
     } else if (activeEdit === 'filtros') {
-      setContent(prev => ({ ...prev, filtros: { ...prev.filtros, purchasePlaceholder: form.purchasePlaceholder || prev.filtros.purchasePlaceholder, estadoPlaceholder: form.estadoPlaceholder || prev.filtros.estadoPlaceholder } }));
+      updatedContent.filtros = { ...updatedContent.filtros, purchasePlaceholder: form.purchasePlaceholder || updatedContent.filtros.purchasePlaceholder, estadoPlaceholder: form.estadoPlaceholder || updatedContent.filtros.estadoPlaceholder };
     }
-    alert('✅ Cambios aplicados');
+
+    setContent(updatedContent);
+    try {
+      localStorage.setItem('cms:distribuidores', JSON.stringify(updatedContent));
+    } catch (e) {
+      console.error('Error saving to localStorage', e);
+      toastError('Error al guardar en memoria local');
+    }
+
+    success('Cambios guardados correctamente');
     setActiveEdit(null);
   };
 
   const guardarCambios = () => {
-    // Persistence disabled: do not save to localStorage
-    alert('✅ Cambios aplicados');
+    // Already saved in saveChanges? 
+    // This function seems unused or for external save button. 
+    // But saveChanges is called by the modal "Guardar" button.
+    // If there is a global save button, we might need this.
+    try {
+      localStorage.setItem('cms:distribuidores', JSON.stringify(content));
+      success('Cambios guardados correctamente');
+    } catch (e) {
+      toastError('Error al guardar');
+    }
   };
 
   const manejarLimpiarFiltros = () => {
@@ -193,15 +220,15 @@ const EditarDistribuidores = () => {
       navigator.geolocation.getCurrentPosition(
         (posicion) => {
           console.log('Ubicación:', posicion.coords);
-          alert('Ubicación obtenida correctamente');
+          success('Ubicación obtenida correctamente');
         },
         (error) => {
           console.error('Error al obtener ubicación:', error);
-          alert('No se pudo obtener tu ubicación');
+          toastError('No se pudo obtener tu ubicación');
         }
       );
     } else {
-      alert('Tu navegador no soporta geolocalización');
+      toastError('Tu navegador no soporta geolocalización');
     }
   };
 
@@ -255,103 +282,134 @@ const EditarDistribuidores = () => {
         {/* EDIT MODAL */}
         {activeEdit && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-caborca-cafe">Sección: {activeEdit}</h3>
-                <button onClick={() => setActiveEdit(null)} className="text-gray-500 hover:text-gray-700">Cerrar</button>
+                <h3 className="text-lg font-semibold text-caborca-cafe flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                  Sección: {activeEdit}
+                </h3>
+                <button onClick={() => setActiveEdit(null)} className="text-gray-500 hover:text-gray-700">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
               </div>
 
-              {activeEdit === 'hero' && (
-                <div className="space-y-4">
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">Badge</div>
-                    <input name="badge" value={form.badge} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
-                  </label>
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">Título</div>
-                    <input name="titulo" value={form.titulo} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
-                  </label>
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">Subtítulo</div>
-                    <input name="subtitulo" value={form.subtitulo} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
-                  </label>
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">Imagen (max 1 MB)</div>
-                    <input type="file" name="imagen" accept="image/*" onChange={handleImage} />
-                    {form.imagen && <img src={form.imagen} alt="preview" className="mt-3 w-48 h-32 object-cover rounded" />}
-                  </label>
-                </div>
-              )}
+              <div className="space-y-4">
+                {activeEdit === 'hero' && (
+                  <>
+                    <label className="block">
+                      <div className="text-sm font-semibold text-gray-700 mb-2">Badge</div>
+                      <input name="badge" value={form.badge} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                    </label>
+                    <label className="block">
+                      <div className="text-sm font-semibold text-gray-700 mb-2">Título</div>
+                      <input name="titulo" value={form.titulo} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                    </label>
+                    <label className="block">
+                      <div className="text-sm font-semibold text-gray-700 mb-2">Subtítulo</div>
+                      <input name="subtitulo" value={form.subtitulo} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                    </label>
+                    <label className="block">
+                      <div className="text-sm font-semibold text-gray-700 mb-2">Imagen (max 1 MB)</div>
+                      <div className="flex gap-3">
+                        <input type="file" name="imagen" accept="image/*" onChange={handleImage} className="hidden" id="hero-img-upload" />
+                        <label htmlFor="hero-img-upload" className="px-4 py-2 bg-caborca-beige-suave text-caborca-cafe rounded-lg hover:bg-caborca-cafe hover:text-white transition-colors cursor-pointer text-sm font-semibold">Seleccionar imagen</label>
+                      </div>
+                      {form.imagen && (
+                        <div className="mt-3 rounded-lg overflow-hidden border-2 border-gray-200">
+                          <img src={form.imagen} alt="preview" className="max-h-48 object-cover" />
+                        </div>
+                      )}
+                    </label>
+                  </>
+                )}
 
-              {activeEdit === 'formulario' && (
-                <div className="space-y-4">
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">Título Formulario</div>
-                    <input name="titulo" value={form.titulo} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
-                  </label>
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">Subtítulo Formulario</div>
-                    <textarea name="subtitulo" value={form.subtitulo} onChange={handleInput} className="w-full border px-3 py-2 rounded" rows="2" />
-                  </label>
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">Texto del botón</div>
-                    <input name="submitLabel" value={form.submitLabel} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
-                  </label>
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">Contador Distribuidores</div>
-                    <input name="distribuidores" value={form.distribuidores} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
-                  </label>
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">Contador Estados</div>
-                    <input name="estados" value={form.estados} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
-                  </label>
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">Mensaje de respuesta</div>
-                    <textarea name="responseMessage" value={form.responseMessage} onChange={handleInput} className="w-full border px-3 py-2 rounded" rows="3" />
-                  </label>
-                </div>
-              )}
+                {activeEdit === 'formulario' && (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre</label>
+                        <input name="nombre" value={formData.nombre} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Dirección</label>
+                        <input name="direccion" value={formData.direccion} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Teléfono</label>
+                        <input name="telefono" value={formData.telefono} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                        <input name="email" value={formData.email} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                      </div>
+                      <div className="md:col-span-2 bg-gray-50 p-3 rounded border border-gray-200">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-sm font-semibold text-gray-700">Coordenadas</label>
+                          <button type="button" onClick={manejarUbicarme} className="text-xs bg-caborca-cafe text-white px-2 py-1 rounded hover:opacity-90">
+                            📍 Usar mi ubicación
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <span className="text-xs text-gray-500 block mb-1">Latitud</span>
+                            <input name="lat" value={formData.lat} onChange={handleInputChange} className="w-full px-2 py-1 border border-gray-300 rounded text-sm" />
+                          </div>
+                          <div>
+                            <span className="text-xs text-gray-500 block mb-1">Longitud</span>
+                            <input name="lng" value={formData.lng} onChange={handleInputChange} className="w-full px-2 py-1 border border-gray-300 rounded text-sm" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
 
-              {activeEdit === 'counters' && (
-                // Counters are now edited in 'formulario'
-                <div className="p-4 bg-yellow-50 text-yellow-800 rounded">
-                  Edita los contadores en la sección de Formulario.
-                </div>
-              )}
+                {activeEdit === 'counters' && (
+                  <div className="p-4 bg-yellow-50 text-yellow-800 rounded border border-yellow-200">
+                    ℹ️ Edita los contadores en la sección de Formulario.
+                  </div>
+                )}
 
-              {activeEdit === 'filtros' && (
-                <div className="space-y-4">
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">Placeholder Tipo de compra</div>
-                    <input name="purchasePlaceholder" value={form.purchasePlaceholder} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
-                  </label>
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">Placeholder Estado</div>
-                    <input name="estadoPlaceholder" value={form.estadoPlaceholder} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
-                  </label>
-                </div>
-              )}
+                {activeEdit === 'filtros' && (
+                  <>
+                    <label className="block">
+                      <div className="text-sm font-semibold text-gray-700 mb-2">Placeholder Tipo de compra</div>
+                      <input name="purchasePlaceholder" value={form.purchasePlaceholder} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                    </label>
+                    <label className="block">
+                      <div className="text-sm font-semibold text-gray-700 mb-2">Placeholder Estado</div>
+                      <input name="estadoPlaceholder" value={form.estadoPlaceholder} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                    </label>
+                  </>
+                )}
 
-              {activeEdit === 'mapa' && (
-                <div className="space-y-4">
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">Título</div>
-                    <input name="mapTitle" value={form.mapTitle} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
-                  </label>
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">Texto</div>
-                    <textarea name="mapText" value={form.mapText} onChange={handleInput} className="w-full border px-3 py-2 rounded" rows={3} />
-                  </label>
-                  <label className="block">
-                    <div className="text-sm font-medium text-caborca-cafe mb-1">URL del iframe de mapa</div>
-                    <input name="mapSrc" value={form.mapSrc} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
-                  </label>
-                </div>
-              )}
+                {activeEdit === 'mapa' && (
+                  <>
+                    <label className="block">
+                      <div className="text-sm font-semibold text-gray-700 mb-2">Título</div>
+                      <input name="mapTitle" value={form.mapTitle} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                    </label>
+                    <label className="block">
+                      <div className="text-sm font-semibold text-gray-700 mb-2">Texto</div>
+                      <textarea name="mapText" value={form.mapText} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows="3" />
+                    </label>
+                    <label className="block">
+                      <div className="text-sm font-semibold text-gray-700 mb-2">URL del iframe de mapa</div>
+                      <input name="mapSrc" value={form.mapSrc} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                    </label>
+                  </>
+                )}
+              </div>
 
               <div className="mt-6 flex justify-end gap-3">
-                <button onClick={() => setActiveEdit(null)} className="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
-                <button onClick={saveChanges} className="px-4 py-2 bg-caborca-cafe text-white rounded">Guardar</button>
+                <button onClick={() => setActiveEdit(null)} className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-semibold flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                  Cancelar
+                </button>
+                <button onClick={saveChanges} className="px-6 py-2 bg-caborca-cafe text-white rounded-lg hover:bg-caborca-negro transition-colors font-semibold flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                  Guardar
+                </button>
               </div>
             </div>
           </div>
@@ -457,7 +515,7 @@ const EditarDistribuidores = () => {
                         <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                         <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                       </svg>
-                      <span className="text-sm">Respuesta en 24-48 hrs</span>
+                      <span className="text-sm">{content.formulario?.responseTime || 'Respuesta en 24-48 hrs'}</span>
                     </div>
                     <div className="flex items-center gap-8">
                       <div className="text-center">
@@ -596,6 +654,200 @@ const EditarDistribuidores = () => {
             </div>
           </div>
         </section>
+
+        {/* MODAL EDITOR */}
+        {activeEdit && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-caborca-cafe flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                  Editar Sección: {activeEdit}
+                </h3>
+                <button
+                  onClick={() => setActiveEdit(null)}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {activeEdit === 'formulario' && (
+                  <>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Título</label>
+                        <input
+                          name="titulo"
+                          value={form.titulo}
+                          onChange={handleInput}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                          placeholder="¿Quieres ser distribuidor?"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Subtítulo</label>
+                        <textarea
+                          name="subtitulo"
+                          value={form.subtitulo}
+                          onChange={handleInput}
+                          rows={2}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none"
+                          placeholder="Si estás interesado, déjanos tus datos..."
+                        />
+                      </div>
+                    </div>
+
+                    <div className="border-t pt-4">
+                      <h4 className="text-sm font-bold text-gray-700 mb-3">Botón y Mensaje de Respuesta</h4>
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-1">Texto del Botón</label>
+                          <input
+                            name="submitLabel"
+                            value={form.submitLabel}
+                            onChange={handleInput}
+                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                            placeholder="ENVIAR SOLICITUD"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-1">Mensaje de Respuesta</label>
+                          <input
+                            name="responseMessage"
+                            value={form.responseMessage}
+                            onChange={handleInput}
+                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                            placeholder="¡Gracias por tu interés!"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-1">Tiempo de Respuesta</label>
+                          <input
+                            name="responseTime"
+                            value={form.responseTime}
+                            onChange={handleInput}
+                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                            placeholder="Respuesta en 24-48 hrs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-t pt-4">
+                      <h4 className="text-sm font-bold text-gray-700 mb-3">Estadísticas</h4>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-1">Número de Distribuidores</label>
+                          <input
+                            name="distribuidores"
+                            value={form.distribuidores}
+                            onChange={handleInput}
+                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                            placeholder="+500"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Ejemplo: +500, 500+, etc.</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-1">Número de Estados</label>
+                          <input
+                            name="estados"
+                            value={form.estados}
+                            onChange={handleInput}
+                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                            placeholder="20+"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Ejemplo: 20+, +20, etc.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {activeEdit === 'hero' && (
+                  <>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Badge</label>
+                        <input
+                          name="badge"
+                          value={form.badge}
+                          onChange={handleInput}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Título</label>
+                        <input
+                          name="titulo"
+                          value={form.titulo}
+                          onChange={handleInput}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Subtítulo</label>
+                      <textarea
+                        name="subtitulo"
+                        value={form.subtitulo}
+                        onChange={handleInput}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none"
+                      />
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded border flex gap-4 items-center">
+                      <div className="flex-1">
+                        <label className="block font-semibold text-gray-700 mb-1">Imagen de fondo</label>
+                        <div className="flex gap-2">
+                          <input
+                            name="imagen"
+                            value={form.imagen || ''}
+                            onChange={handleInput}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm"
+                            placeholder="URL de la imagen"
+                          />
+                          <label className="cursor-pointer bg-caborca-cafe text-white px-3 py-2 rounded text-sm font-medium hover:bg-caborca-negro">
+                            Cargar
+                            <input
+                              name="imagen"
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImage}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                      </div>
+                      {form.imagen && (
+                        <img src={form.imagen} alt="preview" className="h-16 w-16 object-cover rounded border border-gray-200" />
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex justify-end gap-3">
+                <button
+                  onClick={() => setActiveEdit(null)}
+                  className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-semibold flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                  Cancelar
+                </button>
+                <button
+                  onClick={saveChanges}
+                  className="px-6 py-2 bg-caborca-cafe text-white rounded-lg hover:bg-caborca-negro transition-colors font-semibold flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                  Guardar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   );

@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import EditButton from '../componentes/EditButton';
+import { useToast } from '../context/ToastContext';
 
 export default function EditarResponsabilidad() {
+  const { success, error: toastError } = useToast();
+
   const defaultContent = {
     hero: {
       badge: 'COMPROMISO CON EL FUTURO',
@@ -40,7 +43,6 @@ export default function EditarResponsabilidad() {
     shambhala: {
       title: 'Un lugar para renacer',
       subtitle: 'Un ecosistema biodiverso donde la naturaleza y la producción sostenible se encuentran en perfecta armonía',
-
       missionTitle: 'Nuestra Misión',
       missionText: 'Shambhala es un proyecto que nació con el objetivo de convertirse en parte de los pulmones del planeta Tierra.',
       granjaTitle: 'Granja Biodinámica',
@@ -60,9 +62,15 @@ export default function EditarResponsabilidad() {
   const [activeEdit, setActiveEdit] = useState(null);
   const [form, setForm] = useState({
     title: '', p1: '', image: null, videoUrl: '',
-
     missionTitle: '', missionText: '', granjaTitle: '', granjaText: '', educTitle: '', educText: '', statNumber: '', statLabel: '', statDesc: '', thumb1: '', thumb2: ''
   });
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('cms:responsabilidad');
+      if (stored) setContent(JSON.parse(stored));
+    } catch (e) { }
+  }, []);
 
   useEffect(() => {
     const handler = (e) => {
@@ -84,6 +92,8 @@ export default function EditarResponsabilidad() {
     setForm({
       title: data.title || data.badge || '',
       p1: data.p1 || data.subtitle || '',
+      p2: data.p2 || '',
+      highlight: data.highlight || '',
       image: data.image || null,
       videoUrl: data.videoUrl || '',
       stat1: data.stat1 || '',
@@ -111,7 +121,7 @@ export default function EditarResponsabilidad() {
     const file = e.target.files?.[0];
     if (!file || !field) return;
     if (file.size > 1024 * 1024) {
-      alert('El archivo excede 1 MB. Elige una imagen más pequeña');
+      toastError('El archivo excede 1 MB. Elige una imagen más pequeña');
       return;
     }
     const reader = new FileReader();
@@ -132,7 +142,7 @@ export default function EditarResponsabilidad() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 1024 * 1024) {
-      alert('El archivo excede 1 MB. Elige una imagen más pequeña');
+      toastError('El archivo excede 1 MB. Elige una imagen más pequeña');
       return;
     }
     const reader = new FileReader();
@@ -141,34 +151,42 @@ export default function EditarResponsabilidad() {
   };
 
   const saveChanges = () => {
-    setContent(prev => ({
-      ...prev,
-      [activeEdit]: {
-        ...prev[activeEdit],
-        title: form.title || prev[activeEdit].title,
-        p1: form.p1 || prev[activeEdit].p1,
-        image: form.image || prev[activeEdit].image,
-        videoUrl: form.videoUrl || prev[activeEdit].videoUrl,
-        // stats (energia)
-        stat1: form.stat1 || prev[activeEdit].stat1,
-        stat1Label: form.stat1Label || prev[activeEdit].stat1Label,
-        stat2: form.stat2 || prev[activeEdit].stat2,
-        stat2Label: form.stat2Label || prev[activeEdit].stat2Label,
-        // shambhala specific
-        missionTitle: form.missionTitle || prev[activeEdit].missionTitle,
-        missionText: form.missionText || prev[activeEdit].missionText,
-        granjaTitle: form.granjaTitle || prev[activeEdit].granjaTitle,
-        granjaText: form.granjaText || prev[activeEdit].granjaText,
-        educTitle: form.educTitle || prev[activeEdit].educTitle,
-        educText: form.educText || prev[activeEdit].educText,
-        statNumber: form.statNumber || prev[activeEdit].statNumber,
-        statLabel: form.statLabel || prev[activeEdit].statLabel,
-        statDesc: form.statDesc || prev[activeEdit].statDesc,
-        thumb1: form.thumb1 || prev[activeEdit].thumb1,
-        thumb2: form.thumb2 || prev[activeEdit].thumb2
-      }
-    }));
-    alert('✅ Cambios aplicados correctamente');
+    setContent(prev => {
+      const updated = {
+        ...prev,
+        [activeEdit]: {
+          ...prev[activeEdit],
+          title: form.title || prev[activeEdit].title,
+          badge: form.title || prev[activeEdit].badge,
+          subtitle: form.p1 || prev[activeEdit].subtitle,
+          p1: form.p1 || prev[activeEdit].p1,
+          p2: form.p2 || prev[activeEdit].p2,
+          highlight: form.highlight || prev[activeEdit].highlight,
+          image: form.image || prev[activeEdit].image,
+          videoUrl: form.videoUrl || prev[activeEdit].videoUrl,
+          // stats (energia)
+          stat1: form.stat1 || prev[activeEdit].stat1,
+          stat1Label: form.stat1Label || prev[activeEdit].stat1Label,
+          stat2: form.stat2 || prev[activeEdit].stat2,
+          stat2Label: form.stat2Label || prev[activeEdit].stat2Label,
+          // shambhala specific
+          missionTitle: form.missionTitle || prev[activeEdit].missionTitle,
+          missionText: form.missionText || prev[activeEdit].missionText,
+          granjaTitle: form.granjaTitle || prev[activeEdit].granjaTitle,
+          granjaText: form.granjaText || prev[activeEdit].granjaText,
+          educTitle: form.educTitle || prev[activeEdit].educTitle,
+          educText: form.educText || prev[activeEdit].educText,
+          statNumber: form.statNumber || prev[activeEdit].statNumber,
+          statLabel: form.statLabel || prev[activeEdit].statLabel,
+          statDesc: form.statDesc || prev[activeEdit].statDesc,
+          thumb1: form.thumb1 || prev[activeEdit].thumb1,
+          thumb2: form.thumb2 || prev[activeEdit].thumb2
+        }
+      };
+      localStorage.setItem('cms:responsabilidad', JSON.stringify(updated));
+      return updated;
+    });
+    success('Cambios aplicados correctamente');
     closeEditor();
   };
 
@@ -453,7 +471,7 @@ export default function EditarResponsabilidad() {
         {/* MODAL EDITOR GLOBAL */}
         {activeEdit && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
                 <h3 className="text-xl font-semibold text-caborca-cafe flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
@@ -465,136 +483,236 @@ export default function EditarResponsabilidad() {
               </div>
               <div className="p-6 space-y-4">
 
+                {activeEdit === 'hero' && (
+                  <div className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Badge</label>
+                        <input name="title" value={form.title} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Título</label>
+                        <input name="p1" value={form.p1} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Subtítulo</label>
+                      <textarea name="p2" value={form.p2 || ''} onChange={handleInput} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none" />
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded border flex gap-4 items-center">
+                      <div className="flex-1">
+                        <label className="block font-semibold text-gray-700 mb-1">Imagen de fondo</label>
+                        <div className="flex gap-2">
+                          <input name="image" value={form.image || ''} onChange={handleInput} className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm" />
+                          <label className="cursor-pointer bg-caborca-cafe text-white px-3 py-2 rounded text-sm font-medium hover:bg-caborca-negro">
+                            Cargar
+                            <input data-field="image" type="file" accept="image/*" onChange={handleImageNamed} className="hidden" />
+                          </label>
+                        </div>
+                      </div>
+                      {form.image && (
+                        <img src={form.image} alt="preview" className="h-16 w-16 object-cover rounded border border-gray-200" />
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {activeEdit === 'compania' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Título</label>
+                      <input name="title" value={form.title} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Párrafo 1</label>
+                        <textarea name="p1" value={form.p1} onChange={handleInput} rows={4} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Párrafo 2</label>
+                        <textarea name="p2" value={form.p2 || ''} onChange={handleInput} rows={4} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Texto destacado</label>
+                      <textarea name="highlight" value={form.highlight || ''} onChange={handleInput} rows={2} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none" />
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded border flex gap-4 items-center">
+                      <div className="flex-1">
+                        <label className="block font-semibold text-gray-700 mb-1">Imagen</label>
+                        <div className="flex gap-2">
+                          <input name="image" value={form.image || ''} onChange={handleInput} className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm" />
+                          <label className="cursor-pointer bg-caborca-cafe text-white px-3 py-2 rounded text-sm font-medium hover:bg-caborca-negro">
+                            Cargar
+                            <input data-field="image" type="file" accept="image/*" onChange={handleImageNamed} className="hidden" />
+                          </label>
+                        </div>
+                      </div>
+                      {form.image && (
+                        <img src={form.image} alt="preview" className="h-16 w-16 object-cover rounded border border-gray-200" />
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {activeEdit === 'pieles' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Título</label>
+                      <input name="title" value={form.title} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Párrafo 1</label>
+                        <textarea name="p1" value={form.p1} onChange={handleInput} rows={4} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Párrafo 2</label>
+                        <textarea name="p2" value={form.p2 || ''} onChange={handleInput} rows={4} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none" />
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded border flex gap-4 items-center">
+                      <div className="flex-1">
+                        <label className="block font-semibold text-gray-700 mb-1">Imagen</label>
+                        <div className="flex gap-2">
+                          <input name="image" value={form.image || ''} onChange={handleInput} className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm" />
+                          <label className="cursor-pointer bg-caborca-cafe text-white px-3 py-2 rounded text-sm font-medium hover:bg-caborca-negro">
+                            Cargar
+                            <input data-field="image" type="file" accept="image/*" onChange={handleImageNamed} className="hidden" />
+                          </label>
+                        </div>
+                      </div>
+                      {form.image && (
+                        <img src={form.image} alt="preview" className="h-16 w-16 object-cover rounded border border-gray-200" />
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {activeEdit === 'video' && (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">URL del video (embed)</label>
-                    <input name="videoUrl" value={form.videoUrl} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">URL del video (embed)</label>
+                    <input name="videoUrl" value={form.videoUrl} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
                   </div>
                 )}
 
                 {activeEdit === 'shambhala' && (
-                  <div className="space-y-4">
+                  <div className="space-y-4 text-sm">
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Título principal</label>
-                        <input name="title" value={form.title} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe" />
+                        <label className="block font-semibold text-gray-700 mb-1">Título principal</label>
+                        <input name="title" value={form.title} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe" />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Subtítulo</label>
-                        <input name="p1" value={form.p1} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe" />
+                        <label className="block font-semibold text-gray-700 mb-1">Subtítulo</label>
+                        <input name="p1" value={form.p1} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe" />
                       </div>
                     </div>
 
-                    <h4 className="font-semibold">Bloques informativos</h4>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Misión (título)</label>
-                        <input name="missionTitle" value={form.missionTitle} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" />
-                        <label className="block text-sm font-semibold text-gray-700 mb-2 mt-3">Misión (texto)</label>
-                        <textarea name="missionText" value={form.missionText} onChange={handleInput} rows={3} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" />
+                    <h4 className="font-semibold border-b pb-1">Bloques informativos</h4>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div className="bg-gray-50 p-3 rounded border">
+                        <label className="block font-semibold mb-1">Misión (título)</label>
+                        <input name="missionTitle" value={form.missionTitle} onChange={handleInput} className="w-full px-2 py-1 border border-gray-300 rounded text-sm mb-2" />
+                        <label className="block font-semibold mb-1">Texto</label>
+                        <textarea name="missionText" value={form.missionText} onChange={handleInput} rows={3} className="w-full px-2 py-1 border border-gray-300 rounded text-sm resize-none" />
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Granja (título)</label>
-                        <input name="granjaTitle" value={form.granjaTitle} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" />
-                        <label className="block text-sm font-semibold text-gray-700 mb-2 mt-3">Granja (texto)</label>
-                        <textarea name="granjaText" value={form.granjaText} onChange={handleInput} rows={3} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" />
+                      <div className="bg-gray-50 p-3 rounded border">
+                        <label className="block font-semibold mb-1">Granja (título)</label>
+                        <input name="granjaTitle" value={form.granjaTitle} onChange={handleInput} className="w-full px-2 py-1 border border-gray-300 rounded text-sm mb-2" />
+                        <label className="block font-semibold mb-1">Texto</label>
+                        <textarea name="granjaText" value={form.granjaText} onChange={handleInput} rows={3} className="w-full px-2 py-1 border border-gray-300 rounded text-sm resize-none" />
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Educación (título)</label>
-                        <input name="educTitle" value={form.educTitle} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" />
-                        <label className="block text-sm font-semibold text-gray-700 mb-2 mt-3">Educación (texto)</label>
-                        <textarea name="educText" value={form.educText} onChange={handleInput} rows={3} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Estadística (número)</label>
-                        <input name="statNumber" value={form.statNumber} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" />
-                        <label className="block text-sm font-semibold text-gray-700 mb-2 mt-3">Estadística (etiqueta)</label>
-                        <input name="statLabel" value={form.statLabel} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" />
-                        <label className="block text-sm font-semibold text-gray-700 mb-2 mt-3">Descripción estadística</label>
-                        <textarea name="statDesc" value={form.statDesc} onChange={handleInput} rows={2} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" />
+                      <div className="bg-gray-50 p-3 rounded border">
+                        <label className="block font-semibold mb-1">Educación (título)</label>
+                        <input name="educTitle" value={form.educTitle} onChange={handleInput} className="w-full px-2 py-1 border border-gray-300 rounded text-sm mb-2" />
+                        <label className="block font-semibold mb-1">Texto</label>
+                        <textarea name="educText" value={form.educText} onChange={handleInput} rows={3} className="w-full px-2 py-1 border border-gray-300 rounded text-sm resize-none" />
                       </div>
                     </div>
 
-                    <h4 className="font-semibold">Imágenes de galería</h4>
-                    <div className="grid md:grid-cols-3 gap-4 items-end">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Imagen principal (URL)</label>
-                        <input name="image" value={form.image || ''} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" />
-                        <label className="inline-flex items-center gap-2 mt-2 bg-[#EBDCC0] text-caborca-cafe px-3 py-2 rounded-lg cursor-pointer border border-gray-200">
-                          <span className="font-medium">Cargar</span>
-                          <input data-field="image" type="file" accept="image/*" onChange={handleImageNamed} className="hidden" />
-                        </label>
+                    <div className="bg-green-50 p-3 rounded border border-green-100">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <label className="block font-semibold text-green-800 mb-1">Stat (número)</label>
+                          <input name="statNumber" value={form.statNumber} onChange={handleInput} className="w-full px-2 py-1 border border-green-300 rounded text-sm" />
+                        </div>
+                        <div>
+                          <label className="block font-semibold text-green-800 mb-1">Stat (etiqueta)</label>
+                          <input name="statLabel" value={form.statLabel} onChange={handleInput} className="w-full px-2 py-1 border border-green-300 rounded text-sm" />
+                        </div>
+                        <div>
+                          <label className="block font-semibold text-green-800 mb-1">Descripción</label>
+                          <input name="statDesc" value={form.statDesc} onChange={handleInput} className="w-full px-2 py-1 border border-green-300 rounded text-sm" />
+                        </div>
                       </div>
+                    </div>
 
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Miniatura 1 (URL)</label>
-                        <input name="thumb1" value={form.thumb1 || ''} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" />
-                        <label className="inline-flex items-center gap-2 mt-2 bg-[#EBDCC0] text-caborca-cafe px-3 py-2 rounded-lg cursor-pointer border border-gray-200">
-                          <span className="font-medium">Cargar</span>
-                          <input data-field="thumb1" type="file" accept="image/*" onChange={handleImageNamed} className="hidden" />
-                        </label>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Miniatura 2 (URL)</label>
-                        <input name="thumb2" value={form.thumb2 || ''} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" />
-                        <label className="inline-flex items-center gap-2 mt-2 bg-[#EBDCC0] text-caborca-cafe px-3 py-2 rounded-lg cursor-pointer border border-gray-200">
-                          <span className="font-medium">Cargar</span>
-                          <input data-field="thumb2" type="file" accept="image/*" onChange={handleImageNamed} className="hidden" />
-                        </label>
-                      </div>
+                    <h4 className="font-semibold border-b pb-1">Imágenes de galería</h4>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      {[{ f: 'image', l: 'Principal' }, { f: 'thumb1', l: 'Miniatura 1' }, { f: 'thumb2', l: 'Miniatura 2' }].map((item) => (
+                        <div key={item.f}>
+                          <label className="block font-semibold mb-1">{item.l} (URL)</label>
+                          <div className="flex gap-2">
+                            <input name={item.f} value={form[item.f] || ''} onChange={handleInput} className="w-full px-2 py-1 border border-gray-300 rounded text-xs" />
+                            <label className="cursor-pointer bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded text-xs flex items-center">
+                              📂
+                              <input data-field={item.f} type="file" accept="image/*" onChange={handleImageNamed} className="hidden" />
+                            </label>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
 
                 {activeEdit === 'energia' && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Párrafo 1</label>
-                      <textarea name="p1" value={form.p1} onChange={handleInput} rows={3} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Párrafo 2</label>
-                      <textarea name="p2" value={form.p2 || ''} onChange={handleInput} rows={3} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe" />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Imagen de sección (URL)</label>
-                      <div className="flex gap-3">
-                        <input name="image" value={form.image || ''} onChange={handleInput} className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-lg" />
-                        <label className="inline-flex items-center gap-2 bg-[#FFF3D9] text-yellow-700 px-4 py-3 rounded-lg cursor-pointer border border-yellow-200">
-                          <span className="font-medium">Cargar</span>
-                          <input data-field="image" type="file" accept="image/*" onChange={handleImageNamed} className="hidden" />
-                        </label>
+                  <div className="space-y-4 text-sm">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block font-semibold text-gray-700 mb-1">Párrafo 1</label>
+                        <textarea name="p1" value={form.p1} onChange={handleInput} rows={4} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe resize-none" />
                       </div>
-                      <div className="mt-3 border rounded-lg p-4 bg-gray-50">
-                        {form.image ? (
-                          <img src={form.image} alt="preview" className="w-full h-40 object-contain rounded" />
-                        ) : (
-                          <div className="w-full h-40 flex items-center justify-center text-gray-300">Vista previa</div>
-                        )}
+                      <div>
+                        <label className="block font-semibold text-gray-700 mb-1">Párrafo 2</label>
+                        <textarea name="p2" value={form.p2 || ''} onChange={handleInput} rows={4} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe resize-none" />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gray-50 p-3 rounded border flex gap-4 items-center">
+                      <div className="flex-1">
+                        <label className="block font-semibold text-gray-700 mb-1">Imagen de sección</label>
+                        <div className="flex gap-2">
+                          <input name="image" value={form.image || ''} onChange={handleInput} className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm" />
+                          <label className="cursor-pointer bg-caborca-cafe text-white px-3 py-2 rounded text-sm font-medium hover:bg-caborca-negro">
+                            Cargar
+                            <input data-field="image" type="file" accept="image/*" onChange={handleImageNamed} className="hidden" />
+                          </label>
+                        </div>
+                      </div>
+                      {form.image && (
+                        <img src={form.image} alt="preview" className="h-16 w-16 object-cover rounded border border-gray-200" />
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-4 p-3 bg-gray-50 rounded border">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Stat 1 (valor)</label>
-                        <input name="stat1" value={form.stat1} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe" />
+                        <label className="block font-semibold text-gray-700 mb-1 text-xs">Stat 1 (valor)</label>
+                        <input name="stat1" value={form.stat1} onChange={handleInput} className="w-full px-2 py-1 border border-gray-300 rounded text-sm" />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Stat 1 (etiqueta)</label>
-                        <input name="stat1Label" value={form.stat1Label} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe" />
+                        <label className="block font-semibold text-gray-700 mb-1 text-xs">Stat 1 (etiqueta)</label>
+                        <input name="stat1Label" value={form.stat1Label} onChange={handleInput} className="w-full px-2 py-1 border border-gray-300 rounded text-sm" />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Stat 2 (valor)</label>
-                        <input name="stat2" value={form.stat2} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe" />
+                        <label className="block font-semibold text-gray-700 mb-1 text-xs">Stat 2 (valor)</label>
+                        <input name="stat2" value={form.stat2} onChange={handleInput} className="w-full px-2 py-1 border border-gray-300 rounded text-sm" />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Stat 2 (etiqueta)</label>
-                        <input name="stat2Label" value={form.stat2Label} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe" />
+                        <label className="block font-semibold text-gray-700 mb-1 text-xs">Stat 2 (etiqueta)</label>
+                        <input name="stat2Label" value={form.stat2Label} onChange={handleInput} className="w-full px-2 py-1 border border-gray-300 rounded text-sm" />
                       </div>
                     </div>
                   </div>

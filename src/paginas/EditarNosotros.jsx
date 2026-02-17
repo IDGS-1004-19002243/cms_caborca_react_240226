@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import EditButton from '../componentes/EditButton'
+import { useToast } from '../context/ToastContext'
 
 const EditarNosotros = () => {
   const defaultContent = {
@@ -72,7 +73,15 @@ const EditarNosotros = () => {
 
   const [content, setContent] = useState(defaultContent);
   const [activeEdit, setActiveEdit] = useState(null);
-  const [form, setForm] = useState({ title: '', body: '', image: null });
+  const [form, setForm] = useState({ title: '', body: '', image: null, subtitle: '', stats: [] });
+  const { success, error } = useToast();
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('cms:nosotros');
+      if (stored) setContent(JSON.parse(stored));
+    } catch (e) { console.error('Error loading content', e); }
+  }, []);
 
   useEffect(() => {
     // Allow opening editor from external events
@@ -86,13 +95,35 @@ const EditarNosotros = () => {
 
   const openEditor = (section) => {
     const sec = content[section] || {};
-    setForm({ title: sec.title || '', body: (sec.paragraphs || sec.paragraph || []).join('\n\n') || sec.subtitle || '', image: sec.imagen || null });
+
+    let bodyText = '';
+    if (Array.isArray(sec.paragraphs)) {
+      bodyText = sec.paragraphs.join('\n\n');
+    } else if (typeof sec.paragraph === 'string') {
+      bodyText = sec.paragraph;
+    } else if (typeof sec.subtitle === 'string' && section !== 'caborcaHoy') {
+      bodyText = sec.subtitle;
+    }
+
+    setForm({
+      title: sec.title || '',
+      body: bodyText,
+      image: sec.imagen || null,
+      subtitle: sec.subtitle || '',
+      stats: sec.stats ? JSON.parse(JSON.stringify(sec.stats)) : []
+    });
     setActiveEdit(section);
   };
 
   const handleInput = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleStatChange = (index, field, value) => {
+    const newStats = [...form.stats];
+    newStats[index] = { ...newStats[index], [field]: value };
+    setForm(prev => ({ ...prev, stats: newStats }));
   };
 
   const handleImage = (e) => {
@@ -107,18 +138,36 @@ const EditarNosotros = () => {
     if (!activeEdit) return;
     setContent(prev => {
       const updated = { ...prev };
-      if (updated[activeEdit]) {
-        updated[activeEdit] = { ...updated[activeEdit] };
-        updated[activeEdit].title = form.title || updated[activeEdit].title;
-        if (form.body) {
-          updated[activeEdit].paragraphs = form.body.split(/\n\n+/).map(p => p.trim());
+      const currentSec = { ...updated[activeEdit] }; // create copy
+
+      currentSec.title = form.title || currentSec.title;
+
+      // Save Body logic
+      if (form.body !== undefined) {
+        if (activeEdit === 'caborcaHoy') {
+          currentSec.paragraph = form.body;
+        } else if (Array.isArray(currentSec.paragraphs)) {
+          currentSec.paragraphs = form.body.split(/\n\n+/).map(p => p.trim());
+        } else if (currentSec.paragraph !== undefined) {
+          currentSec.paragraph = form.body;
         }
-        if (form.image) updated[activeEdit].imagen = form.image;
       }
+
+      // Save Image
+      if (form.image) currentSec.imagen = form.image;
+
+      // Handle specific fields (subtitle, stats)
+      if (activeEdit === 'caborcaHoy') {
+        currentSec.subtitle = form.subtitle;
+        currentSec.stats = form.stats;
+      }
+
+      updated[activeEdit] = currentSec;
+      localStorage.setItem('cms:nosotros', JSON.stringify(updated));
       return updated;
     });
     setActiveEdit(null);
-    alert('Cambios aplicados en memoria (no persistidos)');
+    success('Cambios guardados correctamente');
   };
   return (
     <div className="bg-white text-caborca-cafe font-sans">
@@ -314,8 +363,8 @@ const EditarNosotros = () => {
 
         {/* EDIT MODAL */}
         {activeEdit && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 overflow-y-auto">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl p-6 m-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-caborca-cafe flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
@@ -326,28 +375,110 @@ const EditarNosotros = () => {
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className="block">
-                  <div className="text-sm font-medium text-caborca-cafe mb-1">Título</div>
-                  <input name="title" value={form.title} onChange={handleInput} className="w-full border px-3 py-2 rounded" />
+                  <div className="text-sm font-semibold text-gray-700 mb-1">Título</div>
+                  <input
+                    name="title"
+                    value={form.title}
+                    onChange={handleInput}
+                    className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                  />
                 </label>
-                <label className="block">
-                  <div className="text-sm font-medium text-caborca-cafe mb-1">Contenido (separar párrafos con línea en blanco)</div>
-                  <textarea name="body" value={form.body} onChange={handleInput} className="w-full border px-3 py-2 rounded" rows={6} />
+
+                {activeEdit === 'caborcaHoy' && (
+                  <label className="block">
+                    <div className="text-sm font-semibold text-gray-700 mb-1">Subtítulo</div>
+                    <input
+                      name="subtitle"
+                      value={form.subtitle}
+                      onChange={handleInput}
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                    />
+                  </label>
+                )}
+
+                {activeEdit === 'caborcaHoy' && (
+                  <div className="md:col-span-2 bg-gray-50 p-3 rounded border border-gray-200">
+                    <div className="text-sm font-semibold text-gray-700 mb-2">Estadísticas</div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {form.stats.map((stat, i) => (
+                        <div key={i} className="flex flex-col gap-1 bg-white p-2 rounded shadow-sm">
+                          <span className="text-[10px] text-gray-400 font-bold uppercase">Stat {i + 1}</span>
+                          <input
+                            value={stat.value}
+                            onChange={e => handleStatChange(i, 'value', e.target.value)}
+                            placeholder="Valor"
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm mb-1"
+                          />
+                          <input
+                            value={stat.label}
+                            onChange={e => handleStatChange(i, 'label', e.target.value)}
+                            placeholder="Etiqueta"
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <label className="block md:col-span-2">
+                  <div className="text-sm font-semibold text-gray-700 mb-1">
+                    {activeEdit === 'caborcaHoy' ? 'Contenido (Párrafo inferior)' : 'Contenido (separar párrafos con línea en blanco)'}
+                  </div>
+                  <textarea
+                    name="body"
+                    value={form.body}
+                    onChange={handleInput}
+                    className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none text-sm"
+                    rows={5}
+                  />
                 </label>
-                <label className="block">
-                  <div className="text-sm font-medium text-caborca-cafe mb-1">Imagen (opcional, max 1MB)</div>
-                  <input type="file" name="image" accept="image/*" onChange={handleImage} />
-                  {form.image && <img src={form.image} alt="preview" className="mt-3 w-48 h-32 object-cover rounded" />}
-                </label>
+
+                {activeEdit !== 'caborcaHoy' && (
+                  <div className="md:col-span-2 flex items-start gap-4 border border-gray-200 p-3 rounded bg-gray-50">
+                    <div className="flex-1">
+                      <div className="text-sm font-semibold text-gray-700 mb-1">Imagen (opcional)</div>
+                      <div className="flex gap-2 items-center">
+                        <label
+                          htmlFor="file-upload"
+                          className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 cursor-pointer text-sm font-medium"
+                        >
+                          Seleccionar Imagen
+                        </label>
+                        <span className="text-xs text-gray-500">Max 1MB</span>
+                        <input
+                          type="file"
+                          name="image"
+                          accept="image/*"
+                          onChange={handleImage}
+                          className="hidden"
+                          id="file-upload"
+                        />
+                      </div>
+                    </div>
+                    {form.image && (
+                      <div className="rounded overflow-hidden border border-gray-300 bg-white p-1">
+                        <img src={form.image} alt="preview" className="h-20 w-auto object-cover" />
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="mt-6 flex justify-end gap-3">
-                <button onClick={() => setActiveEdit(null)} className="px-4 py-2 bg-gray-200 rounded flex items-center gap-2">
+                <button
+                  onClick={() => setActiveEdit(null)}
+                  className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-semibold flex items-center gap-2"
+                >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                   Cancelar
                 </button>
-                <button onClick={saveChanges} className="px-4 py-2 bg-caborca-cafe text-white rounded flex items-center gap-2">
+                <button
+                  onClick={saveChanges}
+                  className="px-6 py-2 bg-caborca-cafe text-white rounded-lg hover:bg-caborca-negro transition-colors font-semibold flex items-center gap-2"
+                >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
                   Guardar
                 </button>

@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
+import { useToast } from '../context/ToastContext';
 
 export default function CatalogoMujer() {
+  const { success, error: toastError } = useToast();
   const [productos, setProductos] = useState([
     { id: 1, nombre: 'Bota Alta Elegante', sku: 'MW-001', descripcion: 'Bota alta con diseño femenino y elegante.', materiales: ['piel'], marca: 'Caborca', categoria: 'alta', destacado: false, imagen: '/images/bota-mujer-1.jpg', imagenes: ['/images/bota-mujer-1.jpg'], tags: ['elegante'] },
     { id: 2, nombre: 'Botín Casual', sku: 'MW-002', descripcion: 'Botín cómodo para uso diario.', materiales: ['piel', 'goma'], marca: 'Caborca', categoria: 'botin', destacado: false, imagen: '/images/bota-mujer-2.jpg', imagenes: ['/images/bota-mujer-2.jpg'], tags: ['casual'] },
@@ -41,9 +43,9 @@ export default function CatalogoMujer() {
     try {
       localStorage.setItem('cms:catalogo-mujer:contenido', JSON.stringify(contenido));
       await new Promise(r => setTimeout(r, 800));
-      alert('✅ Contenido actualizado');
+      success('Contenido actualizado');
     } catch (e) {
-      alert('❌ Error al guardar');
+      toastError('Error al guardar');
     } finally {
       setGuardandoContenido(false);
     }
@@ -145,7 +147,7 @@ export default function CatalogoMujer() {
       const dataUrls = await Promise.all(readers);
       setProductoEditando(prev => ({ ...prev, imagenes: Array.from(new Set([...(prev.imagenes || []), ...dataUrls])).slice(0, maxFiles) }));
     } catch (err) {
-      alert(err.message || 'Error al leer imágenes');
+      toastError(err.message || 'Error al leer imágenes');
     }
     if (inputFileRef.current) inputFileRef.current.value = null;
   };
@@ -174,9 +176,9 @@ export default function CatalogoMujer() {
       console.log('Guardando catálogo mujer:', productos);
       persistProductos(productos);
       await new Promise(resolve => setTimeout(resolve, 1000));
-      alert('✅ Cambios guardados correctamente');
+      success('Cambios guardados correctamente');
     } catch (error) {
-      alert('❌ Error al guardar');
+      toastError('Error al guardar');
     } finally {
       setGuardando(false);
     }
@@ -209,7 +211,7 @@ export default function CatalogoMujer() {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h4 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
             <svg className="w-5 h-5 text-caborca-cafe" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-            Personalizar Encabezado del Catálogo
+            Sección: Encabezado
           </h4>
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
@@ -342,6 +344,10 @@ export default function CatalogoMujer() {
 
               {/* Modal Body */}
               <div className="p-6">
+                <div className="flex items-center gap-2 mb-6 text-caborca-cafe">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                  <span className="font-semibold text-lg">Sección: Detalles de Producto</span>
+                </div>
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
                   {/* Left Column: Basic Info (8 cols) */}

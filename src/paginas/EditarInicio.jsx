@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import EditButton from '../componentes/EditButton';
+import { useToast } from '../context/ToastContext';
 
 export default function EditarInicio() {
+  // Editor de página de inicio
+  const { success, error: toastError } = useToast();
   const [modoEdicion, setModoEdicion] = useState(null); // null, 'carousel', 'productos', etc.
   const [elementoEditando, setElementoEditando] = useState(null);
 
@@ -97,7 +100,9 @@ export default function EditarInicio() {
     },
     formDistribuidor: {
       titulo: { es: '¿Quieres ser distribuidor?', en: 'Want to be a distributor?' },
+      subtitulo: { es: 'Únete a nuestra red', en: 'Join our network' },
       descripcion: { es: 'Únete a nuestra red de distribuidores y forma parte de la familia Caborca.', en: 'Join our network of distributors and become part of the Caborca family.' },
+      mensaje: { es: 'Si estás interesado, déjanos tus datos y nuestro equipo se pondrá en contacto contigo.', en: 'If you are interested, leave us your information and our team will contact you.' },
       boton: { es: 'ENVIAR SOLICITUD', en: 'SUBMIT REQUEST' },
       notaTiempo: { es: 'Respuesta en 24-48 hrs', en: 'Response in 24-48 hrs' },
       statDistribuidores: '+500',
@@ -122,18 +127,26 @@ export default function EditarInicio() {
   });
 
   const [idioma, setIdioma] = useState('es');
+
+  // Cargar contenido desde localStorage
   useEffect(() => {
+    try {
+      const storedContent = localStorage.getItem('cms:inicio');
+      if (storedContent) {
+        setContenido(prev => ({ ...prev, ...JSON.parse(storedContent) }));
+      }
+      const storedLang = localStorage.getItem('cms:editor:lang');
+      if (storedLang) setIdioma(storedLang);
+    } catch (e) { console.error('Error cargando contenido', e); }
+
     const handler = (e) => {
       const l = e && e.detail && e.detail.lang;
       if (l) setIdioma(l);
     };
-    try {
-      const stored = localStorage.getItem('cms:editor:lang');
-      if (stored) setIdioma(stored);
-    } catch (e) { }
     window.addEventListener('cms:editor:lang-changed', handler);
     return () => window.removeEventListener('cms:editor:lang-changed', handler);
   }, []);
+
   const [slideActual, setSlideActual] = useState(0);
   const [slideDistribuidores, setSlideDistribuidores] = useState(0);
   const [guardando, setGuardando] = useState(false);
@@ -146,18 +159,11 @@ export default function EditarInicio() {
     const interval = setInterval(() => {
       setSlideDistribuidores(prev => {
         const total = contenido.distribuidoresAutorizados.distribuidores.length;
-        // Loop back seamlessly logic would require more complex duplicate handling,
-        // for simple preview we just reset or linear increment.
-        // Let's do a simple continuous increment and modulus in render for infinite feel?
-        // Actually, the render logic tries strictly linear. Let's just cycle 0 -> total
         return (prev + 1) % total;
       });
     }, 3000);
     return () => clearInterval(interval);
   }, [contenido.distribuidoresAutorizados.distribuidores.length]);
-
-  // Persistence disabled: do not load productos destacados from localStorage
-  // and do not listen for cms:productos:updated events for automatic updates.
 
   // Escuchar eventos globales para abrir el modal de edición por sección
   useEffect(() => {
@@ -172,11 +178,9 @@ export default function EditarInicio() {
         'inicio-donde-comprar': 'donde-comprar',
         'inicio-sustentabilidad': 'sustentabilidad',
         'inicio-form-distribuidor': 'form-distribuidor',
-        // agregar más mapeos aquí si es necesario
       };
       const modo = map[id];
       if (modo) {
-        // carousel needs an index; open first slide by default
         if (modo === 'carousel') {
           abrirEdicion('carousel', 0);
         } else {
@@ -192,8 +196,6 @@ export default function EditarInicio() {
   }, []);
 
   // Escuchar actualizaciones de catálogos para sincronizar productos destacados.
-  // Nota: no inicializamos desde localStorage al montar — solo actualizamos cuando
-  // un catálogo dispara el evento `cms:productos:updated` (es decir, tras guardar).
   useEffect(() => {
     const handlerProductos = (e) => {
       const lista = e && e.detail && e.detail.productos;
@@ -313,7 +315,7 @@ export default function EditarInicio() {
   const agregarDistribuidor = () => {
     setContenido(prev => {
       if (prev.distribuidoresAutorizados.distribuidores.length >= 10) {
-        alert('Has alcanzado el límite máximo de 10 distribuidores.');
+        toastError('Has alcanzado el límite máximo de 10 distribuidores.');
         return prev;
       }
       const nuevoId = prev.distribuidoresAutorizados.distribuidores.length ? Math.max(...prev.distribuidoresAutorizados.distribuidores.map(d => d.id)) + 1 : 1;
@@ -347,14 +349,14 @@ export default function EditarInicio() {
     const disponibles = 10 - actuales;
 
     if (disponibles <= 0) {
-      alert('Has alcanzado el límite máximo de 10 distribuidores.');
+      toastError('Has alcanzado el límite máximo de 10 distribuidores.');
       e.target.value = '';
       return;
     }
 
     const archivosParaCargar = archivos.slice(0, disponibles);
     if (archivos.length > disponibles) {
-      alert(`Solo se cargarán los primeros ${disponibles} archivos para no exceder el límite.`);
+      toastError(`Solo se cargarán los primeros ${disponibles} archivos para no exceder el límite.`);
     }
 
     const promesas = archivosParaCargar.map(archivo => {
@@ -390,7 +392,6 @@ export default function EditarInicio() {
       console.error("Error al cargar imágenes:", error);
     }
 
-    // Limpiar el input para permitir cargar los mismos archivos nuevamente si es necesario
     e.target.value = '';
   };
 
@@ -459,7 +460,7 @@ export default function EditarInicio() {
   const eliminarSlide = (index) => {
     setContenido(prev => {
       if (prev.carousel.length <= 1) {
-        alert('Debe haber al menos un slide en el carousel');
+        toastError('Debe haber al menos un slide en el carousel');
         return prev;
       }
       const nuevoCarousel = prev.carousel.filter((_, i) => i !== index);
@@ -474,16 +475,12 @@ export default function EditarInicio() {
   const guardarCambios = async () => {
     setGuardando(true);
     try {
-      // Aquí se haría la petición al backend
-      console.log('Guardando cambios:', contenido);
-
-      // Simular guardado
+      localStorage.setItem('cms:inicio', JSON.stringify(contenido));
       await new Promise(resolve => setTimeout(resolve, 1000));
-
-      alert('✓ Cambios guardados exitosamente');
+      success('Cambios guardados correctamente');
     } catch (error) {
       console.error('Error al guardar:', error);
-      alert('✗ Error al guardar los cambios');
+      toastError('Error al guardar los cambios');
     } finally {
       setGuardando(false);
     }
@@ -889,16 +886,11 @@ export default function EditarInicio() {
       {/* MODAL DE EDICIÓN */}
       {modoEdicion && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-caborca-cafe">
-                {modoEdicion === 'carousel' && '📸'}
-                {modoEdicion === 'producto' && '🛍️'}
-                {modoEdicion === 'productos-titulo' && '✏️'}
-                {modoEdicion === 'arte-creacion' && '✨'}
-                {modoEdicion === 'donde-comprar' && '📍'}
-                {modoEdicion === 'sustentabilidad' && '🌍'}
-                {modoEdicion === 'form-distribuidor' && '📧'}
+              <h3 className="text-xl font-semibold text-caborca-cafe flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                Sección: {modoEdicion}
               </h3>
               <button
                 onClick={cerrarEdicion}
@@ -943,145 +935,151 @@ export default function EditarInicio() {
                       </button>
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Título ({idioma === 'es' ? 'Español' : 'English'})
-                    </label>
-                    <input
-                      type="text"
-                      value={contenido.carousel[elementoEditando].titulo[idioma]}
-                      onChange={(e) => manejarCambioCarousel(elementoEditando, 'titulo', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none text-lg"
-                    />
-                  </div>
+                  {/* CAROUSEL */}
+                  {modoEdicion === 'carousel' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                          Título ({idioma === 'es' ? 'Español' : 'English'})
+                        </label>
+                        <input
+                          type="text"
+                          value={contenido.carousel[elementoEditando].titulo[idioma]}
+                          onChange={(e) => manejarCambioCarousel(elementoEditando, 'titulo', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                        />
+                      </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Subtítulo ({idioma === 'es' ? 'Español' : 'English'})
-                    </label>
-                    <textarea
-                      value={contenido.carousel[elementoEditando].subtitulo[idioma]}
-                      onChange={(e) => manejarCambioCarousel(elementoEditando, 'subtitulo', e.target.value)}
-                      rows="3"
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                    />
-                  </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                          Subtítulo ({idioma === 'es' ? 'Español' : 'English'})
+                        </label>
+                        <input
+                          type="text"
+                          value={contenido.carousel[elementoEditando].subtitulo[idioma]}
+                          onChange={(e) => manejarCambioCarousel(elementoEditando, 'subtitulo', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                        />
+                      </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Texto del Botón ({idioma === 'es' ? 'Español' : 'English'})
-                    </label>
-                    <input
-                      type="text"
-                      value={contenido.carousel[elementoEditando].boton[idioma]}
-                      onChange={(e) => manejarCambioCarousel(elementoEditando, 'boton', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                    />
-                  </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                          Texto del Botón ({idioma === 'es' ? 'Español' : 'English'})
+                        </label>
+                        <input
+                          type="text"
+                          value={contenido.carousel[elementoEditando].boton[idioma]}
+                          onChange={(e) => manejarCambioCarousel(elementoEditando, 'boton', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                        />
+                      </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Imagen de Fondo
-                    </label>
-                    <div className="flex gap-3">
-                      <input
-                        type="text"
-                        value={contenido.carousel[elementoEditando].imagen}
-                        onChange={(e) => manejarCambioCarousel(elementoEditando, 'imagen', e.target.value)}
-                        className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                        placeholder="URL de la imagen"
-                      />
-                      <button
-                        onClick={() => {
-                          const input = document.createElement('input');
-                          input.type = 'file';
-                          input.accept = 'image/*';
-                          input.onchange = (e) => manejarCargarImagen(e, 'carousel', elementoEditando);
-                          input.click();
-                        }}
-                        className="px-6 py-3 bg-caborca-beige-suave text-caborca-cafe rounded-lg hover:bg-caborca-cafe hover:text-white transition-colors font-semibold"
-                      >
-                        📁 Cargar
-                      </button>
+                      <div className="md:col-span-2 bg-gray-50 p-3 rounded border border-gray-200">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-sm font-semibold text-gray-700">Imagen de Fondo</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={contenido.carousel[elementoEditando].imagen}
+                              onChange={(e) => manejarCambioCarousel(elementoEditando, 'imagen', e.target.value)}
+                              className="w-64 px-2 py-1 border border-gray-300 rounded text-xs"
+                              placeholder="URL"
+                            />
+                            <button
+                              onClick={() => {
+                                const input = document.createElement('input');
+                                input.type = 'file';
+                                input.accept = 'image/*';
+                                input.onchange = (e) => manejarCargarImagen(e, 'carousel', elementoEditando);
+                                input.click();
+                              }}
+                              className="px-3 py-1 bg-caborca-beige-suave text-caborca-cafe rounded text-xs font-bold hover:bg-caborca-cafe hover:text-white transition-colors"
+                            >
+                              📂 Cargar
+                            </button>
+                          </div>
+                        </div>
+                        <div className="rounded overflow-hidden border border-gray-200 bg-white h-32 w-full flex items-center justify-center">
+                          <img
+                            src={contenido.carousel[elementoEditando].imagen}
+                            alt="Preview"
+                            className="h-full object-contain"
+                            onError={(e) => {
+                              e.target.src = 'https://via.placeholder.com/800x400?text=Preview';
+                            }}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    {/* Preview de imagen */}
-                    <div className="mt-3 rounded-lg overflow-hidden border-2 border-gray-200">
-                      <img
-                        src={contenido.carousel[elementoEditando].imagen}
-                        alt="Preview"
-                        className="w-full h-48 object-cover"
-                        onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/800x400?text=Preview';
-                        }}
-                      />
-                    </div>
-                  </div>
+                  )}
                 </>
               )}
 
               {modoEdicion === 'producto' && (
-                <>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
                       Nombre del Producto ({idioma === 'es' ? 'Español' : 'English'})
                     </label>
                     <input
                       type="text"
                       value={contenido.productosDestacados.productos[elementoEditando].nombre[idioma]}
                       onChange={(e) => manejarCambioProducto(elementoEditando, 'nombre', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
                       Precio (MXN)
                     </label>
                     <input
                       type="number"
                       value={contenido.productosDestacados.productos[elementoEditando].precio}
                       onChange={(e) => manejarCambioProducto(elementoEditando, 'precio', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <div className="md:row-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
                       Imagen del Producto
                     </label>
-                    <div className="flex gap-3">
-                      <input
-                        type="text"
-                        value={contenido.productosDestacados.productos[elementoEditando].imagen}
-                        onChange={(e) => manejarCambioProducto(elementoEditando, 'imagen', e.target.value)}
-                        className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                        placeholder="URL de la imagen"
-                      />
-                      <button
-                        onClick={() => {
-                          const input = document.createElement('input');
-                          input.type = 'file';
-                          input.accept = 'image/*';
-                          input.onchange = (e) => manejarCargarImagen(e, 'producto', elementoEditando);
-                          input.click();
-                        }}
-                        className="px-6 py-3 bg-caborca-beige-suave text-caborca-cafe rounded-lg hover:bg-caborca-cafe hover:text-white transition-colors font-semibold"
-                      >
-                        📁 Cargar
-                      </button>
-                    </div>
-                    <div className="mt-3 rounded-lg overflow-hidden border-2 border-gray-200">
-                      <img
-                        src={contenido.productosDestacados.productos[elementoEditando].imagen}
-                        alt="Preview"
-                        className="w-full h-48 object-cover"
-                        onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/300x300?text=Producto';
-                        }}
-                      />
+                    <div className="bg-gray-50 p-3 rounded border border-gray-200 h-full flex flex-col justify-between">
+                      <div className="flex gap-2 mb-2">
+                        <input
+                          type="text"
+                          value={contenido.productosDestacados.productos[elementoEditando].imagen}
+                          onChange={(e) => manejarCambioProducto(elementoEditando, 'imagen', e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs"
+                          placeholder="URL"
+                        />
+                        <button
+                          onClick={() => {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = (e) => manejarCargarImagen(e, 'producto', elementoEditando);
+                            input.click();
+                          }}
+                          className="px-3 py-1 bg-caborca-beige-suave text-caborca-cafe rounded text-xs font-bold hover:bg-caborca-cafe hover:text-white transition-colors"
+                        >
+                          📂
+                        </button>
+                      </div>
+                      <div className="flex-1 flex items-center justify-center bg-white border border-gray-200 rounded overflow-hidden">
+                        <img
+                          src={contenido.productosDestacados.productos[elementoEditando].imagen}
+                          alt="Preview"
+                          className="max-h-32 object-contain"
+                          onError={(e) => {
+                            e.target.src = 'https://via.placeholder.com/300x300?text=Producto';
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
-                </>
+                </div>
               )}
 
               {modoEdicion === 'productos-titulo' && (
@@ -1093,210 +1091,212 @@ export default function EditarInicio() {
                     type="text"
                     value={contenido.productosDestacados.titulo[idioma]}
                     onChange={(e) => manejarCambioTexto('productosDestacados', 'titulo', e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none text-lg"
+                    className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none text-lg font-medium"
                   />
                 </div>
               )}
 
               {/* ARTE DE LA CREACIÓN */}
               {modoEdicion === 'arte-creacion' && (
-                <>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Badge ({idioma === 'es' ? 'Español' : 'English'})
-                    </label>
-                    <input
-                      type="text"
-                      value={contenido.arteCreacion.badge[idioma]}
-                      onChange={(e) => manejarCambioTexto('arteCreacion', 'badge', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Título ({idioma === 'es' ? 'Español' : 'English'})
-                    </label>
-                    <input
-                      type="text"
-                      value={contenido.arteCreacion.titulo[idioma]}
-                      onChange={(e) => manejarCambioTexto('arteCreacion', 'titulo', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none text-lg"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Años de Experiencia</label>
-                    <input
-                      type="number"
-                      value={contenido.arteCreacion.anosExperiencia}
-                      onChange={(e) => setContenido(prev => ({
-                        ...prev,
-                        arteCreacion: { ...prev.arteCreacion, anosExperiencia: parseInt(e.target.value) || 0 }
-                      }))}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">Features (3)</label>
-                    {contenido.arteCreacion.features.map((feature, i) => (
-                      <div key={feature.id} className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <p className="text-xs text-gray-500 mb-2 font-semibold">Feature {i + 1}</p>
-                        <input
-                          type="text"
-                          value={feature.titulo[idioma]}
-                          onChange={(e) => manejarCambioFeature('arteCreacion', i, 'titulo', e.target.value)}
-                          placeholder="Título"
-                          className="w-full mb-3 px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                        />
-                        <textarea
-                          value={feature.descripcion[idioma]}
-                          onChange={(e) => manejarCambioFeature('arteCreacion', i, 'descripcion', e.target.value)}
-                          placeholder="Descripción"
-                          rows="3"
-                          className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Imagen</label>
-                    <div className="flex gap-3">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">
+                        Badge ({idioma === 'es' ? 'Español' : 'English'})
+                      </label>
                       <input
                         type="text"
-                        value={contenido.arteCreacion.imagen}
+                        value={contenido.arteCreacion.badge[idioma]}
+                        onChange={(e) => manejarCambioTexto('arteCreacion', 'badge', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Años de Experiencia</label>
+                      <input
+                        type="number"
+                        value={contenido.arteCreacion.anosExperiencia}
                         onChange={(e) => setContenido(prev => ({
                           ...prev,
-                          arteCreacion: { ...prev.arteCreacion, imagen: e.target.value }
+                          arteCreacion: { ...prev.arteCreacion, anosExperiencia: parseInt(e.target.value) || 0 }
                         }))}
-                        className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                        placeholder="URL de la imagen"
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                       />
-                      <button
-                        onClick={() => {
-                          const input = document.createElement('input');
-                          input.type = 'file';
-                          input.accept = 'image/*';
-                          input.onchange = (e) => manejarCargarImagen(e, 'arteCreacion');
-                          input.click();
-                        }}
-                        className="px-6 py-3 bg-caborca-beige-suave text-caborca-cafe rounded-lg hover:bg-caborca-cafe hover:text-white transition-colors font-semibold"
-                      >
-                        📁 Cargar
-                      </button>
                     </div>
-                    <div className="mt-3 rounded-lg overflow-hidden border-2 border-gray-200">
-                      <img
-                        src={contenido.arteCreacion.imagen}
-                        alt="Preview"
-                        className="w-full h-48 object-cover"
-                        onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/600x400?text=Preview';
-                        }}
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">
+                        Título ({idioma === 'es' ? 'Español' : 'English'})
+                      </label>
+                      <input
+                        type="text"
+                        value={contenido.arteCreacion.titulo[idioma]}
+                        onChange={(e) => manejarCambioTexto('arteCreacion', 'titulo', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none text-lg font-medium"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Texto del Botón ({idioma === 'es' ? 'Español' : 'English'})
-                    </label>
-                    <input
-                      type="text"
-                      value={contenido.arteCreacion.boton[idioma]}
-                      onChange={(e) => manejarCambioTexto('arteCreacion', 'boton', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                    />
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Features (3)</label>
+                    <div className="grid md:grid-cols-3 gap-3">
+                      {contenido.arteCreacion.features.map((feature, i) => (
+                        <div key={feature.id} className="p-3 bg-gray-50 rounded border border-gray-200">
+                          <p className="text-[10px] text-gray-500 mb-1 font-bold uppercase">Feature {i + 1}</p>
+                          <input
+                            type="text"
+                            value={feature.titulo[idioma]}
+                            onChange={(e) => manejarCambioFeature('arteCreacion', i, 'titulo', e.target.value)}
+                            placeholder="Título"
+                            className="w-full mb-2 px-2 py-1 border border-gray-300 rounded text-sm focus:border-caborca-cafe focus:outline-none"
+                          />
+                          <textarea
+                            value={feature.descripcion[idioma]}
+                            onChange={(e) => manejarCambioFeature('arteCreacion', i, 'descripcion', e.target.value)}
+                            placeholder="Descripción"
+                            rows="4"
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:border-caborca-cafe focus:outline-none resize-none"
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Nota ({idioma === 'es' ? 'Español' : 'English'})
-                    </label>
-                    <input
-                      type="text"
-                      value={contenido.arteCreacion.nota[idioma]}
-                      onChange={(e) => manejarCambioTexto('arteCreacion', 'nota', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                    />
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-gray-50 p-3 rounded border border-gray-200">
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Imagen</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={contenido.arteCreacion.imagen}
+                          onChange={(e) => setContenido(prev => ({
+                            ...prev,
+                            arteCreacion: { ...prev.arteCreacion, imagen: e.target.value }
+                          }))}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs"
+                          placeholder="URL"
+                        />
+                        <button
+                          onClick={() => {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = (e) => manejarCargarImagen(e, 'arteCreacion');
+                            input.click();
+                          }}
+                          className="px-3 py-1 bg-caborca-beige-suave text-caborca-cafe rounded text-xs font-bold hover:bg-caborca-cafe hover:text-white transition-colors"
+                        >
+                          📂
+                        </button>
+                      </div>
+                      <div className="mt-2 rounded overflow-hidden border border-gray-200 bg-white h-24 flex items-center justify-center">
+                        <img
+                          src={contenido.arteCreacion.imagen}
+                          alt="Preview"
+                          className="h-full object-contain"
+                          onError={(e) => {
+                            e.target.src = 'https://via.placeholder.com/600x400?text=Preview';
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                          Texto del Botón
+                        </label>
+                        <input
+                          type="text"
+                          value={contenido.arteCreacion.boton[idioma]}
+                          onChange={(e) => manejarCambioTexto('arteCreacion', 'boton', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                          Nota
+                        </label>
+                        <input
+                          type="text"
+                          value={contenido.arteCreacion.nota[idioma]}
+                          onChange={(e) => manejarCambioTexto('arteCreacion', 'nota', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </>
+                </div>
               )}
 
               {/* DISTRIBUIDORES AUTORIZADOS */}
               {modoEdicion === 'distribuidores' && (
-                <>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
                       Título ({idioma === 'es' ? 'Español' : 'English'})
                     </label>
                     <input
                       type="text"
                       value={contenido.distribuidoresAutorizados.titulo[idioma]}
                       onChange={(e) => manejarCambioTexto('distribuidoresAutorizados', 'titulo', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none text-lg"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none text-lg font-medium"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
                       Subtítulo ({idioma === 'es' ? 'Español' : 'English'})
                     </label>
                     <input
                       type="text"
                       value={contenido.distribuidoresAutorizados.subtitulo[idioma]}
                       onChange={(e) => manejarCambioTexto('distribuidoresAutorizados', 'subtitulo', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                     />
                   </div>
 
-
-
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
                       Texto del Botón ({idioma === 'es' ? 'Español' : 'English'})
                     </label>
                     <input
                       type="text"
                       value={contenido.distribuidoresAutorizados.boton[idioma]}
                       onChange={(e) => manejarCambioTexto('distribuidoresAutorizados', 'boton', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                     />
                   </div>
-                </>
+                </div>
               )}
 
               {/* DÓNDE COMPRAR */}
               {modoEdicion === 'donde-comprar' && (
-                <>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
                       Título ({idioma === 'es' ? 'Español' : 'English'})
                     </label>
                     <input
                       type="text"
                       value={contenido.dondeComprar.titulo[idioma]}
                       onChange={(e) => manejarCambioTexto('dondeComprar', 'titulo', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none text-lg"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none text-lg font-medium"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
                       Descripción ({idioma === 'es' ? 'Español' : 'English'})
                     </label>
                     <textarea
                       value={contenido.dondeComprar.descripcion[idioma]}
                       onChange={(e) => manejarCambioTexto('dondeComprar', 'descripcion', e.target.value)}
-                      rows="3"
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                      rows="2"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
                       URL del Mapa (Google Maps Embed)
                     </label>
                     <textarea
@@ -1305,9 +1305,9 @@ export default function EditarInicio() {
                         ...prev,
                         dondeComprar: { ...prev.dondeComprar, mapaUrl: e.target.value }
                       }))}
-                      rows="4"
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none font-mono text-sm"
-                      placeholder="Pega el código <iframe> de Google Maps"
+                      rows="3"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none font-mono text-xs"
+                      placeholder="<iframe>..."
                     />
                     <p className="text-xs text-gray-500 mt-2">
                       💡 Ve a Google Maps → Compartir → Insertar un mapa → Copia el HTML
@@ -1315,37 +1315,37 @@ export default function EditarInicio() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
                       Texto del Botón ({idioma === 'es' ? 'Español' : 'English'})
                     </label>
                     <input
                       type="text"
                       value={contenido.dondeComprar.boton[idioma]}
                       onChange={(e) => manejarCambioTexto('dondeComprar', 'boton', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
                       Nota ({idioma === 'es' ? 'Español' : 'English'})
                     </label>
                     <input
                       type="text"
                       value={contenido.dondeComprar.nota[idioma]}
                       onChange={(e) => manejarCambioTexto('dondeComprar', 'nota', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                     />
                   </div>
-                </>
+                </div>
               )}
 
               {/* SUSTENTABILIDAD */}
               {modoEdicion === 'sustentabilidad' && (
-                <>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Imagen de Fondo</label>
-                    <div className="flex gap-3">
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-3 rounded border border-gray-200">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Imagen de Fondo</label>
+                    <div className="flex gap-2">
                       <input
                         type="text"
                         value={contenido.sustentabilidadBanner.imagenIzquierda}
@@ -1353,8 +1353,8 @@ export default function EditarInicio() {
                           ...prev,
                           sustentabilidadBanner: { ...prev.sustentabilidadBanner, imagenIzquierda: e.target.value }
                         }))}
-                        className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                        placeholder="URL de la imagen"
+                        className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs"
+                        placeholder="URL"
                       />
                       <button
                         onClick={() => {
@@ -1364,194 +1364,207 @@ export default function EditarInicio() {
                           input.onchange = (e) => manejarCargarImagen(e, 'sustentabilidadBanner');
                           input.click();
                         }}
-                        className="px-6 py-3 bg-caborca-beige-suave text-caborca-cafe rounded-lg hover:bg-caborca-cafe hover:text-white transition-colors font-semibold"
+                        className="px-3 py-1 bg-caborca-beige-suave text-caborca-cafe rounded text-xs font-bold hover:bg-caborca-cafe hover:text-white transition-colors"
                       >
-                        📁 Cargar
+                        📂
                       </button>
                     </div>
-                    <div className="mt-3 rounded-lg overflow-hidden border-2 border-gray-200">
+                    <div className="mt-2 rounded overflow-hidden border border-gray-200 bg-white h-24 flex items-center justify-center">
                       <img
                         src={contenido.sustentabilidadBanner.imagenIzquierda}
                         alt="Preview"
-                        className="w-full h-48 object-cover"
+                        className="h-full object-contain"
                         onError={(e) => {
                           e.target.src = 'https://via.placeholder.com/600x400?text=Preview';
                         }}
                       />
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">
                         Badge ({idioma === 'es' ? 'Español' : 'English'})
                       </label>
                       <input
                         type="text"
                         value={contenido.sustentabilidadBanner.badge[idioma]}
                         onChange={(e) => manejarCambioTexto('sustentabilidadBanner', 'badge', e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">
                         Título Izquierdo ({idioma === 'es' ? 'Español' : 'English'})
                       </label>
                       <input
                         type="text"
                         value={contenido.sustentabilidadBanner.tituloIzquierdo[idioma]}
                         onChange={(e) => manejarCambioTexto('sustentabilidadBanner', 'tituloIzquierdo', e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">
+                        Descripción Izquierda ({idioma === 'es' ? 'Español' : 'English'})
+                      </label>
+                      <textarea
+                        value={contenido.sustentabilidadBanner.descripcionIzquierdo[idioma]}
+                        onChange={(e) => manejarCambioTexto('sustentabilidadBanner', 'descripcionIzquierdo', e.target.value)}
+                        rows="2"
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">
+                        Título Derecho ({idioma === 'es' ? 'Español' : 'English'})
+                      </label>
+                      <input
+                        type="text"
+                        value={contenido.sustentabilidadBanner.tituloDerecho[idioma]}
+                        onChange={(e) => manejarCambioTexto('sustentabilidadBanner', 'tituloDerecho', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Descripción Izquierda ({idioma === 'es' ? 'Español' : 'English'})
-                    </label>
-                    <textarea
-                      value={contenido.sustentabilidadBanner.descripcionIzquierdo[idioma]}
-                      onChange={(e) => manejarCambioTexto('sustentabilidadBanner', 'descripcionIzquierdo', e.target.value)}
-                      rows="3"
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Título Derecho ({idioma === 'es' ? 'Español' : 'English'})
-                    </label>
-                    <input
-                      type="text"
-                      value={contenido.sustentabilidadBanner.tituloDerecho[idioma]}
-                      onChange={(e) => manejarCambioTexto('sustentabilidadBanner', 'tituloDerecho', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none text-lg"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">Features (4)</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Features (4)</label>
                     <div className="grid grid-cols-2 gap-3">
                       {contenido.sustentabilidadBanner.features.map((feature, i) => (
-                        <input
-                          key={feature.id}
-                          type="text"
-                          value={feature.titulo[idioma]}
-                          onChange={(e) => manejarCambioFeature('sustentabilidadBanner', i, 'titulo', e.target.value)}
-                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                          placeholder={`Feature ${i + 1}`}
-                        />
+                        <div key={feature.id} className="p-2 bg-gray-50 rounded border border-gray-200">
+                          <p className="text-[10px] text-gray-500 mb-1 font-bold uppercase">Feature {i + 1}</p>
+                          <input
+                            type="text"
+                            value={feature.titulo[idioma]}
+                            onChange={(e) => manejarCambioFeature('sustentabilidadBanner', i, 'titulo', e.target.value)}
+                            placeholder="Título"
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:border-caborca-cafe focus:outline-none"
+                          />
+                        </div>
                       ))}
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Texto del Botón ({idioma === 'es' ? 'Español' : 'English'})
-                    </label>
-                    <input
-                      type="text"
-                      value={contenido.sustentabilidadBanner.boton[idioma]}
-                      onChange={(e) => manejarCambioTexto('sustentabilidadBanner', 'boton', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">
+                        Texto del Botón ({idioma === 'es' ? 'Español' : 'English'})
+                      </label>
+                      <input
+                        type="text"
+                        value={contenido.sustentabilidadBanner.boton[idioma]}
+                        onChange={(e) => manejarCambioTexto('sustentabilidadBanner', 'boton', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">
+                        Nota ({idioma === 'es' ? 'Español' : 'English'})
+                      </label>
+                      <input
+                        type="text"
+                        value={contenido.sustentabilidadBanner.nota[idioma]}
+                        onChange={(e) => manejarCambioTexto('sustentabilidadBanner', 'nota', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                      />
+                    </div>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Nota ({idioma === 'es' ? 'Español' : 'English'})
-                    </label>
-                    <input
-                      type="text"
-                      value={contenido.sustentabilidadBanner.nota[idioma]}
-                      onChange={(e) => manejarCambioTexto('sustentabilidadBanner', 'nota', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                    />
-                  </div>
-                </>
+                </div>
               )}
-
               {/* FORMULARIO DISTRIBUIDOR */}
               {modoEdicion === 'form-distribuidor' && (
-                <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
                       Título ({idioma === 'es' ? 'Español' : 'English'})
                     </label>
                     <input
                       type="text"
                       value={contenido.formDistribuidor.titulo[idioma]}
                       onChange={(e) => manejarCambioTexto('formDistribuidor', 'titulo', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none text-lg"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Descripción ({idioma === 'es' ? 'Español' : 'English'})
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      Subtítulo ({idioma === 'es' ? 'Español' : 'English'})
+                    </label>
+                    <input
+                      type="text"
+                      value={contenido.formDistribuidor.subtitulo[idioma]}
+                      onChange={(e) => manejarCambioTexto('formDistribuidor', 'subtitulo', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      Mensaje ({idioma === 'es' ? 'Español' : 'English'})
                     </label>
                     <textarea
-                      value={contenido.formDistribuidor.descripcion[idioma]}
-                      onChange={(e) => manejarCambioTexto('formDistribuidor', 'descripcion', e.target.value)}
-                      rows="3"
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                      value={contenido.formDistribuidor.mensaje[idioma]}
+                      onChange={(e) => manejarCambioTexto('formDistribuidor', 'mensaje', e.target.value)}
+                      rows="2"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
                       Texto del Botón ({idioma === 'es' ? 'Español' : 'English'})
                     </label>
                     <input
                       type="text"
                       value={contenido.formDistribuidor.boton[idioma]}
                       onChange={(e) => manejarCambioTexto('formDistribuidor', 'boton', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
                       Nota de Tiempo ({idioma === 'es' ? 'Español' : 'English'})
                     </label>
                     <input
                       type="text"
                       value={contenido.formDistribuidor.notaTiempo[idioma]}
                       onChange={(e) => manejarCambioTexto('formDistribuidor', 'notaTiempo', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Stat Distribuidores</label>
-                      <input
-                        type="text"
-                        value={contenido.formDistribuidor.statDistribuidores}
-                        onChange={(e) => setContenido(prev => ({
-                          ...prev,
-                          formDistribuidor: { ...prev.formDistribuidor, statDistribuidores: e.target.value }
-                        }))}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                        placeholder="Ej: +500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Stat Estados</label>
-                      <input
-                        type="text"
-                        value={contenido.formDistribuidor.statEstados}
-                        onChange={(e) => setContenido(prev => ({
-                          ...prev,
-                          formDistribuidor: { ...prev.formDistribuidor, statEstados: e.target.value }
-                        }))}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
-                        placeholder="Ej: 20+"
-                      />
+                  <div className="md:col-span-2 bg-gray-50 p-3 rounded border border-gray-200">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Stat Distribuidores</label>
+                        <input
+                          type="text"
+                          value={contenido.formDistribuidor.statDistribuidores}
+                          onChange={(e) => setContenido(prev => ({
+                            ...prev,
+                            formDistribuidor: { ...prev.formDistribuidor, statDistribuidores: e.target.value }
+                          }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                          placeholder="Ej: +500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Stat Estados</label>
+                        <input
+                          type="text"
+                          value={contenido.formDistribuidor.statEstados}
+                          onChange={(e) => setContenido(prev => ({
+                            ...prev,
+                            formDistribuidor: { ...prev.formDistribuidor, statEstados: e.target.value }
+                          }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                          placeholder="Ej: 20+"
+                        />
+                      </div>
                     </div>
                   </div>
-                </>
+                </div>
               )}
             </div>
 

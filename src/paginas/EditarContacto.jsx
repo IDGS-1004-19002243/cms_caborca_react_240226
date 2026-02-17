@@ -2,12 +2,17 @@ import { useState, useRef, useEffect } from 'react'
 import Header from '../componentes/Header'
 import Footer from '../componentes/Footer'
 import EditButton from '../componentes/EditButton'
+import { useToast } from '../context/ToastContext'
 
 export default function EditarContacto() {
+  const { success, error: toastError } = useToast();
+
   const [info, setInfo] = useState({
     telefono: '+52 123 456 789',
     email: 'contacto@caborcaboots.com',
     direccion: 'Caborca, Sonora, México',
+    horario: 'Lun - Vie: 9:00 AM - 6:00 PM',
+    mapaUrl: ''
   })
 
   const [formPreview, setFormPreview] = useState({
@@ -21,56 +26,100 @@ export default function EditarContacto() {
     subtitulo: 'Nos encantaría saber de ti. Completa el formulario y nos pondremos en contacto contigo',
     imagen: 'https://blocks.astratic.com/img/general-img-landscape.png'
   })
-  const [editarHero, setEditarHero] = useState(false)
 
+  const [editarHero, setEditarHero] = useState(false)
   const [editarInfo, setEditarInfo] = useState(false)
   const [editarForm, setEditarForm] = useState(false)
+
   const [cards, setCards] = useState([
     { id: 'telefono', title: 'Teléfono', lines: ['+52 (555) 123-4567', 'Lun - Vie: 9:00 AM - 6:00 PM'] },
     { id: 'email', title: 'Correo Electrónico', lines: ['contacto@caborcaboots.com', 'Respuesta en 24-48 hrs'] },
     { id: 'ubicacion', title: 'Ubicación', lines: ['León, Guanajuato, México', 'Capital del calzado mexicano'] },
     { id: 'social', title: 'Síguenos', lines: ['instagram.com/caborca', 'facebook.com/caborca', 'tiktok.com/@caborca'] }
   ])
+
   const [activeCard, setActiveCard] = useState(null)
   const [cardForm, setCardForm] = useState({ id: '', title: '', lines: [] })
-  const [editarMap, setEditarMap] = useState(false)
-  const inputFileRef = useRef(null)
   const [guardando, setGuardando] = useState(false)
 
   const [idioma, setIdioma] = useState(() => {
     try { return localStorage.getItem('cms:editor:lang') || 'es'; } catch (e) { return 'es'; }
   });
 
+  // Load from LocalStorage
   useEffect(() => {
+    try {
+      const stored = localStorage.getItem('cms:contacto');
+      if (stored) {
+        const data = JSON.parse(stored);
+        if (data.info) setInfo(prev => ({ ...prev, ...data.info }));
+        if (data.formPreview) setFormPreview(prev => ({ ...prev, ...data.formPreview }));
+        if (data.hero) setHero(prev => ({ ...prev, ...data.hero }));
+        if (data.cards) setCards(data.cards);
+      }
+    } catch (e) { console.error(e); }
+
     const handler = (e) => { const l = e && e.detail && e.detail.lang; if (l) setIdioma(l); };
-    try { const stored = localStorage.getItem('cms:editor:lang'); if (stored) setIdioma(stored); } catch (e) { }
     window.addEventListener('cms:editor:lang-changed', handler);
     return () => window.removeEventListener('cms:editor:lang-changed', handler);
   }, []);
 
+  const saveToStorage = (newData) => {
+    const dataToSave = {
+      info: newData.info || info,
+      formPreview: newData.formPreview || formPreview,
+      hero: newData.hero || hero,
+      cards: newData.cards || cards
+    };
+    localStorage.setItem('cms:contacto', JSON.stringify(dataToSave));
+  };
+
   const guardarCambios = async () => {
     setGuardando(true)
     try {
-      // aquí debería ir la petición a backend
-      await new Promise(r => setTimeout(r, 800))
-      alert('✓ Cambios guardados')
+      saveToStorage({}); // Save current state
+      await new Promise(r => setTimeout(r, 500))
+      success('Cambios guardados correctamente')
     } catch (e) {
-      alert('✗ Error al guardar')
+      toastError('Error al guardar')
     } finally {
       setGuardando(false)
       setEditarForm(false)
+      setEditarInfo(false)
+      setEditarHero(false)
+      setActiveCard(null)
     }
   }
 
+  // Wrappers to update state AND save immediately (for "Apply" buttons)
   const aplicarHero = () => {
-    // ya estamos usando `hero` para renderizar, sólo cerramos el modal
-    alert('✅ Cambios aplicados al hero')
+    saveToStorage({ hero });
+    success('Cambios guardados correctamente')
     setEditarHero(false)
+  }
+
+  const aplicarInfo = () => {
+    saveToStorage({ info });
+    success('Cambios guardados correctamente')
+    setEditarInfo(false)
+  }
+
+  const aplicarFormPreview = () => {
+    saveToStorage({ formPreview });
+    success('Cambios guardados correctamente')
+    setEditarForm(false)
+  }
+
+  const aplicarCard = () => {
+    const newCards = cards.map(c => c.id === cardForm.id ? { ...c, title: cardForm.title, lines: cardForm.lines } : c);
+    setCards(newCards);
+    saveToStorage({ cards: newCards });
+    success('Cambios guardados correctamente');
+    setActiveCard(null);
   }
 
   return (
     <>
-
       {/* HERO EDITABLE */}
       <section className="relative bg-gray-50">
         <div className="w-full">
@@ -135,7 +184,7 @@ export default function EditarContacto() {
                   <p className="text-sm text-caborca-cafe">{formPreview.descripcion}</p>
                 </div>
 
-                <form onSubmit={(e) => { e.preventDefault(); alert('Formulario enviado (demo)') }} className="space-y-6">
+                <form onSubmit={(e) => { e.preventDefault(); success('Formulario enviado (demo)') }} className="space-y-6">
                   <div className="grid sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-caborca-cafe mb-2">Nombre Completo</label>
@@ -169,35 +218,53 @@ export default function EditarContacto() {
         </main>
 
         {/* Modales */}
+        {/* Modal Info General (Telefono, email hidden fields but present in state) */}
         {editarInfo && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-caborca-cafe flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                  Información de Contacto
+                  Sección: Información de Contacto (Interna)
                 </h3>
                 <button onClick={() => setEditarInfo(false)} className="text-gray-500 hover:text-gray-700">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
-              <div className="space-y-3">
-                <label className="block text-sm">Teléfono</label>
-                <input value={info.telefono} onChange={(e) => setInfo(prev => ({ ...prev, telefono: e.target.value }))} className="w-full px-3 py-2 border rounded" />
-                <label className="block text-sm">Email</label>
-                <input value={info.email} onChange={(e) => setInfo(prev => ({ ...prev, email: e.target.value }))} className="w-full px-3 py-2 border rounded" />
-                <label className="block text-sm">Dirección</label>
-                <input value={info.direccion} onChange={(e) => setInfo(prev => ({ ...prev, direccion: e.target.value }))} className="w-full px-3 py-2 border rounded" />
-                <label className="block text-sm">Horario</label>
-                <input value={info.horario} onChange={(e) => setInfo(prev => ({ ...prev, horario: e.target.value }))} className="w-full px-3 py-2 border rounded" />
-                <label className="block text-sm">Mapa (embed URL)</label>
-                <input value={info.mapaUrl} onChange={(e) => setInfo(prev => ({ ...prev, mapaUrl: e.target.value }))} className="w-full px-3 py-2 border rounded" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Título</label>
+                  <input value={info.titulo} onChange={(e) => setInfo(prev => ({ ...prev, titulo: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Teléfono</label>
+                  <input value={info.telefono} onChange={(e) => setInfo(prev => ({ ...prev, telefono: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                  <input value={info.email} onChange={(e) => setInfo(prev => ({ ...prev, email: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Dirección</label>
+                  <textarea value={info.direccion} onChange={(e) => setInfo(prev => ({ ...prev, direccion: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none" rows={2} />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Horario</label>
+                  <input value={info.horario} onChange={(e) => setInfo(prev => ({ ...prev, horario: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Mapa (embed URL)</label>
+                  <input value={info.mapaUrl} onChange={(e) => setInfo(prev => ({ ...prev, mapaUrl: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none text-xs text-gray-600" />
+                </div>
               </div>
-              <div className="mt-4 flex justify-end gap-3">
-                <button onClick={() => setEditarInfo(false)} className="px-4 py-2 border rounded">Cancelar</button>
-                <button onClick={guardarCambios} className="px-4 py-2 bg-caborca-cafe text-white rounded flex items-center gap-2">
+              <div className="mt-6 flex justify-end gap-3">
+                <button onClick={() => setEditarInfo(false)} className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-semibold flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                  Cancelar
+                </button>
+                <button onClick={aplicarInfo} className="px-6 py-2 bg-caborca-cafe text-white rounded-lg hover:bg-caborca-negro transition-colors font-semibold flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                  Aplicar
+                  Guardar
                 </button>
               </div>
             </div>
@@ -206,27 +273,34 @@ export default function EditarContacto() {
 
         {editarForm && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-caborca-cafe flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                  Formulario
+                  Sección: Formulario de Contacto
                 </h3>
                 <button onClick={() => setEditarForm(false)} className="text-gray-500 hover:text-gray-700">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
-              <div className="space-y-3">
-                <label className="block text-sm">Título</label>
-                <input value={formPreview.titulo} onChange={(e) => setFormPreview(prev => ({ ...prev, titulo: e.target.value }))} className="w-full px-3 py-2 border rounded" />
-                <label className="block text-sm">Descripción</label>
-                <textarea value={formPreview.descripcion} onChange={(e) => setFormPreview(prev => ({ ...prev, descripcion: e.target.value }))} className="w-full px-3 py-2 border rounded" rows={3} />
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Título</label>
+                  <input value={formPreview.titulo} onChange={(e) => setFormPreview(prev => ({ ...prev, titulo: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Descripción</label>
+                  <textarea value={formPreview.descripcion} onChange={(e) => setFormPreview(prev => ({ ...prev, descripcion: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows={3} />
+                </div>
               </div>
-              <div className="mt-4 flex justify-end gap-3">
-                <button onClick={() => setEditarForm(false)} className="px-4 py-2 border rounded">Cancelar</button>
-                <button onClick={guardarCambios} className="px-4 py-2 bg-caborca-cafe text-white rounded flex items-center gap-2">
+              <div className="mt-6 flex justify-end gap-3">
+                <button onClick={() => setEditarForm(false)} className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-semibold flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                  Cancelar
+                </button>
+                <button onClick={aplicarFormPreview} className="px-6 py-2 bg-caborca-cafe text-white rounded-lg hover:bg-caborca-negro transition-colors font-semibold flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                  Aplicar
+                  Guardar
                 </button>
               </div>
             </div>
@@ -240,27 +314,30 @@ export default function EditarContacto() {
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-caborca-cafe flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                  Editar tarjeta: {cardForm.title}
+                  Sección: Tarjeta {cardForm.title}
                 </h3>
                 <button onClick={() => setActiveCard(null)} className="text-gray-500 hover:text-gray-700">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
-              <div className="space-y-3">
-                <label className="block text-sm">Título</label>
-                <input value={cardForm.title} onChange={(e) => setCardForm(prev => ({ ...prev, title: e.target.value }))} className="w-full px-3 py-2 border rounded" />
-                <label className="block text-sm">Líneas (una por renglón)</label>
-                <textarea value={cardForm.lines.join('\n')} onChange={(e) => setCardForm(prev => ({ ...prev, lines: e.target.value.split('\n') }))} className="w-full px-3 py-2 border rounded" rows={4} />
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Título</label>
+                  <input value={cardForm.title} onChange={(e) => setCardForm(prev => ({ ...prev, title: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Líneas (una por renglón)</label>
+                  <textarea value={cardForm.lines.join('\n')} onChange={(e) => setCardForm(prev => ({ ...prev, lines: e.target.value.split('\n') }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows={4} />
+                </div>
               </div>
-              <div className="mt-4 flex justify-end gap-3">
-                <button onClick={() => setActiveCard(null)} className="px-4 py-2 border rounded">Cancelar</button>
-                <button onClick={() => {
-                  setCards(prev => prev.map(c => c.id === cardForm.id ? { ...c, title: cardForm.title, lines: cardForm.lines } : c));
-                  setActiveCard(null);
-                  alert('✅ Cambios aplicados');
-                }} className="px-4 py-2 bg-caborca-cafe text-white rounded flex items-center gap-2">
+              <div className="mt-6 flex justify-end gap-3">
+                <button onClick={() => setActiveCard(null)} className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-semibold flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                  Cancelar
+                </button>
+                <button onClick={aplicarCard} className="px-6 py-2 bg-caborca-cafe text-white rounded-lg hover:bg-caborca-negro transition-colors font-semibold flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                  Aplicar
+                  Guardar
                 </button>
               </div>
             </div>
@@ -273,27 +350,38 @@ export default function EditarContacto() {
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-caborca-cafe flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                  Hero
+                  Sección: Hero
                 </h3>
                 <button onClick={() => setEditarHero(false)} className="text-gray-500 hover:text-gray-700">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
-              <div className="space-y-3">
-                <label className="block text-sm">Badge</label>
-                <input value={hero.badge} onChange={(e) => setHero(prev => ({ ...prev, badge: e.target.value }))} className="w-full px-3 py-2 border rounded" />
-                <label className="block text-sm">Título</label>
-                <input value={hero.titulo} onChange={(e) => setHero(prev => ({ ...prev, titulo: e.target.value }))} className="w-full px-3 py-2 border rounded" />
-                <label className="block text-sm">Subtítulo</label>
-                <textarea value={hero.subtitulo} onChange={(e) => setHero(prev => ({ ...prev, subtitulo: e.target.value }))} className="w-full px-3 py-2 border rounded" rows={3} />
-                <label className="block text-sm">Imagen (URL)</label>
-                <input value={hero.imagen} onChange={(e) => setHero(prev => ({ ...prev, imagen: e.target.value }))} className="w-full px-3 py-2 border rounded" />
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Badge</label>
+                  <input value={hero.badge} onChange={(e) => setHero(prev => ({ ...prev, badge: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Título</label>
+                  <input value={hero.titulo} onChange={(e) => setHero(prev => ({ ...prev, titulo: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Subtítulo</label>
+                  <textarea value={hero.subtitulo} onChange={(e) => setHero(prev => ({ ...prev, subtitulo: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows={3} />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Imagen (URL)</label>
+                  <input value={hero.imagen} onChange={(e) => setHero(prev => ({ ...prev, imagen: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                </div>
               </div>
-              <div className="mt-4 flex justify-end gap-3">
-                <button onClick={() => setEditarHero(false)} className="px-4 py-2 border rounded">Cancelar</button>
-                <button onClick={aplicarHero} className="px-4 py-2 bg-caborca-cafe text-white rounded flex items-center gap-2">
+              <div className="mt-6 flex justify-end gap-3">
+                <button onClick={() => setEditarHero(false)} className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-semibold flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                  Cancelar
+                </button>
+                <button onClick={aplicarHero} className="px-6 py-2 bg-caborca-cafe text-white rounded-lg hover:bg-caborca-negro transition-colors font-semibold flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                  Aplicar
+                  Guardar
                 </button>
               </div>
             </div>

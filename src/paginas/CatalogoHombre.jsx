@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
+import { useToast } from '../context/ToastContext';
 
 export default function CatalogoHombre() {
+  const { success, error: toastError } = useToast();
   const [productos, setProductos] = useState([
     { id: 1, nombre: 'Bota Vaquera Clásica', sku: 'HV-001', descripcion: 'Bota vaquera tradicional hecha a mano.', materiales: ['piel', 'suela cuero'], marca: 'Caborca', categoria: 'vaquera', destacado: false, imagen: '/images/bota-hombre-1.jpg', imagenes: ['/images/bota-hombre-1.jpg'], tags: ['vaquera', 'clásica'] },
     { id: 2, nombre: 'Bota Casual Premium', sku: 'HV-002', descripcion: 'Bota casual para uso diario con acabado premium.', materiales: ['piel'], marca: 'Caborca', categoria: 'casual', destacado: false, imagen: '/images/bota-hombre-2.jpg', imagenes: ['/images/bota-hombre-2.jpg'], tags: ['casual'] },
@@ -43,9 +45,9 @@ export default function CatalogoHombre() {
     try {
       localStorage.setItem('cms:catalogo-hombre:contenido', JSON.stringify(contenido));
       await new Promise(r => setTimeout(r, 800));
-      alert('✅ Contenido actualizado');
+      success('Contenido actualizado');
     } catch (e) {
-      alert('❌ Error al guardar');
+      toastError('Error al guardar');
     } finally {
       setGuardandoContenido(false);
     }
@@ -108,7 +110,7 @@ export default function CatalogoHombre() {
       if (file.size > maxBytesPerFile) return rej(new Error('Un archivo excede el tamaño máximo de 2 MB')); const r = new FileReader(); r.onloadend = () => res(r.result); r.onerror = rej; r.readAsDataURL(file);
     }));
     try { const dataUrls = await Promise.all(readers); setProductoEditando(prev => ({ ...prev, imagenes: Array.from(new Set([...(prev.imagenes || []), ...dataUrls])).slice(0, maxFiles) })); }
-    catch (err) { alert(err.message || 'Error al leer imágenes'); }
+    catch (err) { toastError(err.message || 'Error al leer imágenes'); }
     if (inputFileRef.current) inputFileRef.current.value = null;
   };
 
@@ -116,7 +118,7 @@ export default function CatalogoHombre() {
   const eliminarProducto = (id) => { if (confirm('¿Estás seguro de eliminar este producto?')) { const nuevos = productos.filter(p => p.id !== id); setProductos(nuevos); persistProductos(nuevos); } };
   const toggleDestacado = (id) => { const nuevos = productos.map(p => p.id === id ? { ...p, destacado: !p.destacado } : p); setProductos(nuevos); persistProductos(nuevos); };
 
-  const guardarCambios = async () => { setGuardando(true); try { persistProductos(productos); await new Promise(r => setTimeout(r, 800)); alert('✅ Cambios guardados'); } catch (e) { alert('❌ Error'); } finally { setGuardando(false); } };
+  const guardarCambios = async () => { setGuardando(true); try { persistProductos(productos); await new Promise(r => setTimeout(r, 800)); success('Cambios guardados'); } catch (e) { toastError('Error'); } finally { setGuardando(false); } };
 
   return (
     <>
@@ -133,7 +135,7 @@ export default function CatalogoHombre() {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h4 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
             <svg className="w-5 h-5 text-caborca-cafe" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-            Personalizar Encabezado del Catálogo
+            Sección: Encabezado
           </h4>
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
@@ -236,6 +238,10 @@ export default function CatalogoHombre() {
 
               {/* Modal Body */}
               <div className="p-6">
+                <div className="flex items-center gap-2 mb-6 text-caborca-cafe">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                  <span className="font-semibold text-lg">Sección: Detalles de Producto</span>
+                </div>
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
                   {/* Left Column: Basic Info (8 cols) */}

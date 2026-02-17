@@ -35,7 +35,7 @@ export default function Login() {
     // Simulación de login
     setTimeout(() => {
       const usuario = usuariosValidos[credenciales.usuario.toLowerCase()];
-      
+
       if (usuario && usuario.password === credenciales.password) {
         // Guardar token o sesión
         localStorage.setItem('adminToken', 'token-simulado-12345');
@@ -44,7 +44,7 @@ export default function Login() {
           usuario: credenciales.usuario.toLowerCase(),
           rol: usuario.rol
         }));
-        navigate('/dashboard');
+        navigate('/editar-inicio');
       } else {
         setError('El usuario o la contraseña son incorrectos. Inténtalo de nuevo.');
         setCargando(false);
@@ -62,14 +62,14 @@ export default function Login() {
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239B8674' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
           }}></div>
         </div>
-        
+
         {/* Contenido del panel izquierdo */}
         <div className="relative z-10 flex flex-col items-center justify-start p-12 w-full text-center">
           {/* Logo centrado y prominente */}
           <div className="mb-12">
-            <img 
-              src="/logo-caborca.webp" 
-              alt="Caborca Boots" 
+            <img
+              src="/logo-caborca.webp"
+              alt="Caborca Boots"
               className="h-28 w-auto mx-auto drop-shadow-lg"
             />
           </div>
@@ -85,7 +85,7 @@ export default function Login() {
               Administra productos, distribuidores y contenido de tu sitio web desde un solo lugar.
             </p>
           </div>
-          
+
           {/* Características en fila horizontal */}
           <div className="flex flex-wrap justify-center gap-6 mt-12">
             <div className="flex items-center space-x-2 bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full">
@@ -120,9 +120,9 @@ export default function Login() {
         <div className="w-full max-w-md">
           {/* Logo móvil */}
           <div className="lg:hidden text-center mb-8">
-            <img 
-              src="/logo-caborca.webp" 
-              alt="Caborca Boots" 
+            <img
+              src="/logo-caborca.webp"
+              alt="Caborca Boots"
               className="h-20 w-auto mx-auto"
             />
           </div>
@@ -274,7 +274,7 @@ export default function Login() {
               </div>
             </div>
           </div>
-          
+
           {/* Información (debajo de credenciales) - alineada a los bordes */}
           <div className="mt-4 w-full text-sm text-caborca-negro/60">
             <div className="w-full flex items-center justify-between">

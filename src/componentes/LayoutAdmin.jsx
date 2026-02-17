@@ -14,11 +14,6 @@ export default function LayoutAdmin() {
 
   const menuItems = [
     {
-      nombre: 'Dashboard',
-      icono: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>,
-      ruta: '/dashboard'
-    },
-    {
       nombre: 'Inicio',
       icono: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
       ruta: '/editar-inicio'
@@ -75,59 +70,7 @@ export default function LayoutAdmin() {
     try { return localStorage.getItem('cms:editor:lang') || 'es'; } catch (e) { return 'es'; }
   });
 
-  const [deployModalOpen, setDeployModalOpen] = useState(false);
-  const [scheduleDate, setScheduleDate] = useState('');
 
-  const handleDeployNow = () => {
-    // List of keys to promote from draft to live
-    const keys = [
-      'inicio',
-      'mantenimiento',
-      'notfound',
-      'contacto',
-      'distribuidores',
-      'nosotros',
-      'catalogo-hombre',
-      'catalogo-mujer',
-      'responsabilidad'
-      // Add other section keys as needed
-    ];
-
-    let count = 0;
-    keys.forEach(key => {
-      // In a real staging environment, we would have 'cms:draft:key'.
-      // For this simulated environment, we assume the editors write to 'cms:draft:key' (to be implemented)
-      // OR, simply, we treat the current localStorage keys as 'draft' and we copy them to a specific 'public' namespace if we were separating them.
-      // HOWEVER, based on the user request, they want to "save changes" (draft) and then "deploy".
-      // Current existing code writes to keys like 'cms:mantenimiento'. Let's call these the DRAFT keys from now on.
-      // And we will copy them to 'cms:live:mantenimiento'.
-      // The Portfolio should be updated to read 'cms:live:mantenimiento'.
-
-      const draftData = localStorage.getItem(`cms:${key}`);
-      if (draftData) {
-        localStorage.setItem(`cms:live:${key}`, draftData);
-        count++;
-      }
-    });
-
-    // Also trigger an event so if the portfolio is open in another tab/window it could potentially listen (if same origin)
-    // or we just rely on reload.
-    alert(`Se han desplegado ${count} secciones exitosamente al sitio público.`);
-    setDeployModalOpen(false);
-  };
-
-  const handleScheduleDeploy = (date) => {
-    if (!date) return;
-    // In a real serverless/server app, this would register a cron job.
-    // Here we store the intention. The visitor's browser (Portfolio) would have to check this.
-    const schedule = {
-      date: new Date(date).toISOString(),
-      status: 'pending'
-    };
-    localStorage.setItem('cms:deployment_schedule', JSON.stringify(schedule));
-    alert(`Despliegue programado para: ${new Date(date).toLocaleString()}`);
-    setDeployModalOpen(false);
-  };
 
   useEffect(() => {
     // Ensure initial broadcast so pages can sync
@@ -247,49 +190,47 @@ export default function LayoutAdmin() {
               {menuItems.find(item => item.ruta === location.pathname)?.nombre || 'Panel de Administración'}
             </h2>
             <div className="flex items-center space-x-4">
-              {/* Deploy Button */}
-              <button
-                onClick={() => setDeployModalOpen(true)}
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold transition-all shadow-sm hover:shadow-md animate-pulse-slow"
+              <a
+                href="https://caborcaboots.netlify.app/"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 bg-caborca-cafe text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-caborca-negro transition shadow-sm"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
-                <span>DESPLEGAR</span>
-              </button>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                Ver Sitio
+              </a>
 
-              <div className="h-8 w-px bg-gray-300 mx-2"></div>
 
-              {location.pathname !== '/dashboard' && (
-                <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
-                  <button
-                    onClick={() => {
-                      const lang = 'es';
-                      localStorage.setItem('cms:editor:lang', lang);
-                      window.dispatchEvent(new CustomEvent('cms:editor:lang-changed', { detail: { lang } }));
-                      setLang(lang);
-                    }}
-                    className={`px-3 py-1 text-sm transition-colors ${(typeof window !== 'undefined' && (localStorage.getItem('cms:editor:lang') || 'es') === 'es')
-                      ? 'bg-caborca-cafe text-white rounded'
-                      : 'text-gray-600 hover:bg-gray-200 rounded'
-                      }`}
-                  >
-                    🇲🇽 ES
-                  </button>
-                  <button
-                    onClick={() => {
-                      const lang = 'en';
-                      localStorage.setItem('cms:editor:lang', lang);
-                      window.dispatchEvent(new CustomEvent('cms:editor:lang-changed', { detail: { lang } }));
-                      setLang(lang);
-                    }}
-                    className={`px-3 py-1 text-sm transition-colors ${(typeof window !== 'undefined' && (localStorage.getItem('cms:editor:lang') || 'es') === 'en')
-                      ? 'bg-caborca-cafe text-white rounded'
-                      : 'text-gray-600 hover:bg-gray-200 rounded'
-                      }`}
-                  >
-                    🇺🇸 EN
-                  </button>
-                </div>
-              )}
+              <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => {
+                    const lang = 'es';
+                    localStorage.setItem('cms:editor:lang', lang);
+                    window.dispatchEvent(new CustomEvent('cms:editor:lang-changed', { detail: { lang } }));
+                    setLang(lang);
+                  }}
+                  className={`px-3 py-1 text-sm transition-colors ${(typeof window !== 'undefined' && (localStorage.getItem('cms:editor:lang') || 'es') === 'es')
+                    ? 'bg-caborca-cafe text-white rounded'
+                    : 'text-gray-600 hover:bg-gray-200 rounded'
+                    }`}
+                >
+                  🇲🇽 ES
+                </button>
+                <button
+                  onClick={() => {
+                    const lang = 'en';
+                    localStorage.setItem('cms:editor:lang', lang);
+                    window.dispatchEvent(new CustomEvent('cms:editor:lang-changed', { detail: { lang } }));
+                    setLang(lang);
+                  }}
+                  className={`px-3 py-1 text-sm transition-colors ${(typeof window !== 'undefined' && (localStorage.getItem('cms:editor:lang') || 'es') === 'en')
+                    ? 'bg-caborca-cafe text-white rounded'
+                    : 'text-gray-600 hover:bg-gray-200 rounded'
+                    }`}
+                >
+                  🇺🇸 EN
+                </button>
+              </div>
             </div>
           </div>
         </header>
@@ -300,86 +241,7 @@ export default function LayoutAdmin() {
         </div>
       </main>
 
-      {/* Deploy Modal */}
-      {deployModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-zoom-in">
-            <div className="bg-caborca-cafe p-6 text-white text-center relative">
-              <button
-                onClick={() => setDeployModalOpen(false)}
-                className="absolute top-4 right-4 text-white/70 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-              </div>
-              <h3 className="text-2xl font-playfair font-bold">Desplegar Cambios</h3>
-              <p className="text-white/80 mt-2 text-sm">Publica tus ediciones en el sitio oficial</p>
-            </div>
-            <div className="p-8 space-y-6">
-              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
-                <div className="flex">
-                  <span className="mr-3 text-yellow-500">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                  </span>
-                  <div>
-                    <p className="font-bold text-yellow-800">Advertencia</p>
-                    <p className="text-sm text-yellow-700 mt-1">Esta acción sobrescribirá la versión pública actual con tus borradores guardados.</p>
-                  </div>
-                </div>
-              </div>
 
-              <div className="space-y-4 pt-2">
-                <button
-                  onClick={handleDeployNow}
-                  className="w-full group bg-green-600 hover:bg-green-700 text-white p-4 rounded-xl flex items-center justify-between transition-all shadow-md hover:shadow-lg transform active:scale-[0.98]"
-                >
-                  <div className="text-left">
-                    <span className="block font-bold text-lg">Desplegar Ahora</span>
-                    <span className="text-sm text-green-100">Publicar cambios inmediatamente</span>
-                  </div>
-                  <span className="group-hover:translate-x-1 transition-transform">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                  </span>
-                </button>
-
-                <div className="relative pt-4 border-t border-gray-100">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Programar Fecha y Hora</label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                      </div>
-                      <input
-                        type="datetime-local"
-                        className="w-full pl-10 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-3 text-sm focus:ring-caborca-cafe focus:border-caborca-cafe block"
-                        onChange={(e) => setScheduleDate(e.target.value)}
-                      />
-                    </div>
-                    <button
-                      onClick={() => handleScheduleDeploy(scheduleDate)}
-                      className="bg-caborca-cafe hover:bg-caborca-negro text-white px-4 rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-sm flex items-center gap-2"
-                      disabled={!scheduleDate}
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      Programar
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gray-50 p-4 flex justify-center border-t border-gray-100">
-              <button
-                onClick={() => setDeployModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700 font-semibold text-sm px-6 py-2 hover:bg-gray-100 rounded transition-colors"
-              >
-                Cancelar Operación
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

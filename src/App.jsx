@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastProvider } from './context/ToastContext';
 import Login from './paginas/Login';
 import LayoutAdmin from './componentes/LayoutAdmin';
-import Dashboard from './paginas/Dashboard';
+
 import EditarInicio from './paginas/EditarInicio';
 import EditarNosotros from './paginas/EditarNosotros';
 import EditarContacto from './paginas/EditarContacto';
@@ -27,44 +28,45 @@ function RutaProtegida({ children }) {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Ruta de login */}
-        <Route path="/login" element={<Login />} />
+    <ToastProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Ruta de login */}
+          <Route path="/login" element={<Login />} />
 
-        {/* Rutas protegidas del admin */}
-        <Route
-          path="/"
-          element={
-            <RutaProtegida>
-              <LayoutAdmin />
-            </RutaProtegida>
-          }
-        >
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="editar-inicio" element={<EditarInicio />} />
+          {/* Rutas protegidas del admin */}
+          <Route
+            path="/"
+            element={
+              <RutaProtegida>
+                <LayoutAdmin />
+              </RutaProtegida>
+            }
+          >
+            <Route index element={<Navigate to="/editar-inicio" replace />} />
+            <Route path="editar-inicio" element={<EditarInicio />} />
 
-          <Route path="editar-nosotros" element={<EditarNosotros />} />
-          <Route path="editar-contacto" element={<EditarContacto />} />
+            <Route path="editar-nosotros" element={<EditarNosotros />} />
+            <Route path="editar-contacto" element={<EditarContacto />} />
 
-          <Route path="editar-catalogo-hombre" element={<CatalogoHombre />} />
-          <Route path="editar-catalogo-mujer" element={<CatalogoMujer />} />
-          <Route path="editar-responsabilidad" element={<EditarResponsabilidad />} />
-          <Route path="editar-distribuidores" element={<EditarDistribuidores />} />
+            <Route path="editar-catalogo-hombre" element={<CatalogoHombre />} />
+            <Route path="editar-catalogo-mujer" element={<CatalogoMujer />} />
+            <Route path="editar-responsabilidad" element={<EditarResponsabilidad />} />
+            <Route path="editar-distribuidores" element={<EditarDistribuidores />} />
 
-          {/* Ruta de mensajes comentada */}
-          {/* <Route path="mensajes" element={<Mensajes />} /> */}
+            {/* Ruta de mensajes comentada */}
+            {/* <Route path="mensajes" element={<Mensajes />} /> */}
 
-          <Route path="editar-configuracion" element={<Configuracion />} />
-          <Route path="editar-mantenimiento" element={<EditarMantenimiento />} />
-          <Route path="editar-notfound" element={<EditarNotFound />} />
-        </Route>
+            <Route path="editar-configuracion" element={<Configuracion />} />
+            <Route path="editar-mantenimiento" element={<EditarMantenimiento />} />
+            <Route path="editar-notfound" element={<EditarNotFound />} />
+          </Route>
 
-        {/* Redirección por defecto */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Redirección por defecto */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ToastProvider>
   );
 }
 
