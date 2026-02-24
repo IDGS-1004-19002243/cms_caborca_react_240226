@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import EditButton from '../componentes/EditButton'
+import BotonesPublicar from '../componentes/BotonesPublicar'
 import { useToast } from '../context/ToastContext'
+import { textosService } from '../api/textosService'
 
 const EditarNosotros = () => {
   const defaultContent = {
@@ -77,23 +79,20 @@ const EditarNosotros = () => {
   const { success, error } = useToast();
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('cms:nosotros');
-      if (stored) setContent(JSON.parse(stored));
-    } catch (e) { console.error('Error loading content', e); }
+    const fetchTextos = async () => {
+      try {
+        const data = await textosService.getTextos('nosotros');
+        if (data && Object.keys(data).length > 0) {
+          setContent(data);
+        }
+      } catch (e) {
+        console.error('Error loading content', e);
+      }
+    };
+    fetchTextos();
   }, []);
 
-  useEffect(() => {
-    // Allow opening editor from external events
-    const handler = (e) => {
-      const section = e.detail?.section;
-      if (section) openEditor(section);
-    };
-    window.addEventListener('cms:edit-section', handler);
-    return () => window.removeEventListener('cms:edit-section', handler);
-  }, [content]);
-
-  const openEditor = (section) => {
+  function openEditor(section) {
     const sec = content[section] || {};
 
     let bodyText = '';
@@ -114,6 +113,16 @@ const EditarNosotros = () => {
     });
     setActiveEdit(section);
   };
+
+  useEffect(() => {
+    // Allow opening editor from external events
+    const handler = (e) => {
+      const section = e.detail?.section;
+      if (section) openEditor(section);
+    };
+    window.addEventListener('cms:edit-section', handler);
+    return () => window.removeEventListener('cms:edit-section', handler);
+  }, [content]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleInput = (e) => {
     const { name, value } = e.target;
@@ -138,39 +147,36 @@ const EditarNosotros = () => {
     if (!activeEdit) return;
     setContent(prev => {
       const updated = { ...prev };
-      const currentSec = { ...updated[activeEdit] }; // create copy
 
-      currentSec.title = form.title || currentSec.title;
-
-      // Save Body logic
-      if (form.body !== undefined) {
-        if (activeEdit === 'caborcaHoy') {
-          currentSec.paragraph = form.body;
-        } else if (Array.isArray(currentSec.paragraphs)) {
-          currentSec.paragraphs = form.body.split(/\n\n+/).map(p => p.trim());
-        } else if (currentSec.paragraph !== undefined) {
-          currentSec.paragraph = form.body;
-        }
-      }
-
-      // Save Image
-      if (form.image) currentSec.imagen = form.image;
-
-      // Handle specific fields (subtitle, stats)
       if (activeEdit === 'caborcaHoy') {
-        currentSec.subtitle = form.subtitle;
-        currentSec.stats = form.stats;
+        updated[activeEdit] = { ...prev[activeEdit], ...form };
+      } else {
+        const sec = { ...prev[activeEdit], title: form.title, imagen: form.image };
+        if (form.subtitle) sec.subtitle = form.subtitle;
+        if (typeof prev[activeEdit]?.paragraphs !== 'undefined') {
+          sec.paragraphs = form.body.split('\n\n').filter(p => p.trim());
+        } else if (typeof prev[activeEdit]?.paragraph !== 'undefined') {
+          sec.paragraph = form.body;
+        } else if (!sec.subtitle) {
+          sec.subtitle = form.body;
+        }
+        updated[activeEdit] = sec;
       }
 
-      updated[activeEdit] = currentSec;
-      localStorage.setItem('cms:nosotros', JSON.stringify(updated));
+      textosService.updateTextos('nosotros', updated).catch(e => console.error(e));
       return updated;
     });
+
+    success('Sección actualizada con éxito');
     setActiveEdit(null);
-    success('Cambios guardados correctamente');
   };
+  const guardarBorrador = async () => {
+    await textosService.updateTextos('nosotros', content);
+  };
+
   return (
-    <div className="bg-white text-caborca-cafe font-sans">
+    <div className="bg-white text-caborca-cafe font-sans pb-28">
+      <BotonesPublicar onGuardar={guardarBorrador} />
       <main>
         {/* HERO SECTION */}
         <section className="relative bg-gray-50">
@@ -489,7 +495,7 @@ const EditarNosotros = () => {
 
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default EditarNosotros
+export default EditarNosotros;

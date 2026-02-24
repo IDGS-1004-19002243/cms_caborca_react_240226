@@ -283,7 +283,7 @@ export default function CatalogoMujer() {
                   src={(producto.imagenes && producto.imagenes[0]) || producto.imagen}
                   alt={producto.nombre}
                   className="w-full h-full object-cover"
-                  onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=Bota'; }}
+                  onError={(e) => { e.target.src = 'https://blocks.astratic.com/img/general-img-landscape.png'; }}
                 />
                 {producto.destacado && (
                   <span className="absolute top-2 left-2 bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded-full flex items-center gap-1">

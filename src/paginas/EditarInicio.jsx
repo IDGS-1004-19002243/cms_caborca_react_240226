@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import EditButton from '../componentes/EditButton';
 import { useToast } from '../context/ToastContext';
+import homeService from '../api/homeService';
 
 export default function EditarInicio() {
   // Editor de página de inicio
@@ -74,10 +75,10 @@ export default function EditarInicio() {
       subtitulo: { es: 'Encuentra nuestras colecciones exclusivas', en: 'Find our exclusive collections' },
       boton: { es: 'VER TODOS LOS DISTRIBUIDORES', en: 'SEE ALL DISTRIBUTORS' },
       distribuidores: [
-        { id: 1, imagen: 'https://via.placeholder.com/200x100?text=Logo+1' },
-        { id: 2, imagen: 'https://via.placeholder.com/200x100?text=Logo+2' },
-        { id: 3, imagen: 'https://via.placeholder.com/200x100?text=Logo+3' },
-        { id: 4, imagen: 'https://via.placeholder.com/200x100?text=Logo+4' }
+        { id: 1, imagen: 'https://blocks.astratic.com/img/general-img-landscape.png' },
+        { id: 2, imagen: 'https://blocks.astratic.com/img/general-img-landscape.png' },
+        { id: 3, imagen: 'https://blocks.astratic.com/img/general-img-landscape.png' },
+        { id: 4, imagen: 'https://blocks.astratic.com/img/general-img-landscape.png' }
       ]
     },
     sustentabilidadBanner: {
@@ -128,24 +129,82 @@ export default function EditarInicio() {
 
   const [idioma, setIdioma] = useState('es');
 
-  // Cargar contenido desde localStorage
-  useEffect(() => {
+  // Cargar contenido desde la API al iniciar
+  const cargarDatos = async () => {
     try {
-      const storedContent = localStorage.getItem('cms:inicio');
-      if (storedContent) {
-        setContenido(prev => ({ ...prev, ...JSON.parse(storedContent) }));
-      }
-      const storedLang = localStorage.getItem('cms:editor:lang');
-      if (storedLang) setIdioma(storedLang);
-    } catch (e) { console.error('Error cargando contenido', e); }
+      const data = await homeService.getHomeContent();
 
-    const handler = (e) => {
-      const l = e && e.detail && e.detail.lang;
-      if (l) setIdioma(l);
-    };
-    window.addEventListener('cms:editor:lang-changed', handler);
-    return () => window.removeEventListener('cms:editor:lang-changed', handler);
-  }, []);
+      if (!data || (!data.carousel?.length && !data.formDistribuidor)) return;
+
+      setContenido(prev => ({
+        ...prev,
+
+        // 1. Carousel
+        carousel: data.carousel?.length > 0 ? data.carousel.map(c => ({
+          id: c.id,
+          titulo: { es: c.titulo_ES, en: c.titulo_EN },
+          subtitulo: { es: c.subtitulo_ES, en: c.subtitulo_EN },
+          boton: { es: c.textoBoton_ES, en: c.textoBoton_EN },
+          link: c.linkBoton,
+          imagen: c.imagenUrl
+        })) : prev.carousel,
+
+        // 2. Formulario Distribuidor
+        formDistribuidor: {
+          ...prev.formDistribuidor,
+          titulo: { es: data.formDistribuidor?.titulo_ES || prev.formDistribuidor.titulo.es, en: data.formDistribuidor?.titulo_EN || prev.formDistribuidor.titulo.en },
+          descripcion: { es: data.formDistribuidor?.descripcion_ES || prev.formDistribuidor.descripcion.es, en: data.formDistribuidor?.descripcion_EN || prev.formDistribuidor.descripcion.en },
+          boton: { es: data.formDistribuidor?.textoBoton_ES || prev.formDistribuidor.boton.es, en: data.formDistribuidor?.textoBoton_EN || prev.formDistribuidor.boton.en }
+        },
+
+        // 3. Sustentabilidad
+        sustentabilidadBanner: {
+          ...prev.sustentabilidadBanner,
+          tituloIzquierdo: { es: data.sustentabilidad?.titulo_ES || prev.sustentabilidadBanner.tituloIzquierdo.es, en: data.sustentabilidad?.titulo_EN || prev.sustentabilidadBanner.tituloIzquierdo.en },
+          descripcionIzquierdo: { es: data.sustentabilidad?.descripcion_ES || prev.sustentabilidadBanner.descripcionIzquierdo.es, en: data.sustentabilidad?.descripcion_EN || prev.sustentabilidadBanner.descripcionIzquierdo.en },
+          boton: { es: data.sustentabilidad?.textoBoton_ES || prev.sustentabilidadBanner.boton.es, en: data.sustentabilidad?.textoBoton_EN || prev.sustentabilidadBanner.boton.en },
+          imagenIzquierda: data.sustentabilidad?.imagenUrl || prev.sustentabilidadBanner.imagenIzquierda
+        },
+
+        // 4. Arte de la Creación
+        arteCreacion: data.arteCreacion?.titulo_ES ? {
+          ...prev.arteCreacion,
+          badge: { es: data.arteCreacion.badge_ES || prev.arteCreacion.badge.es, en: data.arteCreacion.badge_EN || prev.arteCreacion.badge.en },
+          titulo: { es: data.arteCreacion.titulo_ES, en: data.arteCreacion.titulo_EN },
+          anosExperiencia: data.arteCreacion.anosExperiencia || prev.arteCreacion.anosExperiencia,
+          imagen: data.arteCreacion.imagenUrl || prev.arteCreacion.imagen,
+          boton: { es: data.arteCreacion.boton_ES || prev.arteCreacion.boton.es, en: data.arteCreacion.boton_EN || prev.arteCreacion.boton.en },
+          nota: { es: data.arteCreacion.nota_ES || prev.arteCreacion.nota?.es, en: data.arteCreacion.nota_EN || prev.arteCreacion.nota?.en },
+          features: data.arteCreacion.features?.length > 0
+            ? data.arteCreacion.features.map(f => ({
+              id: f.id || Math.random(),
+              titulo: { es: f.titulo_ES, en: f.titulo_EN },
+              descripcion: { es: f.descripcion_ES, en: f.descripcion_EN }
+            }))
+            : prev.arteCreacion.features
+        } : prev.arteCreacion,
+
+        // 5. Distribuidores Logos
+        distribuidoresAutorizados: data.distribuidoresLogos?.titulo_ES ? {
+          ...prev.distribuidoresAutorizados,
+          titulo: { es: data.distribuidoresLogos.titulo_ES, en: data.distribuidoresLogos.titulo_EN },
+          subtitulo: { es: data.distribuidoresLogos.subtitulo_ES || prev.distribuidoresAutorizados.subtitulo.es, en: data.distribuidoresLogos.subtitulo_EN || prev.distribuidoresAutorizados.subtitulo.en },
+          boton: { es: data.distribuidoresLogos.textoBoton_ES || prev.distribuidoresAutorizados.boton.es, en: data.distribuidoresLogos.textoBoton_EN || prev.distribuidoresAutorizados.boton.en },
+          distribuidores: data.distribuidoresLogos.logos?.length > 0
+            ? data.distribuidoresLogos.logos.map(l => ({ id: l.id, imagen: l.imagenUrl }))
+            : prev.distribuidoresAutorizados.distribuidores
+        } : prev.distribuidoresAutorizados
+      }));
+    } catch (err) {
+      toastError('Error al cargar datos del servidor');
+      console.error(err);
+    }
+  };
+
+  // Ejecutar carga al montar el componente
+  useEffect(() => {
+    cargarDatos();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [slideActual, setSlideActual] = useState(0);
   const [slideDistribuidores, setSlideDistribuidores] = useState(0);
@@ -271,15 +330,26 @@ export default function EditarInicio() {
       const lector = new FileReader();
       lector.onloadend = () => {
         if (tipo === 'carousel') {
-          manejarCambioCarousel(index, 'imagen', lector.result);
+          // Guardamos Base64 para preview Y el archivo RAW para upload
+          setContenido(prev => {
+            const nuevos = [...prev.carousel];
+            nuevos[index] = {
+              ...nuevos[index],
+              imagen: lector.result,
+              archivoImg: archivo // Archivo listo para subir
+            };
+            return { ...prev, carousel: nuevos };
+          });
         } else if (tipo === 'producto') {
+          // Por ahora producto no lo estamos guardando en este HomeDto, pero lo dejamos listo
           manejarCambioProducto(index, 'imagen', lector.result);
         } else if (tipo === 'arteCreacion') {
           setContenido(prev => ({
             ...prev,
             arteCreacion: {
               ...prev.arteCreacion,
-              imagen: lector.result
+              imagen: lector.result,
+              archivoImg: archivo
             }
           }));
         } else if (tipo === 'sustentabilidadBanner') {
@@ -287,10 +357,12 @@ export default function EditarInicio() {
             ...prev,
             sustentabilidadBanner: {
               ...prev.sustentabilidadBanner,
-              imagenIzquierda: lector.result
+              imagenIzquierda: lector.result,
+              archivoIzquierda: archivo // Archivo listo para subir
             }
           }));
         } else if (tipo === 'distribuidor') {
+          // Distribuidores logos no están implementados en el DTO aun, pero lo dejamos placeholder
           manejarCambioDistribuidor(index, 'imagen', lector.result);
         }
       };
@@ -319,7 +391,7 @@ export default function EditarInicio() {
         return prev;
       }
       const nuevoId = prev.distribuidoresAutorizados.distribuidores.length ? Math.max(...prev.distribuidoresAutorizados.distribuidores.map(d => d.id)) + 1 : 1;
-      const nuevo = { id: nuevoId, imagen: 'https://via.placeholder.com/200x100?text=Nuevo+Distribuidor' };
+      const nuevo = { id: nuevoId, imagen: 'https://blocks.astratic.com/img/general-img-landscape.png' };
       return {
         ...prev,
         distribuidoresAutorizados: {
@@ -471,23 +543,218 @@ export default function EditarInicio() {
     });
   };
 
-  // Función para guardar cambios
+  // Guardar cambios en el backend
   const guardarCambios = async () => {
     setGuardando(true);
     try {
-      localStorage.setItem('cms:inicio', JSON.stringify(contenido));
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      success('Cambios guardados correctamente');
-    } catch (error) {
-      console.error('Error al guardar:', error);
-      toastError('Error al guardar los cambios');
+      // 1. Procesar Carousel (Subir imágenes nuevas)
+      const carouselProcesado = await Promise.all(contenido.carousel.map(async (slide, index) => {
+        let finalImageUrl = slide.imagen;
+
+        // Si hay un archivo RAW nuevo cargado, lo subimos
+        if (slide.archivoImg) {
+          try {
+            finalImageUrl = await homeService.uploadImage(slide.archivoImg);
+          } catch (uploadError) {
+            console.error("Error subiendo imagen slide " + index, uploadError);
+            toastError(`Error al subir imagen del slide ${index + 1}. Se conservará la anterior.`);
+            // Si falla, mantenemos la imagen anterior si no es base64 gigante, o dejamos string vacío
+            if (finalImageUrl.startsWith('data:')) finalImageUrl = '';
+          }
+        }
+
+        return {
+          id: typeof slide.id === 'string' ? 0 : slide.id, // Si es string (temp id), enviar 0
+          titulo_ES: slide.titulo.es,
+          titulo_EN: slide.titulo.en,
+          subtitulo_ES: slide.subtitulo.es,
+          subtitulo_EN: slide.subtitulo.en,
+          textoBoton_ES: slide.boton.es,
+          textoBoton_EN: slide.boton.en,
+          linkBoton: slide.link || '',
+          imagenUrl: finalImageUrl,
+          orden: index
+        };
+      }));
+
+      // 2. Procesar Sustentabilidad (Subir imagen nueva)
+      let sustImagenUrl = contenido.sustentabilidadBanner.imagenIzquierda;
+      if (contenido.sustentabilidadBanner.archivoIzquierda) {
+        try {
+          sustImagenUrl = await homeService.uploadImage(contenido.sustentabilidadBanner.archivoIzquierda);
+        } catch (uploadError) {
+          console.error("Error subiendo imagen sustentabilidad", uploadError);
+          toastError("Error al subir imagen de sustentabilidad.");
+        }
+      }
+
+      // 3. Crear Payload Final con TODAS las secciones
+      const payload = {
+        carousel: carouselProcesado,
+
+        // Formulario "¿Quieres ser distribuidor?"
+        formDistribuidor: {
+          titulo_ES: contenido.formDistribuidor.titulo.es,
+          titulo_EN: contenido.formDistribuidor.titulo.en,
+          descripcion_ES: contenido.formDistribuidor.descripcion.es,
+          descripcion_EN: contenido.formDistribuidor.descripcion.en,
+          textoBoton_ES: contenido.formDistribuidor.boton.es,
+          textoBoton_EN: contenido.formDistribuidor.boton.en,
+          notaTiempo_ES: contenido.formDistribuidor.notaTiempo?.es || 'Respuesta en 24-48 hrs',
+          notaTiempo_EN: contenido.formDistribuidor.notaTiempo?.en || 'Response in 24-48 hrs',
+          statDistribuidores: contenido.formDistribuidor.statDistribuidores || '+500',
+          statEstados: contenido.formDistribuidor.statEstados || '20+',
+          linkBoton: '/distribuidores',
+          imagenUrl: ''
+        },
+
+        // Sección Sustentabilidad
+        sustentabilidad: {
+          titulo_ES: contenido.sustentabilidadBanner.tituloIzquierdo.es,
+          titulo_EN: contenido.sustentabilidadBanner.tituloIzquierdo.en,
+          descripcion_ES: contenido.sustentabilidadBanner.descripcionIzquierdo.es,
+          descripcion_EN: contenido.sustentabilidadBanner.descripcionIzquierdo.en,
+          textoBoton_ES: contenido.sustentabilidadBanner.boton.es,
+          textoBoton_EN: contenido.sustentabilidadBanner.boton.en,
+          linkBoton: '/responsabilidad-social',
+          imagenUrl: sustImagenUrl,
+          badge_ES: contenido.sustentabilidadBanner.badge?.es || 'COMPROMISO AMBIENTAL',
+          badge_EN: contenido.sustentabilidadBanner.badge?.en || 'ENVIRONMENTAL COMMITMENT',
+          tituloDerecho_ES: contenido.sustentabilidadBanner.tituloDerecho?.es || 'Nuestro compromiso con el planeta',
+          tituloDerecho_EN: contenido.sustentabilidadBanner.tituloDerecho?.en || 'Our commitment to the planet',
+          notaCertificacion_ES: contenido.sustentabilidadBanner.nota?.es || 'Certificado por prácticas sustentables',
+          notaCertificacion_EN: contenido.sustentabilidadBanner.nota?.en || 'Certified for sustainable practices'
+        },
+
+        // Sección Arte de la Creación (Nosotros)
+        arteCreacion: {
+          badge_ES: contenido.arteCreacion.badge.es,
+          badge_EN: contenido.arteCreacion.badge.en,
+          titulo_ES: contenido.arteCreacion.titulo.es,
+          titulo_EN: contenido.arteCreacion.titulo.en,
+          anosExperiencia: contenido.arteCreacion.anosExperiencia,
+          imagenUrl: contenido.arteCreacion.imagen || '',
+          boton_ES: contenido.arteCreacion.boton.es,
+          boton_EN: contenido.arteCreacion.boton.en,
+          nota_ES: contenido.arteCreacion.nota?.es || '',
+          nota_EN: contenido.arteCreacion.nota?.en || '',
+          features: (contenido.arteCreacion.features || []).map(f => ({
+            titulo_ES: f.titulo.es,
+            titulo_EN: f.titulo.en,
+            descripcion_ES: f.descripcion.es,
+            descripcion_EN: f.descripcion.en
+          }))
+        },
+
+        // Sección Logos Distribuidores Autorizados
+        distribuidoresLogos: {
+          titulo_ES: contenido.distribuidoresAutorizados.titulo.es,
+          titulo_EN: contenido.distribuidoresAutorizados.titulo.en,
+          subtitulo_ES: contenido.distribuidoresAutorizados.subtitulo.es,
+          subtitulo_EN: contenido.distribuidoresAutorizados.subtitulo.en,
+          textoBoton_ES: contenido.distribuidoresAutorizados.boton.es,
+          textoBoton_EN: contenido.distribuidoresAutorizados.boton.en,
+          logos: (contenido.distribuidoresAutorizados.distribuidores || []).map(d => ({
+            id: d.id,
+            imagenUrl: d.imagen || ''
+          }))
+        }
+      };
+
+      await homeService.updateHomeContent(payload);
+
+      // Limpiar archivos temporales del estado para no re-subirlos
+      setContenido(prev => ({
+        ...prev,
+        carousel: prev.carousel.map(s => {
+          // Si acabamos de guardar, la "imagen" (preview) debería ser la nueva URL si queremos ser puristas,
+          // pero dejar el base64 visualmente no daña nada hasta que recarguen.
+          // Lo importante es quitar 'archivoImg'
+          const { archivoImg, ...rest } = s;
+          return rest;
+        }),
+        sustentabilidadBanner: {
+          ...prev.sustentabilidadBanner,
+          // Quitamos archivoIzquierda
+          archivoIzquierda: undefined
+        }
+      }));
+
+      success('Cambios guardados correctamente y archivos subidos.');
+    } catch (err) {
+      console.error(err);
+      toastError('Error al guardar cambios');
     } finally {
       setGuardando(false);
     }
   };
 
+  // Publicar cambios en el portafolio público (Guardar + Deploy)
+  const [publicando, setPublicando] = useState(false);
+  const publicarCambios = async () => {
+    setPublicando(true);
+    try {
+      // 1. Primero guardar el borrador (reutilizamos la misma lógica de guardarCambios)
+      await guardarCambios();
+      // 2. Luego desplegar borrador → producción
+      await homeService.deployContent();
+      success('¡Cambios PUBLICADOS! El portafolio ya muestra los nuevos contenidos.');
+    } catch (err) {
+      console.error(err);
+      toastError('Error al publicar cambios');
+    } finally {
+      setPublicando(false);
+    }
+  };
   return (
-    <div className="relative min-h-screen bg-white">
+    <div className="relative min-h-screen bg-white pb-24">
+      {/* Botones Flotantes */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+        {/* Botón Publicar */}
+        <button
+          onClick={publicarCambios}
+          disabled={publicando || guardando}
+          className={`flex items-center gap-3 px-7 py-3 rounded-full shadow-2xl font-bold text-base transition-all transform hover:scale-105 active:scale-95 border-2 border-white/20 backdrop-blur-md ${publicando || guardando ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-700 hover:bg-green-800 text-white'
+            }`}
+        >
+          {publicando ? (
+            <>
+              <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Publicando...</span>
+            </>
+          ) : (
+            <>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+              <span>Publicar en Portafolio</span>
+            </>
+          )}
+        </button>
+        {/* Botón Guardar Borrador */}
+        <button
+          onClick={guardarCambios}
+          disabled={guardando || publicando}
+          className={`flex items-center gap-3 px-8 py-4 rounded-full shadow-2xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 border-2 border-white/20 backdrop-blur-md ${guardando ? 'bg-gray-500 cursor-not-allowed' : 'bg-caborca-cafe hover:bg-caborca-negro text-white'
+            }`}
+        >
+          {guardando ? (
+            <>
+              <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Guardando...</span>
+            </>
+          ) : (
+            <>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+              <span>Guardar Borrador</span>
+            </>
+          )}
+        </button>
+      </div>
       {/* Barra de editor removida */}
 
       {/* Contenido principal con previsualización editable */}
@@ -500,7 +767,7 @@ export default function EditarInicio() {
               alt="Hero"
               className="w-full h-full object-cover"
               onError={(e) => {
-                e.target.src = 'https://via.placeholder.com/1920x1080?text=Imagen+no+disponible';
+                e.target.src = 'https://blocks.astratic.com/img/general-img-landscape.png';
               }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col items-center justify-center text-white p-8">
@@ -550,7 +817,7 @@ export default function EditarInicio() {
                         alt={producto.nombre[idioma]}
                         className="w-full h-full object-cover group-hover/item:scale-110 transition-transform duration-500"
                         onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/300x300?text=Producto';
+                          e.target.src = 'https://blocks.astratic.com/img/general-img-landscape.png';
                         }}
                       />
                     </div>
@@ -589,7 +856,7 @@ export default function EditarInicio() {
                       src={contenido.arteCreacion.imagen}
                       alt="Arte"
                       className="w-full h-auto object-cover"
-                      onError={(e) => { e.target.src = 'https://via.placeholder.com/600x600?text=Artesano'; }}
+                      onError={(e) => { e.target.src = 'https://blocks.astratic.com/img/general-img-landscape.png'; }}
                     />
                   </div>
                 </div>
@@ -688,7 +955,7 @@ export default function EditarInicio() {
                         src={distribuidor.imagen}
                         alt={`Distribuidor ${distribuidor.id}`}
                         className="max-w-full max-h-full object-contain mix-blend-multiply"
-                        onError={(e) => { e.target.src = 'https://via.placeholder.com/150x80?text=Logo'; }}
+                        onError={(e) => { e.target.src = 'https://blocks.astratic.com/img/general-img-landscape.png'; }}
                       />
                     </div>
                   </div>
@@ -750,7 +1017,7 @@ export default function EditarInicio() {
           <div className="grid md:grid-cols-2">
             {/* Left Side - Image */}
             <div className="relative h-100 md:h-125">
-              <img src={contenido.sustentabilidadBanner.imagenIzquierda} alt="Sustentabilidad Caborca" className="w-full h-full object-cover" onError={(e) => { e.target.src = 'https://via.placeholder.com/600x600?text=Naturaleza' }} />
+              <img src={contenido.sustentabilidadBanner.imagenIzquierda} alt="Sustentabilidad Caborca" className="w-full h-full object-cover" onError={(e) => { e.target.src = 'https://blocks.astratic.com/img/general-img-landscape.png' }} />
               <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(155,134,116,0.8), rgba(0,0,0,0.4))' }} />
               <div className="absolute inset-0 flex items-center justify-center md:justify-start px-8 md:px-12">
                 <div className="text-white max-w-md">
@@ -913,8 +1180,8 @@ export default function EditarInicio() {
                           onClick={() => setElementoEditando(idx)}
                           className={`flex flex-col items-center gap-2 p-1 rounded transition-shadow ${idx === elementoEditando ? 'ring-2 ring-caborca-cafe' : 'hover:shadow-md'}`}
                         >
-                          <img src={s.imagen} alt={s.titulo[idioma]} className="w-32 h-16 object-cover rounded" onError={(e) => { e.target.src = 'https://via.placeholder.com/320x160?text=Slide' }} />
-                          <span className="text-xs text-gray-700 max-w-[80px] truncate">{s.titulo[idioma]}</span>
+                          <img src={s?.imagen || ''} alt={s?.titulo?.[idioma] || 'Slide'} className="w-32 h-16 object-cover rounded" onError={(e) => { e.target.src = 'https://blocks.astratic.com/img/general-img-landscape.png' }} />
+                          <span className="text-xs text-gray-700 max-w-[80px] truncate">{s?.titulo?.[idioma] || 'Sin título'}</span>
                         </button>
                       ))}
                     </div>
@@ -944,7 +1211,7 @@ export default function EditarInicio() {
                         </label>
                         <input
                           type="text"
-                          value={contenido.carousel[elementoEditando].titulo[idioma]}
+                          value={contenido.carousel[elementoEditando]?.titulo?.[idioma] || ''}
                           onChange={(e) => manejarCambioCarousel(elementoEditando, 'titulo', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                         />
@@ -956,7 +1223,7 @@ export default function EditarInicio() {
                         </label>
                         <input
                           type="text"
-                          value={contenido.carousel[elementoEditando].subtitulo[idioma]}
+                          value={contenido.carousel[elementoEditando]?.subtitulo?.[idioma] || ''}
                           onChange={(e) => manejarCambioCarousel(elementoEditando, 'subtitulo', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                         />
@@ -968,7 +1235,7 @@ export default function EditarInicio() {
                         </label>
                         <input
                           type="text"
-                          value={contenido.carousel[elementoEditando].boton[idioma]}
+                          value={contenido.carousel[elementoEditando]?.boton?.[idioma] || ''}
                           onChange={(e) => manejarCambioCarousel(elementoEditando, 'boton', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                         />
@@ -980,7 +1247,7 @@ export default function EditarInicio() {
                           <div className="flex gap-2">
                             <input
                               type="text"
-                              value={contenido.carousel[elementoEditando].imagen}
+                              value={contenido.carousel[elementoEditando]?.imagen || ''}
                               onChange={(e) => manejarCambioCarousel(elementoEditando, 'imagen', e.target.value)}
                               className="w-64 px-2 py-1 border border-gray-300 rounded text-xs"
                               placeholder="URL"
@@ -1001,11 +1268,11 @@ export default function EditarInicio() {
                         </div>
                         <div className="rounded overflow-hidden border border-gray-200 bg-white h-32 w-full flex items-center justify-center">
                           <img
-                            src={contenido.carousel[elementoEditando].imagen}
+                            src={contenido.carousel[elementoEditando]?.imagen || ''}
                             alt="Preview"
                             className="h-full object-contain"
                             onError={(e) => {
-                              e.target.src = 'https://via.placeholder.com/800x400?text=Preview';
+                              e.target.src = 'https://blocks.astratic.com/img/general-img-landscape.png';
                             }}
                           />
                         </div>
@@ -1023,7 +1290,7 @@ export default function EditarInicio() {
                     </label>
                     <input
                       type="text"
-                      value={contenido.productosDestacados.productos[elementoEditando].nombre[idioma]}
+                      value={contenido.productosDestacados.productos[elementoEditando]?.nombre?.[idioma] || ''}
                       onChange={(e) => manejarCambioProducto(elementoEditando, 'nombre', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                     />
@@ -1035,7 +1302,7 @@ export default function EditarInicio() {
                     </label>
                     <input
                       type="number"
-                      value={contenido.productosDestacados.productos[elementoEditando].precio}
+                      value={contenido.productosDestacados.productos[elementoEditando]?.precio || 0}
                       onChange={(e) => manejarCambioProducto(elementoEditando, 'precio', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                     />
@@ -1049,7 +1316,7 @@ export default function EditarInicio() {
                       <div className="flex gap-2 mb-2">
                         <input
                           type="text"
-                          value={contenido.productosDestacados.productos[elementoEditando].imagen}
+                          value={contenido.productosDestacados.productos[elementoEditando]?.imagen || ''}
                           onChange={(e) => manejarCambioProducto(elementoEditando, 'imagen', e.target.value)}
                           className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs"
                           placeholder="URL"
@@ -1069,11 +1336,11 @@ export default function EditarInicio() {
                       </div>
                       <div className="flex-1 flex items-center justify-center bg-white border border-gray-200 rounded overflow-hidden">
                         <img
-                          src={contenido.productosDestacados.productos[elementoEditando].imagen}
+                          src={contenido.productosDestacados.productos[elementoEditando]?.imagen || ''}
                           alt="Preview"
                           className="max-h-32 object-contain"
                           onError={(e) => {
-                            e.target.src = 'https://via.placeholder.com/300x300?text=Producto';
+                            e.target.src = 'https://blocks.astratic.com/img/general-img-landscape.png';
                           }}
                         />
                       </div>
@@ -1089,7 +1356,7 @@ export default function EditarInicio() {
                   </label>
                   <input
                     type="text"
-                    value={contenido.productosDestacados.titulo[idioma]}
+                    value={contenido.productosDestacados.titulo?.[idioma] || ''}
                     onChange={(e) => manejarCambioTexto('productosDestacados', 'titulo', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none text-lg font-medium"
                   />
@@ -1194,7 +1461,7 @@ export default function EditarInicio() {
                           alt="Preview"
                           className="h-full object-contain"
                           onError={(e) => {
-                            e.target.src = 'https://via.placeholder.com/600x400?text=Preview';
+                            e.target.src = 'https://blocks.astratic.com/img/general-img-landscape.png';
                           }}
                         />
                       </div>
@@ -1375,7 +1642,7 @@ export default function EditarInicio() {
                         alt="Preview"
                         className="h-full object-contain"
                         onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/600x400?text=Preview';
+                          e.target.src = 'https://blocks.astratic.com/img/general-img-landscape.png';
                         }}
                       />
                     </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '../context/ToastContext';
+import homeService from '../api/homeService';
 
 export default function Configuracion() {
   const { success, error: toastError } = useToast();
@@ -32,31 +33,18 @@ export default function Configuracion() {
     localStorage.setItem('cms:maintenance_mode', String(newState));
   };
 
-  const handleDeployNow = () => {
-    // List of keys to promote from draft to live
-    const keys = [
-      'inicio',
-      'mantenimiento',
-      'notfound',
-      'contacto',
-      'distribuidores',
-      'nosotros',
-      'catalogo-hombre',
-      'catalogo-mujer',
-      'responsabilidad'
-    ];
-
-    let count = 0;
-    keys.forEach(key => {
-      const draftData = localStorage.getItem(`cms:${key}`);
-      if (draftData) {
-        localStorage.setItem(`cms:live:${key}`, draftData);
-        count++;
-      }
-    });
-
-    success(`Se han desplegado ${count} secciones exitosamente al sitio público.`);
-    setDeployModalOpen(false);
+  const handleDeployNow = async () => {
+    try {
+      setGuardando(true);
+      await homeService.deployContent();
+      success(`¡Se han desplegado todas las secciones exitosamente al sitio público! 🎉`);
+      setDeployModalOpen(false);
+    } catch (error) {
+      toastError('Hubo un error al desplegar a producción. Inténtalo de nuevo.');
+      console.error(error);
+    } finally {
+      setGuardando(false);
+    }
   };
 
   const handleScheduleDeploy = (date) => {

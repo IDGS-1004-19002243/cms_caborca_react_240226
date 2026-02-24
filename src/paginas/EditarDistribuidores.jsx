@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import EditButton from '../componentes/EditButton';
+import BotonesPublicar from '../componentes/BotonesPublicar';
 import { useToast } from '../context/ToastContext';
+import { textosService } from '../api/textosService';
 
-const EditarDistribuidores = () => {
+export default function EditarDistribuidores() {
   const { success, error: toastError, info } = useToast();
 
   const defaultContent = {
@@ -64,26 +66,18 @@ const EditarDistribuidores = () => {
   };
 
   useEffect(() => {
-    // Cargar valores persistidos (si existen) para que el editor muestre lo guardado
-    try {
-      const stored = localStorage.getItem('cms:distribuidores');
-      if (stored) {
-        setContent(prev => ({ ...prev, ...JSON.parse(stored) }));
-      } else {
-        // Fallback for old keys if new key doesn't exist
-        const storedTitle = localStorage.getItem('cms:page:distribuidores:mapTitle');
-        const storedText = localStorage.getItem('cms:page:distribuidores:mapText');
-        const storedSrc = localStorage.getItem('cms:page:distribuidores:mapSrc');
-        if (storedTitle || storedText || storedSrc) {
-          setContent(prev => ({
-            ...prev,
-            mapTitle: storedTitle || prev.mapTitle,
-            mapText: storedText || prev.mapText,
-            mapSrc: storedSrc || prev.mapSrc
-          }));
+    // Cargar valores de la base de datos a través de la API
+    const fetchDistribuidores = async () => {
+      try {
+        const data = await textosService.getTextos('distribuidores');
+        if (data && Object.keys(data).length > 0) {
+          setContent(prev => ({ ...prev, ...data }));
         }
+      } catch (e) {
+        console.error('Error fetching distribuidores setup', e);
       }
-    } catch (e) { console.error('Error loading content', e) }
+    };
+    fetchDistribuidores();
   }, []);
 
   useEffect(() => {
@@ -104,7 +98,7 @@ const EditarDistribuidores = () => {
     return () => { window.removeEventListener('cms:edit-section', handler); window.removeEventListener('cms:editor:lang-changed', langHandler); };
   }, [content]);
 
-  const openEditor = (section) => {
+  function openEditor(section) {
     if (section === 'hero') {
       setForm({
         badge: content.hero.badge || '',
@@ -182,15 +176,15 @@ const EditarDistribuidores = () => {
     }
 
     setContent(updatedContent);
-    try {
-      localStorage.setItem('cms:distribuidores', JSON.stringify(updatedContent));
-    } catch (e) {
-      console.error('Error saving to localStorage', e);
-      toastError('Error al guardar en memoria local');
-    }
-
-    success('Cambios guardados correctamente');
-    setActiveEdit(null);
+    textosService.updateTextos('distribuidores', updatedContent)
+      .then(() => {
+        success('Cambios guardados correctamente');
+        setActiveEdit(null);
+      })
+      .catch(e => {
+        console.error('Error saving to server', e);
+        toastError('Error al guardar en el servidor');
+      });
   };
 
   const guardarCambios = () => {
@@ -233,7 +227,10 @@ const EditarDistribuidores = () => {
   };
 
   return (
-    <div className="bg-white text-caborca-cafe font-sans">
+    <div className="bg-white text-caborca-cafe font-sans pb-28">
+      <BotonesPublicar onGuardar={async () => {
+        await textosService.updateTextos('distribuidores', content);
+      }} />
       {/* Barra de editor removida intencionalmente */}
 
       <main>
@@ -324,44 +321,40 @@ const EditarDistribuidores = () => {
                 )}
 
                 {activeEdit === 'formulario' && (
-                  <>
+                  <div className="space-y-4">
+                    <label className="block">
+                      <div className="text-sm font-semibold text-gray-700 mb-2">Título del Formulario</div>
+                      <input name="titulo" value={form.titulo} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                    </label>
+                    <label className="block">
+                      <div className="text-sm font-semibold text-gray-700 mb-2">Subtítulo del Formulario</div>
+                      <textarea name="subtitulo" value={form.subtitulo} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows="2" />
+                    </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre</label>
-                        <input name="nombre" value={formData.nombre} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Dirección</label>
-                        <input name="direccion" value={formData.direccion} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Teléfono</label>
-                        <input name="telefono" value={formData.telefono} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
-                        <input name="email" value={formData.email} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
-                      </div>
-                      <div className="md:col-span-2 bg-gray-50 p-3 rounded border border-gray-200">
-                        <div className="flex justify-between items-center mb-2">
-                          <label className="text-sm font-semibold text-gray-700">Coordenadas</label>
-                          <button type="button" onClick={manejarUbicarme} className="text-xs bg-caborca-cafe text-white px-2 py-1 rounded hover:opacity-90">
-                            📍 Usar mi ubicación
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <span className="text-xs text-gray-500 block mb-1">Latitud</span>
-                            <input name="lat" value={formData.lat} onChange={handleInputChange} className="w-full px-2 py-1 border border-gray-300 rounded text-sm" />
-                          </div>
-                          <div>
-                            <span className="text-xs text-gray-500 block mb-1">Longitud</span>
-                            <input name="lng" value={formData.lng} onChange={handleInputChange} className="w-full px-2 py-1 border border-gray-300 rounded text-sm" />
-                          </div>
-                        </div>
+                      <label className="block">
+                        <div className="text-sm font-semibold text-gray-700 mb-2">Texto del Botón</div>
+                        <input name="submitLabel" value={form.submitLabel} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                      </label>
+                      <label className="block">
+                        <div className="text-sm font-semibold text-gray-700 mb-2">Texto de Respuesta Rápida</div>
+                        <input name="responseTime" value={form.responseTime} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                      </label>
+                    </div>
+
+                    <div className="border-t border-gray-200 mt-6 pt-4">
+                      <div className="text-sm font-semibold text-caborca-bronce mb-4">Estadísticas (Mostradas al lado del botón)</div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <label className="block">
+                          <div className="text-xs font-semibold text-gray-500 mb-1">Distribuidores (Ej: +500)</div>
+                          <input name="distribuidores" value={form.distribuidores || ''} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                        </label>
+                        <label className="block">
+                          <div className="text-xs font-semibold text-gray-500 mb-1">Estados (Ej: 20+)</div>
+                          <input name="estados" value={form.estados || ''} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                        </label>
                       </div>
                     </div>
-                  </>
+                  </div>
                 )}
 
                 {activeEdit === 'counters' && (
@@ -851,6 +844,4 @@ const EditarDistribuidores = () => {
       </main>
     </div>
   );
-};
-
-export default EditarDistribuidores;
+}

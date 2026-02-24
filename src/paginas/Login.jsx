@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { authService } from '../api/auth';
+
 export default function Login() {
   const [credenciales, setCredenciales] = useState({
     usuario: '',
@@ -10,12 +12,6 @@ export default function Login() {
   const [cargando, setCargando] = useState(false);
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const navigate = useNavigate();
-
-  // Usuarios válidos
-  const usuariosValidos = {
-    admin: { password: 'admin123', nombre: 'Administrador', rol: 'admin' },
-    superadmin: { password: 'super123', nombre: 'Super Administrador', rol: 'superadmin' }
-  };
 
   const manejarCambio = (e) => {
     const { name, value } = e.target;
@@ -27,29 +23,30 @@ export default function Login() {
     if (error) setError('');
   };
 
-  const manejarEnvio = (e) => {
+  const manejarEnvio = async (e) => {
     e.preventDefault();
     setError('');
     setCargando(true);
 
-    // Simulación de login
-    setTimeout(() => {
-      const usuario = usuariosValidos[credenciales.usuario.toLowerCase()];
+    try {
+      // Llamada real al backend
+      const data = await authService.login(credenciales.usuario, credenciales.password);
 
-      if (usuario && usuario.password === credenciales.password) {
-        // Guardar token o sesión
-        localStorage.setItem('adminToken', 'token-simulado-12345');
-        localStorage.setItem('adminUser', JSON.stringify({
-          nombre: usuario.nombre,
-          usuario: credenciales.usuario.toLowerCase(),
-          rol: usuario.rol
-        }));
-        navigate('/editar-inicio');
-      } else {
-        setError('El usuario o la contraseña son incorrectos. Inténtalo de nuevo.');
-        setCargando(false);
-      }
-    }, 1200);
+      // Guardar token y usuario
+      localStorage.setItem('adminToken', data.token);
+      localStorage.setItem('adminUser', JSON.stringify({
+        usuario: credenciales.usuario,
+        rol: data.rol
+      }));
+
+      // Redirigir al panel
+      navigate('/editar-inicio');
+    } catch (err) {
+      console.error(err);
+      setError('Credenciales inválidas o error de conexión.');
+    } finally {
+      setCargando(false);
+    }
   };
 
   return (
@@ -215,13 +212,6 @@ export default function Login() {
                   )}
                 </button>
               </div>
-            </div>
-
-            {/* Olvidé contraseña */}
-            <div className="flex justify-start">
-              <button type="button" className="text-sm text-caborca-cafe hover:text-caborca-negro transition-colors font-medium">
-                ¿Olvidaste tu contraseña?
-              </button>
             </div>
 
             {/* Botón de submit */}

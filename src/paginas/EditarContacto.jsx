@@ -2,7 +2,9 @@ import { useState, useRef, useEffect } from 'react'
 import Header from '../componentes/Header'
 import Footer from '../componentes/Footer'
 import EditButton from '../componentes/EditButton'
+import BotonesPublicar from '../componentes/BotonesPublicar'
 import { useToast } from '../context/ToastContext'
+import { textosService } from '../api/textosService'
 
 export default function EditarContacto() {
   const { success, error: toastError } = useToast();
@@ -48,37 +50,45 @@ export default function EditarContacto() {
 
   // Load from LocalStorage
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('cms:contacto');
-      if (stored) {
-        const data = JSON.parse(stored);
-        if (data.info) setInfo(prev => ({ ...prev, ...data.info }));
-        if (data.formPreview) setFormPreview(prev => ({ ...prev, ...data.formPreview }));
-        if (data.hero) setHero(prev => ({ ...prev, ...data.hero }));
-        if (data.cards) setCards(data.cards);
+    const fetchContacto = async () => {
+      try {
+        const data = await textosService.getTextos('contacto');
+        if (data && Object.keys(data).length > 0) {
+          if (data.info) setInfo(prev => ({ ...prev, ...data.info }));
+          if (data.formPreview) setFormPreview(prev => ({ ...prev, ...data.formPreview }));
+          if (data.hero) setHero(prev => ({ ...prev, ...data.hero }));
+          if (data.cards) setCards(data.cards);
+        }
+      } catch (e) {
+        console.error('Error fetching contacto setup', e);
       }
-    } catch (e) { console.error(e); }
+    };
+    fetchContacto();
 
     const handler = (e) => { const l = e && e.detail && e.detail.lang; if (l) setIdioma(l); };
     window.addEventListener('cms:editor:lang-changed', handler);
     return () => window.removeEventListener('cms:editor:lang-changed', handler);
   }, []);
 
-  const saveToStorage = (newData) => {
+  const saveToStorage = async (newData) => {
     const dataToSave = {
       info: newData.info || info,
       formPreview: newData.formPreview || formPreview,
       hero: newData.hero || hero,
       cards: newData.cards || cards
     };
-    localStorage.setItem('cms:contacto', JSON.stringify(dataToSave));
+    try {
+      await textosService.updateTextos('contacto', dataToSave);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
   };
 
   const guardarCambios = async () => {
     setGuardando(true)
     try {
-      saveToStorage({}); // Save current state
-      await new Promise(r => setTimeout(r, 500))
+      await saveToStorage({}); // Save current state
       success('Cambios guardados correctamente')
     } catch (e) {
       toastError('Error al guardar')
@@ -92,34 +102,37 @@ export default function EditarContacto() {
   }
 
   // Wrappers to update state AND save immediately (for "Apply" buttons)
-  const aplicarHero = () => {
-    saveToStorage({ hero });
+  const aplicarHero = async () => {
+    await saveToStorage({ hero });
     success('Cambios guardados correctamente')
     setEditarHero(false)
   }
 
-  const aplicarInfo = () => {
-    saveToStorage({ info });
+  const aplicarInfo = async () => {
+    await saveToStorage({ info });
     success('Cambios guardados correctamente')
     setEditarInfo(false)
   }
 
-  const aplicarFormPreview = () => {
-    saveToStorage({ formPreview });
+  const aplicarFormPreview = async () => {
+    await saveToStorage({ formPreview });
     success('Cambios guardados correctamente')
     setEditarForm(false)
   }
 
-  const aplicarCard = () => {
+  const aplicarCard = async () => {
     const newCards = cards.map(c => c.id === cardForm.id ? { ...c, title: cardForm.title, lines: cardForm.lines } : c);
     setCards(newCards);
-    saveToStorage({ cards: newCards });
+    await saveToStorage({ cards: newCards });
     success('Cambios guardados correctamente');
     setActiveCard(null);
   }
 
   return (
     <>
+      <BotonesPublicar onGuardar={async () => {
+        await saveToStorage({});
+      }} />
       {/* HERO EDITABLE */}
       <section className="relative bg-gray-50">
         <div className="w-full">

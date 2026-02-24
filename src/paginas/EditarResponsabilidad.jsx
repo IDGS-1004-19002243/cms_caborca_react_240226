@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import EditButton from '../componentes/EditButton';
+import BotonesPublicar from '../componentes/BotonesPublicar';
 import { useToast } from '../context/ToastContext';
+import { textosService } from '../api/textosService';
 
-export default function EditarResponsabilidad() {
+const EditarResponsabilidad = () => {
   const { success, error: toastError } = useToast();
 
   const defaultContent = {
@@ -66,27 +68,20 @@ export default function EditarResponsabilidad() {
   });
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('cms:responsabilidad');
-      if (stored) setContent(JSON.parse(stored));
-    } catch (e) { }
+    const fetchResponsabilidad = async () => {
+      try {
+        const data = await textosService.getTextos('responsabilidad');
+        if (data && Object.keys(data).length > 0) {
+          setContent(data);
+        }
+      } catch (e) {
+        console.error('Error loading content', e);
+      }
+    };
+    fetchResponsabilidad();
   }, []);
 
-  useEffect(() => {
-    const handler = (e) => {
-      const section = e.detail?.sectionId || e.detail?.section;
-      if (section && content[section]) openEditor(section);
-    };
-    window.addEventListener('cms:edit-section', handler);
-    try {
-      const qp = new URLSearchParams(window.location.search);
-      const edit = qp.get('edit');
-      if (edit && content[edit]) openEditor(edit);
-    } catch (e) { }
-    return () => window.removeEventListener('cms:edit-section', handler);
-  }, [content]);
-
-  const openEditor = (section) => {
+  function openEditor(section) {
     const data = content[section] || {};
 
     setForm({
@@ -101,7 +96,7 @@ export default function EditarResponsabilidad() {
       stat2: data.stat2 || '',
       stat2Label: data.stat2Label || '',
       // shambhala
-      missionTitle: data.missionTitle || data.missionTitle || '',
+      missionTitle: data.missionTitle || '',
       missionText: data.missionText || '',
       granjaTitle: data.granjaTitle || '',
       granjaText: data.granjaText || '',
@@ -115,6 +110,20 @@ export default function EditarResponsabilidad() {
     });
     setActiveEdit(section);
   };
+
+  useEffect(() => {
+    const handler = (e) => {
+      const section = e.detail?.sectionId || e.detail?.section;
+      if (section && content[section]) openEditor(section);
+    };
+    window.addEventListener('cms:edit-section', handler);
+    try {
+      const qp = new URLSearchParams(window.location.search);
+      const edit = qp.get('edit');
+      if (edit && content[edit]) openEditor(edit);
+    } catch (e) { }
+    return () => window.removeEventListener('cms:edit-section', handler);
+  }, [content]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleImageNamed = (e) => {
     const field = e.target.dataset.field;
@@ -183,7 +192,7 @@ export default function EditarResponsabilidad() {
           thumb2: form.thumb2 || prev[activeEdit].thumb2
         }
       };
-      localStorage.setItem('cms:responsabilidad', JSON.stringify(updated));
+      textosService.updateTextos('responsabilidad', updated).catch(e => console.error(e));
       return updated;
     });
     success('Cambios aplicados correctamente');
@@ -193,7 +202,10 @@ export default function EditarResponsabilidad() {
   const renderTitle = (raw) => raw?.split('\n').map((line, i) => <span key={i}>{line}{i < raw.split('\n').length - 1 && <br />}</span>);
 
   return (
-    <div className="bg-white text-caborca-cafe font-sans">
+    <div className="bg-white text-caborca-cafe font-sans pb-28">
+      <BotonesPublicar onGuardar={async () => {
+        await textosService.updateTextos('responsabilidad', content);
+      }} />
       <main>
         {/* HERO */}
         <section data-cms-section="hero" className="relative bg-gray-50">
@@ -735,4 +747,6 @@ export default function EditarResponsabilidad() {
       </main>
     </div>
   );
-}
+};
+
+export default EditarResponsabilidad;
