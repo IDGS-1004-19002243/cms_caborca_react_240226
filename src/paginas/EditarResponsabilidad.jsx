@@ -3,6 +3,7 @@ import EditButton from '../componentes/EditButton';
 import BotonesPublicar from '../componentes/BotonesPublicar';
 import { useToast } from '../context/ToastContext';
 import { textosService } from '../api/textosService';
+import { uploadImage } from '../api/uploadService';
 
 const EditarResponsabilidad = () => {
   const { success, error: toastError } = useToast();
@@ -125,17 +126,16 @@ const EditarResponsabilidad = () => {
     return () => window.removeEventListener('cms:edit-section', handler);
   }, [content]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleImageNamed = (e) => {
+  const handleImageNamed = async (e) => {
     const field = e.target.dataset.field;
     const file = e.target.files?.[0];
     if (!file || !field) return;
-    if (file.size > 1024 * 1024) {
-      toastError('El archivo excede 1 MB. Elige una imagen más pequeña');
-      return;
+    try {
+      const url = await uploadImage(file);
+      setForm(prev => ({ ...prev, [field]: url }));
+    } catch (err) {
+      toastError('Error al subir la imagen');
     }
-    const reader = new FileReader();
-    reader.onload = () => setForm(prev => ({ ...prev, [field]: reader.result }));
-    reader.readAsDataURL(file);
   };
 
   const closeEditor = () => {
@@ -147,16 +147,15 @@ const EditarResponsabilidad = () => {
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImage = (e) => {
+  const handleImage = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 1024 * 1024) {
-      toastError('El archivo excede 1 MB. Elige una imagen más pequeña');
-      return;
+    try {
+      const url = await uploadImage(file);
+      setForm(prev => ({ ...prev, image: url }));
+    } catch (err) {
+      toastError('Error al subir la imagen');
     }
-    const reader = new FileReader();
-    reader.onload = () => setForm(prev => ({ ...prev, image: reader.result }));
-    reader.readAsDataURL(file);
   };
 
   const saveChanges = () => {
@@ -192,7 +191,9 @@ const EditarResponsabilidad = () => {
           thumb2: form.thumb2 || prev[activeEdit].thumb2
         }
       };
-      textosService.updateTextos('responsabilidad', updated).catch(e => console.error(e));
+
+      // Solo enviamos la sección editada para evitar reescribir cosas no tocadas
+      textosService.updateTextos('responsabilidad', { [activeEdit]: updated[activeEdit] }).catch(e => console.error(e));
       return updated;
     });
     success('Cambios aplicados correctamente');

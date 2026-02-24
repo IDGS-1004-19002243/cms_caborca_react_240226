@@ -3,6 +3,7 @@ import EditButton from '../componentes/EditButton'
 import BotonesPublicar from '../componentes/BotonesPublicar'
 import { useToast } from '../context/ToastContext'
 import { textosService } from '../api/textosService'
+import { uploadImage } from '../api/uploadService'
 
 const EditarNosotros = () => {
   const defaultContent = {
@@ -135,12 +136,16 @@ const EditarNosotros = () => {
     setForm(prev => ({ ...prev, stats: newStats }));
   };
 
-  const handleImage = (e) => {
+  const handleImage = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setForm(prev => ({ ...prev, image: reader.result }));
-    reader.readAsDataURL(file);
+    try {
+      const url = await uploadImage(file);
+      setForm(prev => ({ ...prev, image: url }));
+    } catch (err) {
+      console.error(err);
+      alert('Error al subir la imagen');
+    }
   };
 
   const saveChanges = () => {
@@ -163,7 +168,8 @@ const EditarNosotros = () => {
         updated[activeEdit] = sec;
       }
 
-      textosService.updateTextos('nosotros', updated).catch(e => console.error(e));
+      // Solo enviamos la sección editada para evitar reescribir cosas no tocadas
+      textosService.updateTextos('nosotros', { [activeEdit]: updated[activeEdit] }).catch(e => console.error(e));
       return updated;
     });
 

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import EditButton from '../componentes/EditButton';
 import { useToast } from '../context/ToastContext';
 import homeService from '../api/homeService';
-
+import { uploadImage } from '../api/uploadService';
 export default function EditarInicio() {
   // Editor de página de inicio
   const { success, error: toastError } = useToast();
@@ -324,32 +324,30 @@ export default function EditarInicio() {
   };
 
   // Función para manejar carga de imagen
-  const manejarCargarImagen = (e, tipo, index = null) => {
+  const manejarCargarImagen = async (e, tipo, index = null) => {
     const archivo = e.target.files[0];
     if (archivo) {
-      const lector = new FileReader();
-      lector.onloadend = () => {
+      try {
+        const url = await uploadImage(archivo);
         if (tipo === 'carousel') {
-          // Guardamos Base64 para preview Y el archivo RAW para upload
           setContenido(prev => {
             const nuevos = [...prev.carousel];
             nuevos[index] = {
               ...nuevos[index],
-              imagen: lector.result,
-              archivoImg: archivo // Archivo listo para subir
+              imagen: url,
+              archivoImg: null
             };
             return { ...prev, carousel: nuevos };
           });
         } else if (tipo === 'producto') {
-          // Por ahora producto no lo estamos guardando en este HomeDto, pero lo dejamos listo
-          manejarCambioProducto(index, 'imagen', lector.result);
+          manejarCambioProducto(index, 'imagen', url);
         } else if (tipo === 'arteCreacion') {
           setContenido(prev => ({
             ...prev,
             arteCreacion: {
               ...prev.arteCreacion,
-              imagen: lector.result,
-              archivoImg: archivo
+              imagen: url,
+              archivoImg: null
             }
           }));
         } else if (tipo === 'sustentabilidadBanner') {
@@ -357,16 +355,16 @@ export default function EditarInicio() {
             ...prev,
             sustentabilidadBanner: {
               ...prev.sustentabilidadBanner,
-              imagenIzquierda: lector.result,
-              archivoIzquierda: archivo // Archivo listo para subir
+              imagenIzquierda: url,
+              archivoIzquierda: null
             }
           }));
         } else if (tipo === 'distribuidor') {
-          // Distribuidores logos no están implementados en el DTO aun, pero lo dejamos placeholder
-          manejarCambioDistribuidor(index, 'imagen', lector.result);
+          manejarCambioDistribuidor(index, 'imagen', url);
         }
-      };
-      lector.readAsDataURL(archivo);
+      } catch (error) {
+        toastError('No se pudo subir la imagen.');
+      }
     }
   };
 
@@ -431,16 +429,17 @@ export default function EditarInicio() {
       toastError(`Solo se cargarán los primeros ${disponibles} archivos para no exceder el límite.`);
     }
 
-    const promesas = archivosParaCargar.map(archivo => {
-      return new Promise((resolve) => {
-        const lector = new FileReader();
-        lector.onloadend = () => resolve(lector.result);
-        lector.readAsDataURL(archivo);
-      });
+    const promesas = archivosParaCargar.map(async (archivo) => {
+      try {
+        return await uploadImage(archivo);
+      } catch (err) {
+        return null;
+      }
     });
 
     try {
-      const resultados = await Promise.all(promesas);
+      const resultadosBrutos = await Promise.all(promesas);
+      const resultados = resultadosBrutos.filter(url => url !== null);
 
       setContenido(prev => {
         const maxId = prev.distribuidoresAutorizados.distribuidores.length

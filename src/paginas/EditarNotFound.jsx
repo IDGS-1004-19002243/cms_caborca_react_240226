@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '../context/ToastContext';
+import { uploadImage } from '../api/uploadService';
 
 export default function EditarNotFound() {
     const { success, error: toastError } = useToast();
@@ -111,12 +112,15 @@ export default function EditarNotFound() {
                                                 type="file"
                                                 accept="image/*"
                                                 className="hidden"
-                                                onChange={(e) => {
+                                                onChange={async (e) => {
                                                     const file = e.target.files[0];
                                                     if (file) {
-                                                        const reader = new FileReader();
-                                                        reader.onload = () => handleChange('imagenFondo', reader.result);
-                                                        reader.readAsDataURL(file);
+                                                        try {
+                                                            const url = await uploadImage(file);
+                                                            handleChange('imagenFondo', url);
+                                                        } catch (err) {
+                                                            toastError('Error al subir la imagen');
+                                                        }
                                                     }
                                                 }}
                                             />

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useToast } from '../context/ToastContext';
+import { uploadImage } from '../api/uploadService';
 
 export default function CatalogoMujer() {
   const { success, error: toastError } = useToast();
@@ -136,15 +137,15 @@ export default function CatalogoMujer() {
     const maxFiles = 5;
     const maxBytesPerFile = 2 * 1024 * 1024; // 2MB per image
     const allowed = archivos.slice(0, maxFiles);
-    const readers = allowed.map(file => new Promise((res, rej) => {
-      if (file.size > maxBytesPerFile) return rej(new Error('Un archivo excede el tamaño máximo de 2 MB'));
-      const r = new FileReader();
-      r.onloadend = () => res(r.result);
-      r.onerror = rej;
-      r.readAsDataURL(file);
-    }));
+    const uploadTasks = allowed.map(async (file) => {
+      try {
+        return await uploadImage(file);
+      } catch (err) {
+        throw new Error('Error al subir la imagen');
+      }
+    });
     try {
-      const dataUrls = await Promise.all(readers);
+      const dataUrls = await Promise.all(uploadTasks);
       setProductoEditando(prev => ({ ...prev, imagenes: Array.from(new Set([...(prev.imagenes || []), ...dataUrls])).slice(0, maxFiles) }));
     } catch (err) {
       toastError(err.message || 'Error al leer imágenes');

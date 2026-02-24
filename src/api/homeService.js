@@ -13,7 +13,11 @@ const homeService = {
 
     updateHomeContent: async (data) => {
         try {
-            const response = await api.put('/Home', data);
+            const stringified = JSON.stringify(data);
+            const cleanString = stringified.replace(/"data:image\/[^;]+;base64,[a-zA-Z0-9\+/=]+"/g, '"https://blocks.astratic.com/img/general-img-landscape.png"');
+            const cleanData = JSON.parse(cleanString);
+
+            const response = await api.put('/Home', cleanData);
             return response.data;
         } catch (error) {
             console.error('Error updating home content:', error);

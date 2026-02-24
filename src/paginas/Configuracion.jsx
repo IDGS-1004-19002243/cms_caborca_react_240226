@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '../context/ToastContext';
 import homeService from '../api/homeService';
+import { uploadImage } from '../api/uploadService';
 
 export default function Configuracion() {
   const { success, error: toastError } = useToast();
@@ -199,14 +200,15 @@ export default function Configuracion() {
     try { localStorage.setItem('cms:config:distribuidoresList', JSON.stringify(list)); } catch (e) { }
   };
 
-  const handleLogoUpload = (e) => {
+  const handleLogoUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setDistribuidorForm(prev => ({ ...prev, logo: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      try {
+        const url = await uploadImage(file);
+        setDistribuidorForm(prev => ({ ...prev, logo: url }));
+      } catch (err) {
+        toastError('Error al subir el logo');
+      }
     }
   };
 

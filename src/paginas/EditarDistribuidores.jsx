@@ -3,6 +3,7 @@ import EditButton from '../componentes/EditButton';
 import BotonesPublicar from '../componentes/BotonesPublicar';
 import { useToast } from '../context/ToastContext';
 import { textosService } from '../api/textosService';
+import { uploadImage } from '../api/uploadService';
 
 export default function EditarDistribuidores() {
   const { success, error: toastError, info } = useToast();
@@ -133,17 +134,16 @@ export default function EditarDistribuidores() {
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImage = (e) => {
+  const handleImage = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 1024 * 1024) {
-      toastError('El archivo excede 1 MB. Elige una imagen más pequeña');
-      return;
+    try {
+      const url = await uploadImage(file);
+      const name = e.target.name || 'imagen';
+      setForm(prev => ({ ...prev, [name]: url }));
+    } catch (err) {
+      toastError('Error al subir la imagen');
     }
-    const reader = new FileReader();
-    const name = e.target.name || 'imagen';
-    reader.onload = () => setForm(prev => ({ ...prev, [name]: reader.result }));
-    reader.readAsDataURL(file);
   };
 
   const saveChanges = () => {
@@ -176,7 +176,7 @@ export default function EditarDistribuidores() {
     }
 
     setContent(updatedContent);
-    textosService.updateTextos('distribuidores', updatedContent)
+    textosService.updateTextos('distribuidores', { [activeEdit]: updatedContent[activeEdit] })
       .then(() => {
         success('Cambios guardados correctamente');
         setActiveEdit(null);
