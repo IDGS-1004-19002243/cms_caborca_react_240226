@@ -5,9 +5,10 @@ export const uploadImage = async (file) => {
     formData.append('file', file);
 
     try {
-        const response = await api.post('/upload', formData, {
+        // Axios detectará FormData y agregará el límite (boundary) automáticamente
+        const response = await api.post('/Upload', formData, {
             headers: {
-                'Content-Type': 'multipart/form-data'
+                'Content-Type': undefined
             }
         });
         return response.data.url;
