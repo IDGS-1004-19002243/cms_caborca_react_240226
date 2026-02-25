@@ -553,7 +553,7 @@ export default function EditarInicio() {
         // Si hay un archivo RAW nuevo cargado, lo subimos
         if (slide.archivoImg) {
           try {
-            finalImageUrl = await homeService.uploadImage(slide.archivoImg);
+            finalImageUrl = await uploadImage(slide.archivoImg);
           } catch (uploadError) {
             console.error("Error subiendo imagen slide " + index, uploadError);
             toastError(`Error al subir imagen del slide ${index + 1}. Se conservará la anterior.`);
@@ -580,7 +580,7 @@ export default function EditarInicio() {
       let sustImagenUrl = contenido.sustentabilidadBanner.imagenIzquierda;
       if (contenido.sustentabilidadBanner.archivoIzquierda) {
         try {
-          sustImagenUrl = await homeService.uploadImage(contenido.sustentabilidadBanner.archivoIzquierda);
+          sustImagenUrl = await uploadImage(contenido.sustentabilidadBanner.archivoIzquierda);
         } catch (uploadError) {
           console.error("Error subiendo imagen sustentabilidad", uploadError);
           toastError("Error al subir imagen de sustentabilidad.");
