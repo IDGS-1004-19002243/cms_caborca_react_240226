@@ -110,7 +110,8 @@ const EditarNosotros = () => {
       body: bodyText,
       image: sec.imagen || null,
       subtitle: sec.subtitle || '',
-      stats: sec.stats ? JSON.parse(JSON.stringify(sec.stats)) : []
+      stats: sec.stats ? JSON.parse(JSON.stringify(sec.stats)) : [],
+      stat: sec.stat || ''
     });
     setActiveEdit(section);
   };
@@ -158,6 +159,7 @@ const EditarNosotros = () => {
       } else {
         const sec = { ...prev[activeEdit], title: form.title, imagen: form.image };
         if (form.subtitle) sec.subtitle = form.subtitle;
+        if (activeEdit === 'proceso') sec.stat = form.stat;
         if (typeof prev[activeEdit]?.paragraphs !== 'undefined') {
           sec.paragraphs = form.body.split('\n\n').filter(p => p.trim());
         } else if (typeof prev[activeEdit]?.paragraph !== 'undefined') {
@@ -190,7 +192,7 @@ const EditarNosotros = () => {
             <div className="w-full">
               <div className="relative overflow-hidden shadow-sm">
                 <img
-                  src="https://blocks.astratic.com/img/general-img-landscape.png"
+                  src={content.hero.imagen || "https://blocks.astratic.com/img/general-img-landscape.png"}
                   alt="Nosotros Caborca Boots"
                   className="w-full h-[600px] object-cover"
                 />
@@ -232,7 +234,7 @@ const EditarNosotros = () => {
                 </div>
                 <div className="relative">
                   <img
-                    src="https://blocks.astratic.com/img/general-img-landscape.png"
+                    src={content.origen.imagen || "https://blocks.astratic.com/img/general-img-landscape.png"}
                     alt="Historia Caborca"
                     className="rounded-lg shadow-2xl"
                   />
@@ -250,7 +252,7 @@ const EditarNosotros = () => {
                 <div>
                   <div className="bg-white rounded-2xl p-8 shadow-2xl">
                     <div className="w-full h-[380px] rounded-lg flex items-center justify-center">
-                      <img src="https://blocks.astratic.com/img/general-img-landscape.png" alt="Imagen crecimiento" className="object-contain w-3/4 h-3/4 opacity-40" />
+                      <img src={content.crecimiento.imagen || "https://blocks.astratic.com/img/general-img-landscape.png"} alt="Imagen crecimiento" className="object-contain w-3/4 h-3/4 opacity-40" />
                     </div>
                   </div>
                 </div>
@@ -314,7 +316,7 @@ const EditarNosotros = () => {
                 <div>
                   <div className="bg-gray-50 rounded-2xl p-10 shadow-2xl">
                     <div className="w-full h-[420px] flex items-center justify-center">
-                      <img src="https://blocks.astratic.com/img/general-img-landscape.png" alt="Artesanía" className="object-contain w-3/4 h-3/4 opacity-40" />
+                      <img src={content.artesania.imagen || "https://blocks.astratic.com/img/general-img-landscape.png"} alt="Artesanía" className="object-contain w-3/4 h-3/4 opacity-40" />
                     </div>
                   </div>
                 </div>
@@ -331,7 +333,7 @@ const EditarNosotros = () => {
                 <div>
                   <div className="bg-gray-50 rounded-2xl p-10 shadow-2xl">
                     <div className="w-full h-[420px] flex items-center justify-center">
-                      <img src="https://blocks.astratic.com/img/general-img-landscape.png" alt="Nuestro proceso" className="object-contain w-3/4 h-3/4 opacity-40" />
+                      <img src={content.proceso.imagen || "https://blocks.astratic.com/img/general-img-landscape.png"} alt="Nuestro proceso" className="object-contain w-3/4 h-3/4 opacity-40" />
                     </div>
                   </div>
                 </div>
@@ -448,7 +450,19 @@ const EditarNosotros = () => {
                   />
                 </label>
 
-                {activeEdit !== 'caborcaHoy' && (
+                {activeEdit === 'proceso' && (
+                  <label className="block md:col-span-2">
+                    <div className="text-sm font-semibold text-gray-700 mb-1">Dato Estadístico</div>
+                    <input
+                      name="stat"
+                      value={form.stat}
+                      onChange={handleInput}
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                    />
+                  </label>
+                )}
+
+                {!['caborcaHoy', 'legado'].includes(activeEdit) && (
                   <div className="md:col-span-2 flex items-start gap-4 border border-gray-200 p-3 rounded bg-gray-50">
                     <div className="flex-1">
                       <div className="text-sm font-semibold text-gray-700 mb-1">Imagen (opcional)</div>

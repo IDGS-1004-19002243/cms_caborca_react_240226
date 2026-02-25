@@ -163,7 +163,16 @@ export default function EditarInicio() {
           tituloIzquierdo: { es: data.sustentabilidad?.titulo_ES || prev.sustentabilidadBanner.tituloIzquierdo.es, en: data.sustentabilidad?.titulo_EN || prev.sustentabilidadBanner.tituloIzquierdo.en },
           descripcionIzquierdo: { es: data.sustentabilidad?.descripcion_ES || prev.sustentabilidadBanner.descripcionIzquierdo.es, en: data.sustentabilidad?.descripcion_EN || prev.sustentabilidadBanner.descripcionIzquierdo.en },
           boton: { es: data.sustentabilidad?.textoBoton_ES || prev.sustentabilidadBanner.boton.es, en: data.sustentabilidad?.textoBoton_EN || prev.sustentabilidadBanner.boton.en },
-          imagenIzquierda: data.sustentabilidad?.imagenUrl || prev.sustentabilidadBanner.imagenIzquierda
+          imagenIzquierda: data.sustentabilidad?.imagenUrl || prev.sustentabilidadBanner.imagenIzquierda,
+          badge: { es: data.sustentabilidad?.badge_ES || prev.sustentabilidadBanner.badge.es, en: data.sustentabilidad?.badge_EN || prev.sustentabilidadBanner.badge.en },
+          tituloDerecho: { es: data.sustentabilidad?.tituloDerecho_ES || prev.sustentabilidadBanner.tituloDerecho.es, en: data.sustentabilidad?.tituloDerecho_EN || prev.sustentabilidadBanner.tituloDerecho.en },
+          nota: { es: data.sustentabilidad?.notaCertificacion_ES || prev.sustentabilidadBanner.nota?.es, en: data.sustentabilidad?.notaCertificacion_EN || prev.sustentabilidadBanner.nota?.en },
+          features: data.sustentabilidad?.features?.length > 0
+            ? data.sustentabilidad.features.map(f => ({
+              id: Math.random(),
+              titulo: { es: f.titulo_ES, en: f.titulo_EN }
+            }))
+            : prev.sustentabilidadBanner.features
         },
 
         // 4. Arte de la Creación
@@ -193,7 +202,23 @@ export default function EditarInicio() {
           distribuidores: data.distribuidoresLogos.logos?.length > 0
             ? data.distribuidoresLogos.logos.map(l => ({ id: l.id, imagen: l.imagenUrl }))
             : prev.distribuidoresAutorizados.distribuidores
-        } : prev.distribuidoresAutorizados
+        } : prev.distribuidoresAutorizados,
+
+        // 6. Dónde Comprar
+        dondeComprar: data.dondeComprar?.titulo_ES ? {
+          ...prev.dondeComprar,
+          titulo: { es: data.dondeComprar.titulo_ES, en: data.dondeComprar.titulo_EN },
+          descripcion: { es: data.dondeComprar.descripcion_ES, en: data.dondeComprar.descripcion_EN },
+          boton: { es: data.dondeComprar.textoBoton_ES, en: data.dondeComprar.textoBoton_EN },
+          mapaUrl: data.dondeComprar.mapaUrl || prev.dondeComprar.mapaUrl,
+          nota: { es: data.dondeComprar.nota_ES || prev.dondeComprar.nota.es, en: data.dondeComprar.nota_EN || prev.dondeComprar.nota.en }
+        } : prev.dondeComprar,
+
+        // 7. Productos Destacados
+        productosDestacados: {
+          ...prev.productosDestacados,
+          titulo: { es: data.productosDestacados?.titulo_ES || prev.productosDestacados.titulo.es, en: data.productosDestacados?.titulo_EN || prev.productosDestacados.titulo.en }
+        }
       }));
     } catch (err) {
       toastError('Error al cargar datos del servidor');
@@ -622,7 +647,13 @@ export default function EditarInicio() {
           tituloDerecho_ES: contenido.sustentabilidadBanner.tituloDerecho?.es || 'Nuestro compromiso con el planeta',
           tituloDerecho_EN: contenido.sustentabilidadBanner.tituloDerecho?.en || 'Our commitment to the planet',
           notaCertificacion_ES: contenido.sustentabilidadBanner.nota?.es || 'Certificado por prácticas sustentables',
-          notaCertificacion_EN: contenido.sustentabilidadBanner.nota?.en || 'Certified for sustainable practices'
+          notaCertificacion_EN: contenido.sustentabilidadBanner.nota?.en || 'Certified for sustainable practices',
+          features: (contenido.sustentabilidadBanner.features || []).map(f => ({
+            titulo_ES: f.titulo.es,
+            titulo_EN: f.titulo.en,
+            descripcion_ES: '',
+            descripcion_EN: ''
+          }))
         },
 
         // Sección Arte de la Creación (Nosotros)
@@ -657,6 +688,25 @@ export default function EditarInicio() {
             id: d.id,
             imagenUrl: d.imagen || ''
           }))
+        },
+
+        // Sección Dónde Comprar
+        dondeComprar: {
+          titulo_ES: contenido.dondeComprar.titulo.es,
+          titulo_EN: contenido.dondeComprar.titulo.en,
+          descripcion_ES: contenido.dondeComprar.descripcion.es,
+          descripcion_EN: contenido.dondeComprar.descripcion.en,
+          textoBoton_ES: contenido.dondeComprar.boton.es,
+          textoBoton_EN: contenido.dondeComprar.boton.en,
+          mapaUrl: contenido.dondeComprar.mapaUrl || '',
+          nota_ES: contenido.dondeComprar.nota?.es || '',
+          nota_EN: contenido.dondeComprar.nota?.en || ''
+        },
+
+        // Sección Productos Destacados
+        productosDestacados: {
+          titulo_ES: contenido.productosDestacados.titulo?.es || '',
+          titulo_EN: contenido.productosDestacados.titulo?.en || ''
         }
       };
 

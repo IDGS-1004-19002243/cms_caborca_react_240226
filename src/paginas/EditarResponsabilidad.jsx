@@ -86,7 +86,8 @@ const EditarResponsabilidad = () => {
     const data = content[section] || {};
 
     setForm({
-      title: data.title || data.badge || '',
+      title: data.title || '',
+      badge: data.badge || '',
       p1: data.p1 || data.subtitle || '',
       p2: data.p2 || '',
       highlight: data.highlight || '',
@@ -165,8 +166,8 @@ const EditarResponsabilidad = () => {
         [activeEdit]: {
           ...prev[activeEdit],
           title: form.title || prev[activeEdit].title,
-          badge: form.title || prev[activeEdit].badge,
-          subtitle: form.p1 || prev[activeEdit].subtitle,
+          badge: form.badge || prev[activeEdit].badge,
+          subtitle: activeEdit === 'hero' ? form.p2 : (form.p1 || prev[activeEdit].subtitle),
           p1: form.p1 || prev[activeEdit].p1,
           p2: form.p2 || prev[activeEdit].p2,
           highlight: form.highlight || prev[activeEdit].highlight,
@@ -278,7 +279,7 @@ const EditarResponsabilidad = () => {
                 <div className="relative order-2 lg:order-1">
                   <div className="absolute -top-8 -right-8 w-full h-full bg-yellow-400/10 rounded-2xl"></div>
                   <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                    <img src="https://blocks.astratic.com/img/general-img-landscape.png" alt="Paneles Solares" className="w-full h-[500px] object-cover" />
+                    <img src={content.energia.image || "https://blocks.astratic.com/img/general-img-landscape.png"} alt="Paneles Solares" className="w-full h-[500px] object-cover" />
                   </div>
                   <div className="absolute -top-6 -left-6 w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg">
                     <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -501,11 +502,11 @@ const EditarResponsabilidad = () => {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Badge</label>
-                        <input name="title" value={form.title} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                        <input name="badge" value={form.badge || ''} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Título</label>
-                        <input name="p1" value={form.p1} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                        <input name="title" value={form.title || ''} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
                       </div>
                     </div>
                     <div>
@@ -603,9 +604,19 @@ const EditarResponsabilidad = () => {
                 )}
 
                 {activeEdit === 'video' && (
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">URL del video (embed)</label>
-                    <input name="videoUrl" value={form.videoUrl} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Título</label>
+                      <input name="title" value={form.title || ''} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Descripción</label>
+                      <input name="p1" value={form.p1 || ''} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">URL del video (embed)</label>
+                      <input name="videoUrl" value={form.videoUrl} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                    </div>
                   </div>
                 )}
 
@@ -683,6 +694,10 @@ const EditarResponsabilidad = () => {
 
                 {activeEdit === 'energia' && (
                   <div className="space-y-4 text-sm">
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Título</label>
+                      <input name="title" value={form.title || ''} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe" />
+                    </div>
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <label className="block font-semibold text-gray-700 mb-1">Párrafo 1</label>
