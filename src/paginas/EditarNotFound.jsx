@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '../context/ToastContext';
 import { uploadImage } from '../api/uploadService';
+import { textosService } from '../api/textosService';
 
 export default function EditarNotFound() {
     const { success, error: toastError } = useToast();
@@ -13,10 +14,17 @@ export default function EditarNotFound() {
     const [guardando, setGuardando] = useState(false);
 
     useEffect(() => {
-        try {
-            const stored = localStorage.getItem('cms:notfound');
-            if (stored) setContent(JSON.parse(stored));
-        } catch (e) { }
+        const fetchContent = async () => {
+            try {
+                const data = await textosService.getTextos('notfound');
+                if (data && Object.keys(data).length > 0) {
+                    setContent(data);
+                }
+            } catch (e) {
+                console.error('Error fetching 404 content:', e);
+            }
+        };
+        fetchContent();
     }, []);
 
     const handleChange = (field, value) => {
@@ -26,9 +34,8 @@ export default function EditarNotFound() {
     const guardarCambios = async () => {
         setGuardando(true);
         try {
-            localStorage.setItem('cms:notfound', JSON.stringify(content));
-            await new Promise(r => setTimeout(r, 800));
-            success('Configuración guardada');
+            await textosService.updateTextos('notfound', content);
+            success('Configuración guardada en BD');
         } catch (e) {
             toastError('Error al guardar');
         } finally {

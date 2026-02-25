@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '../context/ToastContext';
-import { settingsService } from '../api/settingsService';
+import { textosService } from '../api/textosService';
 import { uploadImage } from '../api/uploadService';
 
 export default function EditarMantenimiento() {
@@ -23,7 +23,7 @@ export default function EditarMantenimiento() {
     useEffect(() => {
         const fetchMantenimiento = async () => {
             try {
-                const data = await settingsService.getMantenimiento();
+                const data = await textosService.getTextos('mantenimiento');
                 if (data && Object.keys(data).length > 0) {
                     const parsed = data;
                     const migratedRedes = {};
@@ -71,7 +71,7 @@ export default function EditarMantenimiento() {
     const guardarCambios = async () => {
         setGuardando(true);
         try {
-            await settingsService.updateMantenimiento(content);
+            await textosService.updateTextos('mantenimiento', content);
             success('Configuración guardada correctamente');
         } catch (e) {
             toastError('Error al guardar en el servidor');

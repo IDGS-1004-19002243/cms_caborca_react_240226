@@ -5,6 +5,7 @@ import EditButton from '../componentes/EditButton'
 import BotonesPublicar from '../componentes/BotonesPublicar'
 import { useToast } from '../context/ToastContext'
 import { textosService } from '../api/textosService'
+import { uploadImage } from '../api/uploadService'
 
 export default function EditarContacto() {
   const { success, error: toastError } = useToast();
@@ -107,6 +108,17 @@ export default function EditarContacto() {
     success('Cambios guardados correctamente')
     setEditarHero(false)
   }
+
+  const handleHeroImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const url = await uploadImage(file);
+      setHero(prev => ({ ...prev, imagen: url }));
+    } catch (err) {
+      toastError('Error al subir la imagen');
+    }
+  };
 
   const aplicarInfo = async () => {
     await saveToStorage({ info });
@@ -383,8 +395,14 @@ export default function EditarContacto() {
                   <textarea value={hero.subtitulo} onChange={(e) => setHero(prev => ({ ...prev, subtitulo: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows={3} />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Imagen (URL)</label>
-                  <input value={hero.imagen} onChange={(e) => setHero(prev => ({ ...prev, imagen: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Imagen (URL o archivo)</label>
+                  <div className="flex gap-2">
+                    <input value={hero.imagen} onChange={(e) => setHero(prev => ({ ...prev, imagen: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                    <label className="cursor-pointer bg-caborca-cafe text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-caborca-negro whitespace-nowrap">
+                      Cargar
+                      <input type="file" accept="image/*" onChange={handleHeroImage} className="hidden" />
+                    </label>
+                  </div>
                 </div>
               </div>
               <div className="mt-6 flex justify-end gap-3">
