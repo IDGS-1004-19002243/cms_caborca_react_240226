@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '../context/ToastContext';
 import homeService from '../api/homeService';
 import { uploadImage } from '../api/uploadService';
+import { settingsService } from '../api/settingsService';
 
 export default function Configuracion() {
   const { success, error: toastError } = useToast();
@@ -16,8 +17,15 @@ export default function Configuracion() {
 
   useEffect(() => {
     // Load initial state for maintenance mode
-    const isMaintenance = localStorage.getItem('cms:maintenance_mode') === 'true';
-    setMaintenanceMode(isMaintenance);
+    const fetchMaintenance = async () => {
+      try {
+        const data = await settingsService.getMantenimiento();
+        setMaintenanceMode(!!data.activo);
+      } catch (err) {
+        console.error('Error fetching maintenance mode:', err);
+      }
+    };
+    fetchMaintenance();
 
     const handler = (e) => {
       const l = e && e.detail && e.detail.lang;
@@ -28,10 +36,18 @@ export default function Configuracion() {
     return () => window.removeEventListener('cms:editor:lang-changed', handler);
   }, []);
 
-  const handleToggleMaintenance = () => {
+  const handleToggleMaintenance = async () => {
     const newState = !maintenanceMode;
+    // Optimistic update
     setMaintenanceMode(newState);
-    localStorage.setItem('cms:maintenance_mode', String(newState));
+    try {
+      const currentData = await settingsService.getMantenimiento();
+      await settingsService.updateMantenimiento({ ...currentData, activo: newState });
+    } catch (err) {
+      console.error('Error updating maintenance mode:', err);
+      setMaintenanceMode(!newState); // revert on failure
+      toastError('Hubo un error al actualizar el modo mantenimiento.');
+    }
   };
 
   const handleDeployNow = async () => {

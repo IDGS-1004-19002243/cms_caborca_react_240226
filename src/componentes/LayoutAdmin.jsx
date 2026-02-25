@@ -77,6 +77,7 @@ export default function LayoutAdmin() {
     try {
       window.dispatchEvent(new CustomEvent('cms:editor:lang-changed', { detail: { lang } }));
     } catch (e) { }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
