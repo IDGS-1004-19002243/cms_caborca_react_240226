@@ -181,20 +181,23 @@ export default function LayoutAdmin() {
       </aside>
 
       {/* Contenido principal */}
-      <main className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${menuAbierto ? 'ml-64' : 'ml-20'
+      <main className={`flex-1 flex flex-col transition-all duration-300 ${menuAbierto ? 'ml-64' : 'ml-20'
         }`}>
         {/* Header superior */}
-        <header className="bg-white shadow-sm p-4">
+        <header className="sticky top-0 z-50 bg-white shadow-sm p-4 w-full border-b border-gray-100">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-playfair text-caborca-cafe">
               {menuItems.find(item => item.ruta === location.pathname)?.nombre || 'Panel de Administración'}
             </h2>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4">
+              {/* Contenedor DOM para el Portal de BotonesPublicar */}
+              <div id="top-bar-actions" className="flex items-center gap-3"></div>
+
               <a
                 href="https://caborcaboots.netlify.app/"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 bg-caborca-cafe text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-caborca-negro transition shadow-sm"
+                className="flex items-center gap-2 bg-[#9C8A79] text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-[#8A7968] transition shadow-sm"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                 Ver Sitio
@@ -236,7 +239,7 @@ export default function LayoutAdmin() {
         </header>
 
         {/* Área de contenido */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 p-6 z-0">
           <Outlet />
         </div>
       </main>

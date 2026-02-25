@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { textosService } from '../api/textosService';
 import { useToast } from '../context/ToastContext';
 
@@ -12,6 +13,11 @@ const BotonesPublicar = ({ onGuardar, label = 'Guardar Borrador' }) => {
     const { success, error: toastError } = useToast();
     const [guardando, setGuardando] = useState(false);
     const [publicando, setPublicando] = useState(false);
+    const [domNode, setDomNode] = useState(null);
+
+    useEffect(() => {
+        setDomNode(document.getElementById('top-bar-actions'));
+    }, []);
 
     const handleGuardar = async () => {
         setGuardando(true);
@@ -42,38 +48,13 @@ const BotonesPublicar = ({ onGuardar, label = 'Guardar Borrador' }) => {
 
     const disabled = guardando || publicando;
 
-    return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
-            {/* Botón Publicar */}
-            <button
-                onClick={handlePublicar}
-                disabled={disabled}
-                className={`flex items-center gap-3 px-7 py-3 rounded-full shadow-2xl font-bold text-sm transition-all transform hover:scale-105 active:scale-95 border-2 border-white/20 backdrop-blur-md ${disabled ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-green-700 hover:bg-green-800 text-white'
-                    }`}
-            >
-                {publicando ? (
-                    <>
-                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        <span>Publicando...</span>
-                    </>
-                ) : (
-                    <>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>Publicar en Portafolio</span>
-                    </>
-                )}
-            </button>
-
+    const content = (
+        <div className="flex items-center gap-3 mr-2">
             {/* Botón Guardar Borrador */}
             <button
                 onClick={handleGuardar}
                 disabled={disabled}
-                className={`flex items-center gap-3 px-7 py-3 rounded-full shadow-2xl font-bold text-sm transition-all transform hover:scale-105 active:scale-95 border-2 border-white/20 backdrop-blur-md ${disabled ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-caborca-cafe hover:bg-caborca-negro text-white'
+                className={`flex items-center gap-2 px-5 py-2 rounded-full shadow-md font-bold text-sm transition-all transform hover:scale-105 active:scale-95 ${disabled ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-[#9C8A79] hover:bg-[#8A7968] text-white'
                     }`}
             >
                 {guardando ? (
@@ -93,8 +74,39 @@ const BotonesPublicar = ({ onGuardar, label = 'Guardar Borrador' }) => {
                     </>
                 )}
             </button>
+
+            {/* Botón Publicar */}
+            <button
+                onClick={handlePublicar}
+                disabled={disabled}
+                className={`flex items-center gap-2 px-5 py-2 rounded-full shadow-md font-bold text-sm transition-all transform hover:scale-105 active:scale-95 ${disabled ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-[#008035] hover:bg-[#00662a] text-white'
+                    }`}
+            >
+                {publicando ? (
+                    <>
+                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        <span>Publicando...</span>
+                    </>
+                ) : (
+                    <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Publicar en Portafolio</span>
+                    </>
+                )}
+            </button>
         </div>
     );
+
+    if (domNode) {
+        return createPortal(content, domNode);
+    }
+
+    return content;
 };
 
 export default BotonesPublicar;
