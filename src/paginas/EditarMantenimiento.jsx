@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '../context/ToastContext';
 import { textosService } from '../api/textosService';
 import { uploadImage } from '../api/uploadService';
+import BotonesPublicar from '../componentes/BotonesPublicar';
 
 export default function EditarMantenimiento() {
     const { success, error: toastError } = useToast();
@@ -98,13 +99,7 @@ export default function EditarMantenimiento() {
             <div className="w-full lg:w-2/5 bg-white rounded-xl shadow-lg border border-gray-100 flex flex-col overflow-hidden">
                 <div className="p-4 border-b bg-gray-50 flex justify-between items-center bg-stripes-caborca">
                     <h3 className="font-bold text-caborca-cafe">Sección: Mantenimiento</h3>
-                    <button
-                        onClick={guardarCambios}
-                        disabled={guardando}
-                        className="text-xs bg-caborca-cafe text-white px-3 py-1.5 rounded hover:bg-caborca-negro disabled:opacity-50 transition-colors"
-                    >
-                        {guardando ? 'Guardando...' : 'Guardar Cambios'}
-                    </button>
+                    <BotonesPublicar onGuardar={guardarCambios} />
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-gray-300">

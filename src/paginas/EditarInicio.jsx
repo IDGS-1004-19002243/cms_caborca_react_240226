@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import EditButton from '../componentes/EditButton';
 import { useToast } from '../context/ToastContext';
+import BotonesPublicar from '../componentes/BotonesPublicar';
 import homeService from '../api/homeService';
 import { uploadImage } from '../api/uploadService';
 export default function EditarInicio() {
@@ -757,54 +758,8 @@ export default function EditarInicio() {
   };
   return (
     <div className="relative min-h-screen bg-white pb-24">
-      {/* Botones Flotantes */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
-        {/* Botón Publicar */}
-        <button
-          onClick={publicarCambios}
-          disabled={publicando || guardando}
-          className={`flex items-center gap-3 px-7 py-3 rounded-full shadow-2xl font-bold text-base transition-all transform hover:scale-105 active:scale-95 border-2 border-white/20 backdrop-blur-md ${publicando || guardando ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-700 hover:bg-green-800 text-white'
-            }`}
-        >
-          {publicando ? (
-            <>
-              <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <span>Publicando...</span>
-            </>
-          ) : (
-            <>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-              <span>Publicar en Portafolio</span>
-            </>
-          )}
-        </button>
-        {/* Botón Guardar Borrador */}
-        <button
-          onClick={guardarCambios}
-          disabled={guardando || publicando}
-          className={`flex items-center gap-3 px-8 py-4 rounded-full shadow-2xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 border-2 border-white/20 backdrop-blur-md ${guardando ? 'bg-gray-500 cursor-not-allowed' : 'bg-caborca-cafe hover:bg-caborca-negro text-white'
-            }`}
-        >
-          {guardando ? (
-            <>
-              <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <span>Guardando...</span>
-            </>
-          ) : (
-            <>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-              <span>Guardar Borrador</span>
-            </>
-          )}
-        </button>
-      </div>
-      {/* Barra de editor removida */}
+      {/* Botones Flotantes mediante Portal */}
+      <BotonesPublicar onGuardar={guardarCambios} />
 
       {/* Contenido principal con previsualización editable */}
       <div className="pb-10">
