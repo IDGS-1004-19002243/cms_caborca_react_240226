@@ -65,7 +65,7 @@ const EditarResponsabilidad = () => {
   const [activeEdit, setActiveEdit] = useState(null);
   const [form, setForm] = useState({
     title: '', p1: '', image: null, videoUrl: '',
-    missionTitle: '', missionText: '', granjaTitle: '', granjaText: '', educTitle: '', educText: '', statNumber: '', statLabel: '', statDesc: '', thumb1: '', thumb2: ''
+    missionTitle: '', missionText: '', granjaTitle: '', granjaText: '', educTitle: '', educText: '', statNumber: '', statLabel: '', statDesc: '', thumb1: '', thumb2: '', subtitle: '', p2: '', badge: '', highlight: '', stat1: '', stat1Label: '', stat2: '', stat2Label: '', description: '', sustanciasText: ''
   });
 
   useEffect(() => {
@@ -88,11 +88,14 @@ const EditarResponsabilidad = () => {
     setForm({
       title: data.title || '',
       badge: data.badge || '',
-      p1: data.p1 || data.subtitle || '',
+      subtitle: data.subtitle || '',
+      p1: data.p1 || '',
       p2: data.p2 || '',
       highlight: data.highlight || '',
       image: data.image || null,
       videoUrl: data.videoUrl || '',
+      description: data.description || '',
+      sustanciasText: data.sustanciasText || '',
       stat1: data.stat1 || '',
       stat1Label: data.stat1Label || '',
       stat2: data.stat2 || '',
@@ -159,46 +162,54 @@ const EditarResponsabilidad = () => {
     }
   };
 
-  const saveChanges = () => {
-    setContent(prev => {
-      const updated = {
-        ...prev,
-        [activeEdit]: {
-          ...prev[activeEdit],
-          title: form.title || prev[activeEdit].title,
-          badge: form.badge || prev[activeEdit].badge,
-          subtitle: activeEdit === 'hero' ? form.p2 : (form.p1 || prev[activeEdit].subtitle),
-          p1: form.p1 || prev[activeEdit].p1,
-          p2: form.p2 || prev[activeEdit].p2,
-          highlight: form.highlight || prev[activeEdit].highlight,
-          image: form.image || prev[activeEdit].image,
-          videoUrl: form.videoUrl || prev[activeEdit].videoUrl,
-          // stats (energia)
-          stat1: form.stat1 || prev[activeEdit].stat1,
-          stat1Label: form.stat1Label || prev[activeEdit].stat1Label,
-          stat2: form.stat2 || prev[activeEdit].stat2,
-          stat2Label: form.stat2Label || prev[activeEdit].stat2Label,
-          // shambhala specific
-          missionTitle: form.missionTitle || prev[activeEdit].missionTitle,
-          missionText: form.missionText || prev[activeEdit].missionText,
-          granjaTitle: form.granjaTitle || prev[activeEdit].granjaTitle,
-          granjaText: form.granjaText || prev[activeEdit].granjaText,
-          educTitle: form.educTitle || prev[activeEdit].educTitle,
-          educText: form.educText || prev[activeEdit].educText,
-          statNumber: form.statNumber || prev[activeEdit].statNumber,
-          statLabel: form.statLabel || prev[activeEdit].statLabel,
-          statDesc: form.statDesc || prev[activeEdit].statDesc,
-          thumb1: form.thumb1 || prev[activeEdit].thumb1,
-          thumb2: form.thumb2 || prev[activeEdit].thumb2
-        }
+  const saveChanges = async () => {
+    if (!activeEdit) return;
+
+    try {
+      const prevSection = content[activeEdit] || {};
+
+      const newSectionData = {
+        ...prevSection,
+        title: form.title !== undefined ? form.title : prevSection.title,
+        badge: form.badge !== undefined ? form.badge : prevSection.badge,
+        subtitle: activeEdit === 'hero' ? form.subtitle : (form.p1 !== undefined ? form.p1 : prevSection.subtitle),
+        p1: form.p1 !== undefined ? form.p1 : prevSection.p1,
+        p2: form.p2 !== undefined ? form.p2 : prevSection.p2,
+        highlight: form.highlight !== undefined ? form.highlight : prevSection.highlight,
+        image: form.image !== undefined ? form.image : prevSection.image,
+        videoUrl: form.videoUrl !== undefined ? form.videoUrl : prevSection.videoUrl,
+        description: form.description !== undefined ? form.description : prevSection.description,
+        sustanciasText: form.sustanciasText !== undefined ? form.sustanciasText : prevSection.sustanciasText,
+        // stats (energia)
+        stat1: form.stat1 !== undefined ? form.stat1 : prevSection.stat1,
+        stat1Label: form.stat1Label !== undefined ? form.stat1Label : prevSection.stat1Label,
+        stat2: form.stat2 !== undefined ? form.stat2 : prevSection.stat2,
+        stat2Label: form.stat2Label !== undefined ? form.stat2Label : prevSection.stat2Label,
+        // shambhala specific
+        missionTitle: form.missionTitle !== undefined ? form.missionTitle : prevSection.missionTitle,
+        missionText: form.missionText !== undefined ? form.missionText : prevSection.missionText,
+        granjaTitle: form.granjaTitle !== undefined ? form.granjaTitle : prevSection.granjaTitle,
+        granjaText: form.granjaText !== undefined ? form.granjaText : prevSection.granjaText,
+        educTitle: form.educTitle !== undefined ? form.educTitle : prevSection.educTitle,
+        educText: form.educText !== undefined ? form.educText : prevSection.educText,
+        statNumber: form.statNumber !== undefined ? form.statNumber : prevSection.statNumber,
+        statLabel: form.statLabel !== undefined ? form.statLabel : prevSection.statLabel,
+        statDesc: form.statDesc !== undefined ? form.statDesc : prevSection.statDesc,
+        thumb1: form.thumb1 !== undefined ? form.thumb1 : prevSection.thumb1,
+        thumb2: form.thumb2 !== undefined ? form.thumb2 : prevSection.thumb2
       };
 
-      // Solo enviamos la sección editada para evitar reescribir cosas no tocadas
-      textosService.updateTextos('responsabilidad', { [activeEdit]: updated[activeEdit] }).catch(e => console.error(e));
-      return updated;
-    });
-    success('Cambios aplicados correctamente');
-    closeEditor();
+      await textosService.updateTextos('responsabilidad', { [activeEdit]: newSectionData });
+      setContent(prev => ({ ...prev, [activeEdit]: newSectionData }));
+
+      success('Cambios aplicados correctamente');
+      closeEditor();
+    } catch (e) {
+      console.error(e);
+      if (toastError) {
+        toastError('Error al guardar la sección.');
+      }
+    }
   };
 
   const renderTitle = (raw) => raw?.split('\n').map((line, i) => <span key={i}>{line}{i < raw.split('\n').length - 1 && <br />}</span>);
@@ -511,7 +522,7 @@ const EditarResponsabilidad = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1">Subtítulo</label>
-                      <textarea name="p2" value={form.p2 || ''} onChange={handleInput} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none" />
+                      <textarea name="subtitle" value={form.subtitle || ''} onChange={handleInput} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none" />
                     </div>
                     <div className="bg-gray-50 p-3 rounded border flex gap-4 items-center">
                       <div className="flex-1">
@@ -585,6 +596,10 @@ const EditarResponsabilidad = () => {
                         <textarea name="p2" value={form.p2 || ''} onChange={handleInput} rows={4} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none" />
                       </div>
                     </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Sustancias (separadas por coma)</label>
+                      <textarea name="sustanciasText" value={form.sustanciasText || ''} onChange={handleInput} rows={2} placeholder="Plomo, Arsénico, Cadmio..." className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none" />
+                    </div>
                     <div className="bg-gray-50 p-3 rounded border flex gap-4 items-center">
                       <div className="flex-1">
                         <label className="block font-semibold text-gray-700 mb-1">Imagen</label>
@@ -611,7 +626,7 @@ const EditarResponsabilidad = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1">Descripción</label>
-                      <input name="p1" value={form.p1 || ''} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
+                      <input name="description" value={form.description || ''} onChange={handleInput} className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none" />
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1">URL del video (embed)</label>

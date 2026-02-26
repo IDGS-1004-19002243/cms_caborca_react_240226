@@ -398,9 +398,9 @@ export default function EditarContacto() {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Imagen (URL o archivo)</label>
                   <div className="flex gap-2">
                     <input value={hero.imagen} onChange={(e) => setHero(prev => ({ ...prev, imagen: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
-                    <label className="cursor-pointer bg-caborca-cafe text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-caborca-negro whitespace-nowrap">
+                    <label htmlFor="contactoHeroImgInput" className="cursor-pointer bg-caborca-cafe text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-caborca-negro whitespace-nowrap">
                       Cargar
-                      <input type="file" accept="image/*" onChange={handleHeroImage} className="hidden" />
+                      <input id="contactoHeroImgInput" type="file" accept="image/*" onChange={handleHeroImage} style={{ display: 'none' }} />
                     </label>
                   </div>
                 </div>

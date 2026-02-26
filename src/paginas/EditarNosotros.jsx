@@ -62,7 +62,8 @@ const EditarNosotros = () => {
         'Trabajamos con esfuerzo y pasión.',
         'Más de cuatro décadas de trabajo arduo, construyendo un legado de tradición que es evidente en cada par de botas hechas por las manos talentosas de nuestros artesanos mexicanos.'
       ],
-      stat: '+200'
+      stat: '+200',
+      statLabel: 'Pasos en el proceso de fabricación'
     },
     legado: {
       title: 'Nuestro Legado',
@@ -76,7 +77,7 @@ const EditarNosotros = () => {
 
   const [content, setContent] = useState(defaultContent);
   const [activeEdit, setActiveEdit] = useState(null);
-  const [form, setForm] = useState({ title: '', body: '', image: null, subtitle: '', stats: [] });
+  const [form, setForm] = useState({ title: '', body: '', image: null, subtitle: '', stats: [], stat: '', statLabel: '' });
   const { success, error } = useToast();
 
   useEffect(() => {
@@ -84,7 +85,7 @@ const EditarNosotros = () => {
       try {
         const data = await textosService.getTextos('nosotros');
         if (data && Object.keys(data).length > 0) {
-          setContent(data);
+          setContent(prev => ({ ...prev, ...data }));
         }
       } catch (e) {
         console.error('Error loading content', e);
@@ -111,7 +112,8 @@ const EditarNosotros = () => {
       image: sec.imagen || null,
       subtitle: sec.subtitle || '',
       stats: sec.stats ? JSON.parse(JSON.stringify(sec.stats)) : [],
-      stat: sec.stat || ''
+      stat: sec.stat || '',
+      statLabel: sec.statLabel || ''
     });
     setActiveEdit(section);
   };
@@ -149,34 +151,60 @@ const EditarNosotros = () => {
     }
   };
 
-  const saveChanges = () => {
+  const saveChanges = async () => {
     if (!activeEdit) return;
-    setContent(prev => {
-      const updated = { ...prev };
 
-      if (activeEdit === 'caborcaHoy') {
-        updated[activeEdit] = { ...prev[activeEdit], ...form };
-      } else {
-        const sec = { ...prev[activeEdit], title: form.title, imagen: form.image };
-        if (form.subtitle) sec.subtitle = form.subtitle;
-        if (activeEdit === 'proceso') sec.stat = form.stat;
-        if (typeof prev[activeEdit]?.paragraphs !== 'undefined') {
-          sec.paragraphs = form.body.split('\n\n').filter(p => p.trim());
-        } else if (typeof prev[activeEdit]?.paragraph !== 'undefined') {
-          sec.paragraph = form.body;
-        } else if (!sec.subtitle) {
-          sec.subtitle = form.body;
+    const previousState = content[activeEdit] || {};
+    let newSectionData = {};
+
+    if (activeEdit === 'caborcaHoy') {
+      newSectionData = {
+        ...previousState,
+        title: form.title,
+        subtitle: form.subtitle,
+        paragraph: form.body, // Se asigna correctamente a paragraph en vez de body
+        stats: form.stats
+      };
+    } else {
+      newSectionData = { ...previousState, title: form.title };
+
+      if (!['caborcaHoy'].includes(activeEdit)) {
+        // No asignar atributo 'imagen' a 'legado' ni a 'caborcaHoy' porque no lo llevan
+        if (activeEdit !== 'legado') {
+          newSectionData.imagen = form.image;
         }
-        updated[activeEdit] = sec;
       }
 
-      // Solo enviamos la sección editada para evitar reescribir cosas no tocadas
-      textosService.updateTextos('nosotros', { [activeEdit]: updated[activeEdit] }).catch(e => console.error(e));
-      return updated;
-    });
+      if (form.subtitle && activeEdit !== 'hero') {
+        newSectionData.subtitle = form.subtitle;
+      }
 
-    success('Sección actualizada con éxito');
-    setActiveEdit(null);
+      if (activeEdit === 'proceso') {
+        newSectionData.stat = form.stat;
+        newSectionData.statLabel = form.statLabel;
+      }
+
+      if (typeof previousState?.paragraphs !== 'undefined') {
+        newSectionData.paragraphs = form.body.split('\n\n').filter(p => p.trim());
+      } else if (typeof previousState?.paragraph !== 'undefined') {
+        newSectionData.paragraph = form.body;
+      } else if (typeof previousState?.subtitle !== 'undefined' && activeEdit === 'hero') {
+        newSectionData.subtitle = form.body; // hero tiene el subtítulo renderizado en el textarea
+      }
+    }
+
+    try {
+      await textosService.updateTextos('nosotros', { [activeEdit]: newSectionData });
+      setContent(prev => ({ ...prev, [activeEdit]: newSectionData }));
+
+      success('Sección actualizada con éxito');
+      setActiveEdit(null);
+    } catch (e) {
+      console.error(e);
+      if (error) {
+        error('Error al guardar la sección.');
+      }
+    }
   };
   const guardarBorrador = async () => {
     await textosService.updateTextos('nosotros', content);
@@ -351,7 +379,7 @@ const EditarNosotros = () => {
 
                   <div className="text-white rounded-lg px-8 py-6" style={{ backgroundColor: '#332B1E' }}>
                     <div className="text-4xl md:text-5xl font-bold">{content.proceso.stat}</div>
-                    <div className="mt-3 text-sm text-white/90">Pasos en el proceso de fabricación</div>
+                    <div className="mt-3 text-sm text-white/90">{content.proceso.statLabel || 'Pasos en el proceso de fabricación'}</div>
                   </div>
                 </div>
               </div>
@@ -452,13 +480,23 @@ const EditarNosotros = () => {
 
                 {activeEdit === 'proceso' && (
                   <label className="block md:col-span-2">
-                    <div className="text-sm font-semibold text-gray-700 mb-1">Dato Estadístico</div>
-                    <input
-                      name="stat"
-                      value={form.stat}
-                      onChange={handleInput}
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
-                    />
+                    <div className="text-sm font-semibold text-gray-700 mb-1">Dato Estadístico y Etiqueta</div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        name="stat"
+                        value={form.stat}
+                        onChange={handleInput}
+                        placeholder="Ej. +200"
+                        className="w-full sm:w-1/4 px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                      />
+                      <input
+                        name="statLabel"
+                        value={form.statLabel}
+                        onChange={handleInput}
+                        placeholder="Ej. Pasos en el proceso de fabricación"
+                        className="w-full sm:w-3/4 px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
+                      />
+                    </div>
                   </label>
                 )}
 

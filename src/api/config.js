@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Definir la URL base de tu API .NET (Azure Production)
-export const API_URL = "https://cms-api-caborca-gkfbcdffbqfpesfg.centralus-01.azurewebsites.net/api";
+// Definir la URL base de tu API .NET
+export const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "https://localhost:7020/api" : "https://cms-api-caborca-gkfbcdffbqfpesfg.centralus-01.azurewebsites.net/api");
 
 // Crear instancia de Axios configurada
 const api = axios.create({

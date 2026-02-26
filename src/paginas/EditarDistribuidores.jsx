@@ -81,31 +81,13 @@ export default function EditarDistribuidores() {
     fetchDistribuidores();
   }, []);
 
-  useEffect(() => {
-    const handler = (e) => {
-      const detail = e.detail || {};
-      const section = detail.section || detail.sectionId || detail.id || detail.sectionName;
-      if (section) openEditor(section);
-    };
-    const langHandler = (e) => { const l = e && e.detail && e.detail.lang; if (l) setIdioma(l); };
-    window.addEventListener('cms:edit-section', handler);
-    window.addEventListener('cms:editor:lang-changed', langHandler);
-    try {
-      const qp = new URLSearchParams(window.location.search);
-      const edit = qp.get('edit');
-      if (edit) openEditor(edit);
-    } catch (e) { }
-    try { const stored = localStorage.getItem('cms:editor:lang'); if (stored) setIdioma(stored); } catch (e) { }
-    return () => { window.removeEventListener('cms:edit-section', handler); window.removeEventListener('cms:editor:lang-changed', langHandler); };
-  }, [content]);
-
   function openEditor(section) {
     if (section === 'hero') {
       setForm({
-        badge: content.hero.badge || '',
-        titulo: content.hero.titulo || '',
-        subtitulo: content.hero.subtitulo || '',
-        imagen: content.hero.imagen || null,
+        badge: content.hero?.badge || '',
+        titulo: content.hero?.titulo || '',
+        subtitulo: content.hero?.subtitulo || '',
+        imagen: content.hero?.imagen || null,
         submitLabel: '', responseMessage: '', mapSrc: '', distribuidores: '', estados: ''
       });
     } else if (section === 'formulario') {
@@ -127,7 +109,27 @@ export default function EditarDistribuidores() {
       setForm({ badge: '', titulo: '', subtitulo: '', imagen: null, submitLabel: '', responseMessage: '', mapSrc: '', purchasePlaceholder: content.filtros?.purchasePlaceholder || '', estadoPlaceholder: content.filtros?.estadoPlaceholder || '' });
     }
     setActiveEdit(section);
-  };
+  }
+
+  useEffect(() => {
+    const handler = (e) => {
+      const detail = e.detail || {};
+      const section = detail.section || detail.sectionId || detail.id || detail.sectionName;
+      if (section) openEditor(section);
+    };
+    const langHandler = (e) => { const l = e && e.detail && e.detail.lang; if (l) setIdioma(l); };
+    window.addEventListener('cms:edit-section', handler);
+    window.addEventListener('cms:editor:lang-changed', langHandler);
+    try {
+      const qp = new URLSearchParams(window.location.search);
+      const edit = qp.get('edit');
+      if (edit) openEditor(edit);
+    } catch (e) { }
+    try { const stored = localStorage.getItem('cms:editor:lang'); if (stored) setIdioma(stored); } catch (e) { }
+    return () => { window.removeEventListener('cms:edit-section', handler); window.removeEventListener('cms:editor:lang-changed', langHandler); };
+  }, [content]);
+
+
 
   const handleInput = (e) => {
     const { name, value } = e.target;
@@ -146,45 +148,67 @@ export default function EditarDistribuidores() {
     }
   };
 
-  const saveChanges = () => {
+  const saveChanges = async () => {
     if (!activeEdit) return;
 
-    let updatedContent = { ...content };
+    try {
+      let payload = {};
+      const newContent = { ...content };
 
-    if (activeEdit === 'hero') {
-      updatedContent.hero = { ...updatedContent.hero, badge: form.badge || updatedContent.hero.badge, titulo: form.titulo || updatedContent.hero.titulo, subtitulo: form.subtitulo || updatedContent.hero.subtitulo, imagen: form.imagen || updatedContent.hero.imagen };
-    } else if (activeEdit === 'formulario') {
-      updatedContent.formulario = {
-        ...updatedContent.formulario,
-        titulo: form.titulo,
-        subtitulo: form.subtitulo,
-        submitLabel: form.submitLabel || updatedContent.formulario?.submitLabel,
-        responseMessage: form.responseMessage || updatedContent.formulario?.responseMessage,
-        responseTime: form.responseTime || updatedContent.formulario?.responseTime
-      };
-      updatedContent.counters = {
-        ...updatedContent.counters,
-        distribuidores: form.distribuidores || updatedContent.counters.distribuidores,
-        estados: form.estados || updatedContent.counters.estados
-      };
-    } else if (activeEdit === 'mapa') {
-      updatedContent.mapSrc = form.mapSrc || updatedContent.mapSrc;
-      updatedContent.mapTitle = form.mapTitle || updatedContent.mapTitle;
-      updatedContent.mapText = form.mapText || updatedContent.mapText;
-    } else if (activeEdit === 'filtros') {
-      updatedContent.filtros = { ...updatedContent.filtros, purchasePlaceholder: form.purchasePlaceholder || updatedContent.filtros.purchasePlaceholder, estadoPlaceholder: form.estadoPlaceholder || updatedContent.filtros.estadoPlaceholder };
+      if (activeEdit === 'hero') {
+        const h = {
+          ...newContent.hero,
+          badge: form.badge !== undefined ? form.badge : newContent.hero?.badge,
+          titulo: form.titulo !== undefined ? form.titulo : newContent.hero?.titulo,
+          subtitulo: form.subtitulo !== undefined ? form.subtitulo : newContent.hero?.subtitulo,
+          imagen: form.imagen !== undefined ? form.imagen : newContent.hero?.imagen
+        };
+        newContent.hero = h;
+        payload = { hero: h };
+      } else if (activeEdit === 'formulario') {
+        const f = {
+          ...newContent.formulario,
+          titulo: form.titulo !== undefined ? form.titulo : newContent.formulario?.titulo,
+          subtitulo: form.subtitulo !== undefined ? form.subtitulo : newContent.formulario?.subtitulo,
+          submitLabel: form.submitLabel !== undefined ? form.submitLabel : newContent.formulario?.submitLabel,
+          responseMessage: form.responseMessage !== undefined ? form.responseMessage : newContent.formulario?.responseMessage,
+          responseTime: form.responseTime !== undefined ? form.responseTime : newContent.formulario?.responseTime
+        };
+        const c = {
+          ...newContent.counters,
+          distribuidores: form.distribuidores !== undefined ? form.distribuidores : newContent.counters?.distribuidores,
+          estados: form.estados !== undefined ? form.estados : newContent.counters?.estados
+        };
+        newContent.formulario = f;
+        newContent.counters = c;
+        payload = { formulario: f, counters: c };
+      } else if (activeEdit === 'mapa') {
+        newContent.mapSrc = form.mapSrc !== undefined ? form.mapSrc : newContent.mapSrc;
+        newContent.mapTitle = form.mapTitle !== undefined ? form.mapTitle : newContent.mapTitle;
+        newContent.mapText = form.mapText !== undefined ? form.mapText : newContent.mapText;
+        payload = {
+          mapSrc: newContent.mapSrc,
+          mapTitle: newContent.mapTitle,
+          mapText: newContent.mapText
+        };
+      } else if (activeEdit === 'filtros') {
+        const filt = {
+          ...newContent.filtros,
+          purchasePlaceholder: form.purchasePlaceholder !== undefined ? form.purchasePlaceholder : newContent.filtros?.purchasePlaceholder,
+          estadoPlaceholder: form.estadoPlaceholder !== undefined ? form.estadoPlaceholder : newContent.filtros?.estadoPlaceholder
+        };
+        newContent.filtros = filt;
+        payload = { filtros: filt };
+      }
+
+      await textosService.updateTextos('distribuidores', payload);
+      setContent(newContent);
+      success('Cambios guardados correctamente');
+      setActiveEdit(null);
+    } catch (e) {
+      console.error('Error saving to server', e);
+      if (toastError) toastError('Error al guardar en el servidor');
     }
-
-    setContent(updatedContent);
-    textosService.updateTextos('distribuidores', { [activeEdit]: updatedContent[activeEdit] })
-      .then(() => {
-        success('Cambios guardados correctamente');
-        setActiveEdit(null);
-      })
-      .catch(e => {
-        console.error('Error saving to server', e);
-        toastError('Error al guardar en el servidor');
-      });
   };
 
   const guardarCambios = () => {
