@@ -147,71 +147,28 @@ export default function Configuracion() {
     setGuardando(true);
     try {
       console.log('Guardando configuración:', config);
-      try {
-        localStorage.setItem('cms:config:medioContacto', JSON.stringify(config.redesSociales));
-        localStorage.setItem('cms:config:general', JSON.stringify(config.general));
-        localStorage.setItem('cms:config:emails', JSON.stringify(config.emails));
-        localStorage.setItem('cms:config:distribuidoresMap', JSON.stringify(config.distribuidoresMap));
-        localStorage.setItem('cms:config:distribuidoresList', JSON.stringify(config.distribuidoresList || []));
-      } catch (e) {
-        console.warn('No se pudo persistir la configuración en localStorage', e);
-      }
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await settingsService.updateConfiguracionGeneral(config);
       success('Configuración guardada correctamente');
     } catch (error) {
-      toastError('Error al guardar');
+      toastError('Error al guardar configuración general');
     } finally {
       setGuardando(false);
     }
   };
 
-  // Cargar configuración persistida (si existe)
+  // Cargar configuración de la API al montar
   useEffect(() => {
-    try {
-      const storedRedes = localStorage.getItem('cms:config:medioContacto');
-      if (storedRedes) {
-        const parsed = JSON.parse(storedRedes);
-        if (parsed && typeof parsed === 'object') {
-          setConfig(prev => ({ ...prev, redesSociales: { ...prev.redesSociales, ...parsed } }));
+    const loadConfig = async () => {
+      try {
+        const data = await settingsService.getConfiguracionGeneral();
+        if (data && Object.keys(data).length > 0) {
+          setConfig(prev => ({ ...prev, ...data }));
         }
+      } catch (e) {
+        console.error('Error cargando configuración general', e);
       }
-    } catch (e) { }
-    try {
-      const storedGeneral = localStorage.getItem('cms:config:general');
-      if (storedGeneral) {
-        const parsedG = JSON.parse(storedGeneral);
-        if (parsedG && typeof parsedG === 'object') {
-          setConfig(prev => ({ ...prev, general: { ...prev.general, ...parsedG } }));
-        }
-      }
-    } catch (e) { }
-    try {
-      const storedEmails = localStorage.getItem('cms:config:emails');
-      if (storedEmails) {
-        const parsedE = JSON.parse(storedEmails);
-        if (parsedE && typeof parsedE === 'object') {
-          setConfig(prev => ({ ...prev, emails: { ...prev.emails, ...parsedE } }));
-        }
-      }
-    } catch (e) { }
-    try {
-      const storedMap = localStorage.getItem('cms:config:distribuidoresMap');
-      if (storedMap) {
-        const parsedM = JSON.parse(storedMap);
-        if (parsedM && typeof parsedM === 'object') {
-          setConfig(prev => ({ ...prev, distribuidoresMap: { ...prev.distribuidoresMap, ...parsedM } }));
-        }
-      }
-    } catch (e) { }
-    try {
-      const storedList = localStorage.getItem('cms:config:distribuidoresList');
-      if (storedList) {
-        const parsedL = JSON.parse(storedList);
-        if (Array.isArray(parsedL)) {
-          setConfig(prev => ({ ...prev, distribuidoresList: parsedL }));
-        }
-      }
-    } catch (e) { }
+    };
+    loadConfig();
   }, []);
 
   // Estados locales para formulario de distribuidores
@@ -240,8 +197,14 @@ export default function Configuracion() {
     id: null, contactoNombre: '', negocioNombre: '', pais: '', estado: '', ciudad: '', colonia: '', calle: '', numeroExt: '', numeroInt: '', cp: '', tipoVenta: '', sitioWeb: '', telefono: '', email: '', logo: '', clasificacion: 'nacional'
   });
 
-  const saveDistribuidorLocal = (list) => {
-    try { localStorage.setItem('cms:config:distribuidoresList', JSON.stringify(list)); } catch (e) { }
+  const saveDistribuidorLocal = async (list) => {
+    try {
+      setConfig(prev => {
+        const updated = { ...prev, distribuidoresList: list };
+        settingsService.updateConfiguracionGeneral(updated).catch(console.error);
+        return updated;
+      });
+    } catch (e) { console.error(e) }
   };
 
   const handleLogoUpload = async (e) => {

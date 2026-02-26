@@ -36,5 +36,23 @@ export const settingsService = {
             console.error('Error setting deploy schedule:', error);
             throw error;
         }
+    },
+    getConfiguracionGeneral: async () => {
+        try {
+            const response = await api.get('/Settings/ConfiguracionGeneral');
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching general config:', error);
+            throw error;
+        }
+    },
+    updateConfiguracionGeneral: async (data) => {
+        try {
+            const response = await api.put('/Settings/ConfiguracionGeneral', data);
+            return response.data;
+        } catch (error) {
+            console.error('Error updating general config:', error);
+            throw error;
+        }
     }
 };
