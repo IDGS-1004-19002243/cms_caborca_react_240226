@@ -56,5 +56,32 @@ export const authService = {
      */
     isAuthenticated() {
         return !!localStorage.getItem('adminToken');
+    },
+
+    /**
+     * Cambia la contraseña del usuario actual
+     */
+    async changePassword(currentPassword, newPassword) {
+        try {
+            const token = localStorage.getItem('adminToken');
+            const response = await fetch(`${API_URL}/Auth/change-password`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ currentPassword, newPassword }),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Error al cambiar la contraseña');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Error en changePassword:", error);
+            throw error;
+        }
     }
 };

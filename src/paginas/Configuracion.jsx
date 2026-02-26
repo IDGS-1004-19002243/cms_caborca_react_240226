@@ -3,12 +3,17 @@ import { useToast } from '../context/ToastContext';
 import homeService from '../api/homeService';
 import { uploadImage } from '../api/uploadService';
 import { settingsService } from '../api/settingsService';
+import { authService } from '../api/auth';
 
 export default function Configuracion() {
   const { success, error: toastError } = useToast();
   const [guardando, setGuardando] = useState(false);
   const [seccionActiva, setSeccionActiva] = useState('estadoSitio');
   const [idioma, setIdioma] = useState('es');
+
+  // --- Seguridad ---
+  const [passwordForm, setPasswordForm] = useState({ actual: '', nueva: '', confirmar: '' });
+  const [cambiandoPassword, setCambiandoPassword] = useState(false);
 
   // --- Estado del Sitio ---
   const [deployModalOpen, setDeployModalOpen] = useState(false);
@@ -73,6 +78,28 @@ export default function Configuracion() {
       setScheduleDate('');
     } catch (error) {
       toastError('Hubo un error al programar el despliegue.');
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (!passwordForm.actual || !passwordForm.nueva || !passwordForm.confirmar) {
+      toastError('Por favor completa todos los campos.');
+      return;
+    }
+    if (passwordForm.nueva !== passwordForm.confirmar) {
+      toastError('Las nuevas contraseñas no coinciden.');
+      return;
+    }
+    setCambiandoPassword(true);
+    try {
+      await authService.changePassword(passwordForm.actual, passwordForm.nueva);
+      success('Contraseña actualizada correctamente.');
+      setPasswordForm({ actual: '', nueva: '', confirmar: '' });
+    } catch (error) {
+      toastError(error.message || 'Error al cambiar la contraseña.');
+    } finally {
+      setCambiandoPassword(false);
     }
   };
 
@@ -648,29 +675,41 @@ export default function Configuracion() {
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Cambiar Contraseña</label>
-                    <div className="space-y-4">
+                    <form onSubmit={handleChangePassword} className="space-y-4">
                       <input
                         type="password"
                         placeholder="Contraseña actual"
                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                        value={passwordForm.actual}
+                        onChange={(e) => setPasswordForm({ ...passwordForm, actual: e.target.value })}
+                        required
                       />
                       <input
                         type="password"
                         placeholder="Nueva contraseña"
                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                        value={passwordForm.nueva}
+                        onChange={(e) => setPasswordForm({ ...passwordForm, nueva: e.target.value })}
+                        required
                       />
                       <input
                         type="password"
                         placeholder="Confirmar nueva contraseña"
                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                        value={passwordForm.confirmar}
+                        onChange={(e) => setPasswordForm({ ...passwordForm, confirmar: e.target.value })}
+                        required
                       />
-                    </div>
+                      <button
+                        type="submit"
+                        disabled={cambiandoPassword}
+                        className="px-6 py-2 bg-caborca-cafe text-white rounded-lg hover:bg-caborca-negro flex items-center gap-2 disabled:opacity-50"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        {cambiandoPassword ? 'Actualizando...' : 'Actualizar Contraseña'}
+                      </button>
+                    </form>
                   </div>
-
-                  <button className="px-6 py-2 bg-caborca-cafe text-white rounded-lg hover:bg-caborca-negro flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                    Actualizar Contraseña
-                  </button>
 
                   <hr className="my-6" />
 
