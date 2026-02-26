@@ -18,5 +18,23 @@ export const settingsService = {
             console.error('Error updating settings:', error);
             throw error;
         }
+    },
+    getDeploySchedule: async () => {
+        try {
+            const response = await api.get('/Settings/DeploySchedule');
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching deploy schedule:', error);
+            throw error;
+        }
+    },
+    setDeploySchedule: async (dateString) => {
+        try {
+            const response = await api.post('/Settings/DeploySchedule', { date: dateString });
+            return response.data;
+        } catch (error) {
+            console.error('Error setting deploy schedule:', error);
+            throw error;
+        }
     }
 };

@@ -64,15 +64,16 @@ export default function Configuracion() {
     }
   };
 
-  const handleScheduleDeploy = (date) => {
+  const handleScheduleDeploy = async (date) => {
     if (!date) return;
-    const schedule = {
-      date: new Date(date).toISOString(),
-      status: 'pending'
-    };
-    localStorage.setItem('cms:deployment_schedule', JSON.stringify(schedule));
-    success(`Despliegue programado para: ${new Date(date).toLocaleString()}`);
-    setDeployModalOpen(false);
+    try {
+      await settingsService.setDeploySchedule(new Date(date).toISOString());
+      success(`Despliegue programado para: ${new Date(date).toLocaleString()}`);
+      setDeployModalOpen(false);
+      setScheduleDate('');
+    } catch (error) {
+      toastError('Hubo un error al programar el despliegue.');
+    }
   };
 
   // --- Configuración General ---
