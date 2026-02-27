@@ -708,20 +708,6 @@ export default function Configuracion() {
                     </form>
                   </div>
 
-                  <hr className="my-6" />
-
-                  <div>
-                    <h5 className="font-semibold text-gray-700 mb-3">Sesiones Activas</h5>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Windows • Chrome</p>
-                          <p className="text-sm text-gray-500">Sesión actual • Ciudad de México</p>
-                        </div>
-                        <span className="px-3 py-1 bg-caborca-verde-light text-caborca-verde rounded-full text-sm">Activa</span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               )}
             </div>
