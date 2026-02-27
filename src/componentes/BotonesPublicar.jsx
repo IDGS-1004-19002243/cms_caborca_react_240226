@@ -16,6 +16,7 @@ const BotonesPublicar = ({ onGuardar, label = 'Guardar Borrador' }) => {
     const [publicando, setPublicando] = useState(false);
     const [deployModalOpen, setDeployModalOpen] = useState(false);
     const [scheduleDate, setScheduleDate] = useState('');
+    const [scheduledInfo, setScheduledInfo] = useState(null); // fecha ya programada
     const [domNode, setDomNode] = useState(null);
 
     useEffect(() => {
@@ -55,10 +56,31 @@ const BotonesPublicar = ({ onGuardar, label = 'Guardar Borrador' }) => {
         try {
             await settingsService.setDeploySchedule(new Date(scheduleDate).toISOString());
             success(`Despliegue programado para: ${new Date(scheduleDate).toLocaleString()}`);
+            setScheduledInfo(new Date(scheduleDate).toISOString());
             setDeployModalOpen(false);
             setScheduleDate('');
         } catch (err) {
             toastError('Error al programar el despliegue.');
+        }
+    };
+
+    const handleCancelSchedule = async () => {
+        try {
+            await settingsService.setDeploySchedule('');
+            setScheduledInfo(null);
+            success('Despliegue programado cancelado.');
+        } catch (err) {
+            toastError('Error al cancelar el despliegue programado.');
+        }
+    };
+
+    const openModal = async () => {
+        setDeployModalOpen(true);
+        try {
+            const data = await settingsService.getDeploySchedule();
+            setScheduledInfo(data && data.date ? data.date : null);
+        } catch (e) {
+            setScheduledInfo(null);
         }
     };
 
@@ -99,7 +121,7 @@ const BotonesPublicar = ({ onGuardar, label = 'Guardar Borrador' }) => {
 
             {/* Botón Desplegar → abre modal */}
             <button
-                onClick={() => setDeployModalOpen(true)}
+                onClick={openModal}
                 disabled={disabled}
                 className={`flex items-center gap-2 px-5 py-2 rounded-full shadow-md font-bold text-sm transition-all transform hover:scale-105 active:scale-95 ${disabled ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-[#008035] hover:bg-[#00662a] text-white'}`}
             >
@@ -146,6 +168,27 @@ const BotonesPublicar = ({ onGuardar, label = 'Guardar Borrador' }) => {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Banner: despliegue ya programado */}
+                            {scheduledInfo && (
+                                <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg flex items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <svg className="w-5 h-5 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <div>
+                                            <p className="text-sm font-bold text-blue-800">Despliegue ya programado</p>
+                                            <p className="text-xs text-blue-600">{new Date(scheduledInfo).toLocaleString('es-MX', { dateStyle: 'full', timeStyle: 'short' })}</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={handleCancelSchedule}
+                                        className="text-xs bg-red-100 hover:bg-red-200 text-red-700 font-semibold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            )}
 
                             <div className="space-y-4 pt-2">
                                 {/* Desplegar Ahora */}
