@@ -190,12 +190,14 @@ export default function Configuracion() {
     telefono: '',
     email: '',
     logo: '',
-    clasificacion: 'nacional'
+    clasificacion: 'nacional',
+    lat: '',
+    lng: ''
   });
   const [editIndex, setEditIndex] = useState(null);
 
   const resetDistribuidorForm = () => setDistribuidorForm({
-    id: null, contactoNombre: '', negocioNombre: '', pais: '', estado: '', ciudad: '', colonia: '', calle: '', numeroExt: '', numeroInt: '', cp: '', tipoVenta: '', sitioWeb: '', telefono: '', email: '', logo: '', clasificacion: 'nacional'
+    id: null, contactoNombre: '', negocioNombre: '', pais: '', estado: '', ciudad: '', colonia: '', calle: '', numeroExt: '', numeroInt: '', cp: '', tipoVenta: '', sitioWeb: '', telefono: '', email: '', logo: '', clasificacion: 'nacional', lat: '', lng: ''
   });
 
   const saveDistribuidorLocal = async (list) => {
@@ -596,6 +598,40 @@ export default function Configuracion() {
                         <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
                           <input placeholder="correo@ejemplo.com" value={distribuidorForm.email} onChange={(e) => setDistribuidorForm({ ...distribuidorForm, email: e.target.value })} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" aria-label="Email" />
+                        </div>
+
+                        {/* Coordenadas para el mapa */}
+                        <div className="col-span-1 md:col-span-2">
+                          <div className="flex items-center gap-2 mb-2">
+                            <label className="text-sm font-semibold text-gray-700">📍 Coordenadas para el mapa</label>
+                            <a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer"
+                              className="text-xs text-caborca-cafe underline hover:text-caborca-negro">
+                              Obtener coordenadas →
+                            </a>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <input
+                                type="number" step="any"
+                                placeholder="Latitud  Ej. 19.4326"
+                                value={distribuidorForm.lat}
+                                onChange={(e) => setDistribuidorForm({ ...distribuidorForm, lat: e.target.value })}
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                                aria-label="Latitud"
+                              />
+                            </div>
+                            <div>
+                              <input
+                                type="number" step="any"
+                                placeholder="Longitud  Ej. -99.1332"
+                                value={distribuidorForm.lng}
+                                onChange={(e) => setDistribuidorForm({ ...distribuidorForm, lng: e.target.value })}
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                                aria-label="Longitud"
+                              />
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-400 mt-1">Entra a Google Maps, haz clic derecho sobre la ubicación y copia las coordenadas.</p>
                         </div>
                       </div>
                       <div className="mt-6 flex gap-3">
