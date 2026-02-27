@@ -239,30 +239,12 @@ export default function Login() {
 
           {/* (Información del Sistema movida al panel izquierdo) */}
 
-          {/* Credenciales de prueba */}
-          <div className="mt-8 p-5 bg-linear-to-r from-caborca-cafe/5 to-caborca-arena/10 rounded-xl border border-caborca-cafe/20">
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 w-10 h-10 bg-caborca-cafe/10 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-caborca-cafe" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-caborca-cafe text-sm mb-3">Credenciales de demostración</p>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="bg-white rounded-lg p-2">
-                    <p className="text-caborca-negro/60 text-xs mb-1">Administrador</p>
-                    <p className="text-caborca-negro/80"><span className="font-medium">Usuario:</span> <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">admin</code></p>
-                    <p className="text-caborca-negro/80"><span className="font-medium">Pass:</span> <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">admin123</code></p>
-                  </div>
-                  <div className="bg-white rounded-lg p-2">
-                    <p className="text-caborca-negro/60 text-xs mb-1">Super Admin</p>
-                    <p className="text-caborca-negro/80"><span className="font-medium">Usuario:</span> <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">superadmin</code></p>
-                    <p className="text-caborca-negro/80"><span className="font-medium">Pass:</span> <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">super123</code></p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Acceso protegido */}
+          <div className="mt-8 p-4 bg-caborca-cafe/5 rounded-xl border border-caborca-cafe/15 flex items-center gap-3">
+            <svg className="w-5 h-5 text-caborca-cafe shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <p className="text-sm text-caborca-cafe/80">Acceso restringido a personal autorizado. Contacta al administrador si olvidaste tus credenciales.</p>
           </div>
 
           {/* Información (debajo de credenciales) - alineada a los bordes */}
