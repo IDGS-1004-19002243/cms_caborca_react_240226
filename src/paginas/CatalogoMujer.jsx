@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useToast } from '../context/ToastContext';
 import { uploadImage } from '../api/uploadService';
+import { settingsService } from '../api/settingsService';
 
 export default function CatalogoMujer() {
   const { success, error: toastError } = useToast();
@@ -33,20 +34,29 @@ export default function CatalogoMujer() {
   const [guardandoContenido, setGuardandoContenido] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('cms:catalogo-mujer:contenido');
-      if (stored) setContenido(JSON.parse(stored));
-    } catch (e) { console.error(e); }
+    const fetchData = async () => {
+      try {
+        const data = await settingsService.getCatalogoMujer();
+        if (data && data.productos && Array.isArray(data.productos)) {
+          if (data.productos.length > 0) setProductos(data.productos);
+        }
+        if (data && data.contenido) {
+          setContenido(data.contenido);
+        }
+      } catch (e) {
+        console.error('Error cargando catalogo mujer desde API:', e);
+      }
+    };
+    fetchData();
   }, []);
 
   const guardarContenido = async () => {
     setGuardandoContenido(true);
     try {
-      localStorage.setItem('cms:catalogo-mujer:contenido', JSON.stringify(contenido));
-      await new Promise(r => setTimeout(r, 800));
+      await settingsService.updateCatalogoMujer({ contenido, productos });
       success('Contenido actualizado');
     } catch (e) {
-      toastError('Error al guardar');
+      toastError('Error al guardar contenido');
     } finally {
       setGuardandoContenido(false);
     }
@@ -80,39 +90,10 @@ export default function CatalogoMujer() {
     });
     setModalAbierto(true);
   };
-  useEffect(() => {
-    // On mount, load featured flags from shared localStorage (if any)
+  const persistProductos = async (lista) => {
     try {
-      const stored = JSON.parse(localStorage.getItem('cms:productos:featured') || '[]');
-      if (Array.isArray(stored)) {
-        const ids = stored.filter(p => p.origen === 'mujer').map(p => String(p.id));
-        setProductos(prev => prev.map(prod => ({ ...prod, destacado: ids.includes(String(prod.id)) })));
-      }
-    } catch (e) {
-      // ignore parse errors
-    }
-  }, []);
-
-  const persistProductos = (lista) => {
-    // Merge this catalog's destacados into shared localStorage and dispatch update event
-    try {
-      const origen = 'mujer';
-      const destacadosActuales = lista.filter(p => p.destacado).map(p => ({ ...p, origen }));
-      let stored = [];
-      try { stored = JSON.parse(localStorage.getItem('cms:productos:featured') || '[]'); } catch (e) { stored = []; }
-
-      const otros = stored.filter(s => (s && s.origen) ? s.origen !== origen : true);
-      const candidates = [...otros, ...destacadosActuales];
-
-      const map = new Map();
-      candidates.forEach(item => {
-        const key = `${(item.origen || 'unknown')}-${item.id}`;
-        map.set(key, { ...item, origen: item.origen || 'unknown' });
-      });
-      const merged = Array.from(map.values());
-
-      localStorage.setItem('cms:productos:featured', JSON.stringify(merged));
-      window.dispatchEvent(new CustomEvent('cms:productos:updated', { detail: { productos: merged } }));
+      await settingsService.updateCatalogoMujer({ contenido, productos: lista });
+      window.dispatchEvent(new CustomEvent('cms:productos:updated', { detail: { productos: lista } }));
     } catch (e) {
       console.error('Error dispatching productos updated event', e);
     }

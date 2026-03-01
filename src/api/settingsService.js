@@ -54,5 +54,41 @@ export const settingsService = {
             console.error('Error updating general config:', error);
             throw error;
         }
+    },
+    getCatalogoHombre: async () => {
+        try {
+            const response = await api.get('/Settings/CatalogoHombre');
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching CatalogoHombre:', error);
+            throw error;
+        }
+    },
+    updateCatalogoHombre: async (data) => {
+        try {
+            const response = await api.put('/Settings/CatalogoHombre', data);
+            return response.data;
+        } catch (error) {
+            console.error('Error updating CatalogoHombre:', error);
+            throw error;
+        }
+    },
+    getCatalogoMujer: async () => {
+        try {
+            const response = await api.get('/Settings/CatalogoMujer');
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching CatalogoMujer:', error);
+            throw error;
+        }
+    },
+    updateCatalogoMujer: async (data) => {
+        try {
+            const response = await api.put('/Settings/CatalogoMujer', data);
+            return response.data;
+        } catch (error) {
+            console.error('Error updating CatalogoMujer:', error);
+            throw error;
+        }
     }
 };
