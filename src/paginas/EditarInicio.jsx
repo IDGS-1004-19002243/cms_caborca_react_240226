@@ -130,6 +130,21 @@ export default function EditarInicio() {
 
   const [idioma, setIdioma] = useState('es');
 
+  useEffect(() => {
+    const handler = (e) => {
+      const l = e?.detail?.lang;
+      if (l) setIdioma(l);
+    };
+    try {
+      const stored = localStorage.getItem('cms:editor:lang');
+      if (stored) setIdioma(stored);
+    } catch (e) {
+      console.error(e);
+    }
+    window.addEventListener('cms:editor:lang-changed', handler);
+    return () => window.removeEventListener('cms:editor:lang-changed', handler);
+  }, []);
+
   // Cargar contenido desde la API al iniciar
   const cargarDatos = async () => {
     try {
