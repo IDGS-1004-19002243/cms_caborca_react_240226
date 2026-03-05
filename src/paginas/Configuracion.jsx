@@ -137,10 +137,15 @@ export default function Configuracion() {
   const [cambiandoPassword, setCambiandoPassword] = useState(false);
   const [showPwd, setShowPwd] = useState({ actual: false, nueva: false, confirmar: false });
 
-  // --- Estado del Sitio ---
   const [deployModalOpen, setDeployModalOpen] = useState(false);
   const [scheduleDate, setScheduleDate] = useState('');
   const [maintenanceMode, setMaintenanceMode] = useState(false);
+
+  const [adminUsers, setAdminUsers] = useState([]);
+  const [targetUsername, setTargetUsername] = useState('');
+
+  const currentUser = authService.getCurrentUser();
+  const isSuperAdmin = currentUser?.rol === 'SuperAdmin' || currentUser?.usuario?.toLowerCase() === 'superadmin';
 
   useEffect(() => {
     // Load initial state for maintenance mode
@@ -162,6 +167,23 @@ export default function Configuracion() {
     window.addEventListener('cms:editor:lang-changed', handler);
     return () => window.removeEventListener('cms:editor:lang-changed', handler);
   }, []);
+
+  useEffect(() => {
+    if (seccionActiva === 'seguridad' && isSuperAdmin) {
+      const fetchUsers = async () => {
+        try {
+          const users = await authService.getAdminUsers();
+          setAdminUsers(users);
+          if (users.length > 0) {
+            setTargetUsername(users[0].usuario);
+          }
+        } catch (err) {
+          console.error("Failed to load users:", err);
+        }
+      };
+      fetchUsers();
+    }
+  }, [seccionActiva, isSuperAdmin]);
 
   const handleToggleMaintenance = async () => {
     const newState = !maintenanceMode;
@@ -215,8 +237,8 @@ export default function Configuracion() {
     }
     setCambiandoPassword(true);
     try {
-      await authService.changePassword(passwordForm.actual, passwordForm.nueva);
-      success('Contraseña actualizada correctamente.');
+      await authService.changePassword(passwordForm.actual, passwordForm.nueva, targetUsername);
+      success(`Contraseña actualizada correctamente para el usuario ${targetUsername || 'actual'}.`);
       setPasswordForm({ actual: '', nueva: '', confirmar: '' });
     } catch (error) {
       toastError(error.message || 'Error al cambiar la contraseña.');
@@ -256,14 +278,17 @@ export default function Configuracion() {
     distribuidoresList: []
   });
 
-  const secciones = [
+  let secciones = [
     { id: 'estadoSitio', nombre: 'Estado del Sitio', icono: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg> },
     { id: 'redesSociales', nombre: 'Medio de contacto', icono: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg> },
     { id: 'emailsContacto', nombre: 'Emails Contacto', icono: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> },
     { id: 'emailsDistribuidores', nombre: 'Emails Distribuidores', icono: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg> },
-    { id: 'distribuidores', nombre: 'Gestión Distribuidores', icono: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> },
-    { id: 'seguridad', nombre: 'Seguridad', icono: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg> }
+    { id: 'distribuidores', nombre: 'Gestión Distribuidores', icono: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> }
   ];
+
+  if (isSuperAdmin) {
+    secciones.push({ id: 'seguridad', nombre: 'Seguridad', icono: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg> });
+  }
 
   const guardarCambios = async () => {
     setGuardando(true);
@@ -391,7 +416,7 @@ export default function Configuracion() {
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-playfair text-caborca-cafe mb-2">
+            <h3 className="text-xl font-serif font-bold text-caborca-cafe mb-2">
               Configuración del Sistema
             </h3>
             <p className="text-sm text-gray-600">
@@ -1038,8 +1063,23 @@ export default function Configuracion() {
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Cambiar Contraseña</label>
                     <form onSubmit={handleChangePassword} className="space-y-4">
+                      {/* Campo: Usuario a modificar */}
+                      <div className="relative">
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">Usuario</label>
+                        <select
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none"
+                          value={targetUsername}
+                          onChange={(e) => setTargetUsername(e.target.value)}
+                        >
+                          {adminUsers.map(u => (
+                            <option key={u.usuario} value={u.usuario}>{u.usuario} ({u.rol})</option>
+                          ))}
+                        </select>
+                      </div>
+
                       {/* Campo: Contraseña actual */}
                       <div className="relative">
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">Tu contraseña actual (SuperAdmin)</label>
                         <input
                           type={showPwd.actual ? 'text' : 'password'}
                           placeholder="Contraseña actual"
@@ -1128,7 +1168,7 @@ export default function Configuracion() {
                 <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                 </div>
-                <h3 className="text-2xl font-playfair font-bold">Desplegar Cambios</h3>
+                <h3 className="text-2xl font-serif font-bold font-bold">Desplegar Cambios</h3>
                 <p className="text-white/80 mt-2 text-sm">Publica tus ediciones en el sitio oficial</p>
               </div>
               <div className="p-8 space-y-6">

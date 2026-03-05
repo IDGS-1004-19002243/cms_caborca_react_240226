@@ -95,10 +95,10 @@ export default function EditarInicio() {
       },
       tituloDerecho: { es: 'Nuestro compromiso con el planeta', en: 'Our commitment to the planet' },
       features: [
-        { id: 1, titulo: { es: 'Materiales Sostenibles', en: 'Sustainable Materials' } },
-        { id: 2, titulo: { es: 'Reciclaje Responsable', en: 'Responsible Recycling' } },
-        { id: 3, titulo: { es: 'Reducción de Huella', en: 'Reduced Footprint' } },
-        { id: 4, titulo: { es: 'Producción Ética', en: 'Ethical Production' } }
+        { id: 1, titulo: { es: 'Materiales Sostenibles', en: 'Sustainable Materials' }, descripcion: { es: 'Seleccionamos las mejores pieles de proveedores responsables con el medio ambiente.', en: 'We select the best leathers from environmentally responsible suppliers.' } },
+        { id: 2, titulo: { es: 'Reciclaje Responsable', en: 'Responsible Recycling' }, descripcion: { es: 'Implementamos procesos de reciclaje en cada etapa de producción.', en: 'We implement recycling processes at every stage of production.' } },
+        { id: 3, titulo: { es: 'Reducción de Huella', en: 'Reduced Footprint' }, descripcion: { es: 'Optimizamos el consumo de agua y energía en la manufactura de cada par de botas.', en: 'We optimize water and energy consumption in the manufacture of each pair of boots.' } },
+        { id: 4, titulo: { es: 'Producción Ética', en: 'Ethical Production' }, descripcion: { es: 'Garantizamos condiciones laborales justas y responsables en toda nuestra cadena.', en: 'We ensure fair and responsible working conditions throughout our supply chain.' } }
       ],
       boton: { es: 'Conoce más', en: 'Learn more' },
       nota: { es: 'Certificado por prácticas sustentables', en: 'Certified for sustainable practices' }
@@ -169,12 +169,14 @@ export default function EditarInicio() {
           badge: { es: data.sustentabilidad?.badge_ES || prev.sustentabilidadBanner.badge.es, en: data.sustentabilidad?.badge_EN || prev.sustentabilidadBanner.badge.en },
           tituloDerecho: { es: data.sustentabilidad?.tituloDerecho_ES || prev.sustentabilidadBanner.tituloDerecho.es, en: data.sustentabilidad?.tituloDerecho_EN || prev.sustentabilidadBanner.tituloDerecho.en },
           nota: { es: data.sustentabilidad?.notaCertificacion_ES || prev.sustentabilidadBanner.nota?.es, en: data.sustentabilidad?.notaCertificacion_EN || prev.sustentabilidadBanner.nota?.en },
-          features: data.sustentabilidad?.features?.length > 0
-            ? data.sustentabilidad.features.map(f => ({
+          features: [0, 1, 2, 3].map(i => {
+            const f = data.sustentabilidad?.features?.[i];
+            return {
               id: Math.random(),
-              titulo: { es: f.titulo_ES, en: f.titulo_EN }
-            }))
-            : prev.sustentabilidadBanner.features
+              titulo: { es: f?.titulo_ES || prev.sustentabilidadBanner.features[i]?.titulo.es || '', en: f?.titulo_EN || prev.sustentabilidadBanner.features[i]?.titulo.en || '' },
+              descripcion: { es: f?.descripcion_ES || prev.sustentabilidadBanner.features[i]?.descripcion?.es || '', en: f?.descripcion_EN || prev.sustentabilidadBanner.features[i]?.descripcion?.en || '' }
+            };
+          })
         },
 
         // 4. Arte de la Creación
@@ -651,10 +653,10 @@ export default function EditarInicio() {
           notaCertificacion_ES: contenido.sustentabilidadBanner.nota?.es || 'Certificado por prácticas sustentables',
           notaCertificacion_EN: contenido.sustentabilidadBanner.nota?.en || 'Certified for sustainable practices',
           features: (contenido.sustentabilidadBanner.features || []).map(f => ({
-            titulo_ES: f.titulo.es,
-            titulo_EN: f.titulo.en,
-            descripcion_ES: '',
-            descripcion_EN: ''
+            titulo_ES: f.titulo?.es || '',
+            titulo_EN: f.titulo?.en || '',
+            descripcion_ES: f.descripcion?.es || '',
+            descripcion_EN: f.descripcion?.en || ''
           }))
         },
 
@@ -777,7 +779,7 @@ export default function EditarInicio() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col items-center justify-center text-white p-8">
               <div className="backdrop-blur-sm bg-white/10 rounded-2xl p-12 max-w-4xl text-center">
-                <h1 className="text-6xl font-playfair mb-6 drop-shadow-lg">
+                <h1 className="text-6xl font-serif mb-6 drop-shadow-lg font-bold">
                   {contenido.carousel[slideActual].titulo[idioma]}
                 </h1>
                 <p className="text-2xl mb-8 drop-shadow">
@@ -809,10 +811,10 @@ export default function EditarInicio() {
         {/* SECCIÓN PRODUCTOS */}
         <section data-cms-section="inicio-productos" className="relative group py-20 bg-gradient-to-b from-white to-caborca-beige-suave/30">
           <div className="max-w-7xl mx-auto px-8">
-            <h2 className="text-5xl font-playfair text-caborca-cafe text-center mb-16">
+            <h2 className="text-5xl font-serif font-bold text-caborca-cafe text-center mb-16">
               {contenido.productosDestacados.titulo[idioma]}
             </h2>
-            <div className="grid grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
               {contenido.productosDestacados.productos.map((producto, i) => (
                 <div key={producto.id} className="relative group/item">
                   <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all">
@@ -980,7 +982,7 @@ export default function EditarInicio() {
         <section data-cms-section="inicio-donde-comprar" className="relative group py-20 bg-gradient-to-b from-white to-caborca-beige-suave/30">
           <div className="max-w-7xl mx-auto px-8">
             <div className="text-center mb-12">
-              <h2 className="text-6xl font-playfair text-caborca-cafe mb-6">
+              <h2 className="text-6xl font-serif font-bold text-caborca-cafe mb-6">
                 {contenido.dondeComprar.titulo[idioma]}
               </h2>
               <p className="text-gray-600 text-xl max-w-3xl mx-auto">
@@ -1044,15 +1046,18 @@ export default function EditarInicio() {
             <div className="bg-linear-to-br from-caborca-beige-suave to-amber-50 p-8 md:p-12 flex flex-col justify-center" style={{ background: 'linear-gradient(135deg, #ECE7DF 0%, #F5EFE7 100%)' }}>
               <div className="max-w-lg mx-auto">
                 <h3 className="text-xl md:text-2xl font-serif text-caborca-cafe mb-4 whitespace-nowrap overflow-hidden">{contenido.sustentabilidadBanner.tituloDerecho[idioma]}</h3>
-                <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="grid grid-cols-2 gap-3 mb-8">
                   {contenido.sustentabilidadBanner.features.map((feature, i) => (
-                    <div key={feature.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                      <div className="text-caborca-cafe mb-2">
-                        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
-                        </svg>
+                    <div key={feature.id} className="bg-white p-4 rounded-lg border border-gray-100">
+                      <div className="flex items-start gap-2">
+                        <span
+                          className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                          style={{ backgroundColor: '#9B8674' }}
+                        >
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <p className="text-xs font-semibold text-caborca-beige-fuerte leading-snug pt-0.5">{feature.titulo[idioma]}</p>
                       </div>
-                      <p className="text-sm font-semibold text-caborca-cafe">{feature.titulo[idioma]}</p>
                     </div>
                   ))}
                 </div>
@@ -1701,16 +1706,23 @@ export default function EditarInicio() {
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Features (4)</label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {contenido.sustentabilidadBanner.features.map((feature, i) => (
-                        <div key={feature.id} className="p-2 bg-gray-50 rounded border border-gray-200">
-                          <p className="text-[10px] text-gray-500 mb-1 font-bold uppercase">Feature {i + 1}</p>
+                        <div key={feature.id} className="p-3 bg-gray-50 rounded border border-gray-200">
+                          <p className="text-[10px] text-gray-500 mb-2 font-bold uppercase">Feature {i + 1}</p>
                           <input
                             type="text"
-                            value={feature.titulo[idioma]}
+                            value={feature.titulo[idioma] || ''}
                             onChange={(e) => manejarCambioFeature('sustentabilidadBanner', i, 'titulo', e.target.value)}
                             placeholder="Título"
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:border-caborca-cafe focus:outline-none"
+                            className="w-full px-2 py-1 mb-2 border border-gray-300 rounded text-sm focus:border-caborca-cafe focus:outline-none"
+                          />
+                          <textarea
+                            value={feature.descripcion?.[idioma] || ''}
+                            onChange={(e) => manejarCambioFeature('sustentabilidadBanner', i, 'descripcion', e.target.value)}
+                            placeholder="Descripción"
+                            rows="2"
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:border-caborca-cafe focus:outline-none resize-none"
                           />
                         </div>
                       ))}

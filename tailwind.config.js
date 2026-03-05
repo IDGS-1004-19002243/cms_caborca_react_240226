@@ -7,9 +7,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        'sans': ['Montserrat', 'sans-serif'],
-        'serif': ['Playfair Display', 'serif'],
-        'playfair': ['Playfair Display', 'serif'],
+        'sans': ['Aleo', 'sans-serif'],
+        'serif': ['"Patua One"', 'serif'],
+        'playfair': ['"Patua One"', 'serif'],
+        'patua': ['"Patua One"', 'serif'],
       },
       colors: {
         caborca: {

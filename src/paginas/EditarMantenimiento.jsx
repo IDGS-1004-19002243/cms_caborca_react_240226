@@ -4,12 +4,18 @@ import { textosService } from '../api/textosService';
 import { uploadImage } from '../api/uploadService';
 import BotonesPublicar from '../componentes/BotonesPublicar';
 
+import { useOutletContext } from 'react-router-dom';
+
 export default function EditarMantenimiento() {
     const { success, error: toastError } = useToast();
+    const { idioma } = useOutletContext();
     const [content, setContent] = useState({
-        titulo: 'Página en Construcción',
-        subtitulo: 'ESTAMOS PREPARANDO ALGO INCREÍBLE',
-        mensaje: 'Estamos trabajando arduamente para traerte una experiencia renovada.',
+        titulo_ES: 'Página en Construcción',
+        titulo_EN: 'Page Under Construction',
+        subtitulo_ES: 'ESTAMOS PREPARANDO ALGO INCREÍBLE',
+        subtitulo_EN: 'WE ARE PREPARING SOMETHING AMAZING',
+        mensaje_ES: 'Estamos trabajando arduamente para traerte una experiencia renovada.',
+        mensaje_EN: 'We are working hard to bring you a renewed experience.',
         imagenFondo: 'https://blocks.astratic.com/img/general-img-landscape.png',
         redes: {
             whatsapp: { url: 'https://wa.me/525551234567', enabled: true },
@@ -103,6 +109,10 @@ export default function EditarMantenimiento() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-gray-300">
+                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-2 mb-4 text-xs font-semibold text-yellow-800">
+                        Editando en: {idioma === 'es' ? '🇲🇽 ESPAÑOL' : '🇺🇸 INGLÉS'}
+                    </div>
+
                     <div className="space-y-4">
                         <h4 className="text-xs font-bold text-gray-500 uppercase border-b pb-1 tracking-wider">Contenido Principal</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -110,8 +120,8 @@ export default function EditarMantenimiento() {
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">Título</label>
                                 <input
                                     type="text"
-                                    value={content.titulo}
-                                    onChange={(e) => handleChange('titulo', e.target.value)}
+                                    value={idioma === 'es' ? content.titulo_ES : content.titulo_EN}
+                                    onChange={(e) => handleChange(idioma === 'es' ? 'titulo_ES' : 'titulo_EN', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                                 />
                             </div>
@@ -119,8 +129,8 @@ export default function EditarMantenimiento() {
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">Subtítulo (Uppercase)</label>
                                 <input
                                     type="text"
-                                    value={content.subtitulo}
-                                    onChange={(e) => handleChange('subtitulo', e.target.value)}
+                                    value={idioma === 'es' ? content.subtitulo_ES : content.subtitulo_EN}
+                                    onChange={(e) => handleChange(idioma === 'es' ? 'subtitulo_ES' : 'subtitulo_EN', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none uppercase"
                                 />
                             </div>
@@ -128,8 +138,8 @@ export default function EditarMantenimiento() {
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">Mensaje</label>
                                 <textarea
                                     rows={3}
-                                    value={content.mensaje}
-                                    onChange={(e) => handleChange('mensaje', e.target.value)}
+                                    value={idioma === 'es' ? content.mensaje_ES : content.mensaje_EN}
+                                    onChange={(e) => handleChange(idioma === 'es' ? 'mensaje_ES' : 'mensaje_EN', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none"
                                 />
                             </div>
@@ -235,17 +245,17 @@ export default function EditarMantenimiento() {
                     {/* Content */}
                     <div className="relative z-10 w-full max-w-2xl mx-auto transform scale-75 lg:scale-90 origin-center transition-transform duration-300">
                         <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-bold text-white mb-4 drop-shadow-2xl tracking-tight">
-                            {content.titulo}
+                            {idioma === 'es' ? content.titulo_ES : content.titulo_EN}
                         </h1>
 
                         <p className="text-caborca-bronce font-bold text-lg md:text-xl mb-8 uppercase tracking-[0.2em] shadow-black drop-shadow-md">
-                            {content.subtitulo}
+                            {idioma === 'es' ? content.subtitulo_ES : content.subtitulo_EN}
                         </p>
 
                         <div className="w-24 h-1.5 bg-caborca-bronce mx-auto mb-8 rounded-full shadow-lg opacity-80"></div>
 
                         <p className="text-lg text-gray-200 max-w-lg mx-auto mb-10 leading-relaxed font-light drop-shadow-md whitespace-pre-wrap">
-                            {content.mensaje}
+                            {idioma === 'es' ? content.mensaje_ES : content.mensaje_EN}
                         </p>
 
                         <div className="flex justify-center gap-6">

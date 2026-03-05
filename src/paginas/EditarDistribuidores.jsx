@@ -4,9 +4,11 @@ import BotonesPublicar from '../componentes/BotonesPublicar';
 import { useToast } from '../context/ToastContext';
 import { textosService } from '../api/textosService';
 import { uploadImage } from '../api/uploadService';
+import { useOutletContext } from 'react-router-dom';
 
 export default function EditarDistribuidores() {
   const { success, error: toastError, info } = useToast();
+  const { idioma } = useOutletContext();
 
   const defaultContent = {
     hero: {
@@ -22,21 +24,20 @@ export default function EditarDistribuidores() {
     formulario: {
       titulo: '¿Quieres ser distribuidor?',
       subtitulo: 'Si estás interesado, déjanos tus datos y nuestro equipo se pondrá en contacto contigo.',
-      submitLabel: 'ENVIAR SOLICITUD',
-      responseMessage: '¡Gracias por tu interés! Nos pondremos en contacto contigo pronto.',
-      responseTime: 'Respuesta en 24-48 hrs'
+      submitLabel_ES: 'ENVIAR SOLICITUD', submitLabel_EN: 'SEND REQUEST',
+      responseMessage_ES: '¡Gracias por tu interés! Nos pondremos en contacto contigo pronto.', responseMessage_EN: 'Thank you for your interest! We will contact you soon.',
+      responseTime_ES: 'Respuesta en 24-48 hrs', responseTime_EN: 'Response in 24-48 hrs'
     },
     filtros: {
-      purchasePlaceholder: 'Tipo de compra',
-      estadoPlaceholder: 'Estado'
+      purchasePlaceholder_ES: 'Tipo de compra', purchasePlaceholder_EN: 'Purchase type',
+      estadoPlaceholder_ES: 'Estado', estadoPlaceholder_EN: 'State'
     },
-    mapTitle: 'Encuéntranos en el mapa',
-    mapText: 'Visita nuestras tiendas y distribuidores autorizados en todo México.',
+    mapTitle_ES: 'Encuéntranos en el mapa', mapTitle_EN: 'Find us on the map',
+    mapText_ES: 'Visita nuestras tiendas y distribuidores autorizados en todo México.', mapText_EN: 'Visit our stores and authorized distributors across Mexico.',
     mapSrc: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d120615.72236587609!2d-99.2840989!3d19.432608!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85ce0026db097507%3A0x54061076265ee841!2sCiudad%20de%20M%C3%A9xico%2C%20CDMX!5e0!3m2!1ses!2smx!4v1234567890123!5m2!1ses!2smx'
   };
 
   const [content, setContent] = useState(defaultContent);
-  const [idioma, setIdioma] = useState(() => { try { return localStorage.getItem('cms:editor:lang') || 'es'; } catch (e) { return 'es'; } });
   const [formulario, setFormulario] = useState({
     nombreCompleto: '',
     correoElectronico: '',
@@ -48,7 +49,14 @@ export default function EditarDistribuidores() {
   const [tipoCompra, setTipoCompra] = useState('');
   const [estadoFiltro, setEstadoFiltro] = useState('');
   const [activeEdit, setActiveEdit] = useState(null);
-  const [form, setForm] = useState({ badge: '', titulo: '', subtitulo: '', imagen: null, submitLabel: '', responseMessage: '', responseTime: '', mapSrc: '', distribuidores: '', estados: '' });
+  const [form, setForm] = useState({
+    badge_ES: '', badge_EN: '', titulo_ES: '', titulo_EN: '', subtitulo_ES: '', subtitulo_EN: '',
+    imagen: null,
+    submitLabel_ES: '', submitLabel_EN: '', responseMessage_ES: '', responseMessage_EN: '', responseTime_ES: '', responseTime_EN: '',
+    mapSrc: '', mapTitle_ES: '', mapTitle_EN: '', mapText_ES: '', mapText_EN: '',
+    distribuidores: '', estados: '',
+    purchasePlaceholder_ES: '', purchasePlaceholder_EN: '', estadoPlaceholder_ES: '', estadoPlaceholder_EN: ''
+  });
 
   // decorative hero: no button behavior required
 
@@ -63,7 +71,7 @@ export default function EditarDistribuidores() {
   const manejarEnvioFormulario = (evento) => {
     evento.preventDefault();
     console.log('Formulario enviado:', formulario);
-    success('¡Gracias por tu interés! Nos pondremos en contacto contigo pronto.');
+    success(idioma === 'es' ? '¡Gracias por tu interés! Nos pondremos en contacto contigo pronto.' : 'Thank you for your interest! We will contact you soon.');
   };
 
   useEffect(() => {
@@ -84,29 +92,36 @@ export default function EditarDistribuidores() {
   function openEditor(section) {
     if (section === 'hero') {
       setForm({
-        badge: content.hero?.badge || '',
-        titulo: content.hero?.titulo || '',
-        subtitulo: content.hero?.subtitulo || '',
+        ...form,
+        badge_ES: content.hero?.badge_ES || content.hero?.badge || '',
+        badge_EN: content.hero?.badge_EN || '',
+        titulo_ES: content.hero?.titulo_ES || content.hero?.titulo || '',
+        titulo_EN: content.hero?.titulo_EN || '',
+        subtitulo_ES: content.hero?.subtitulo_ES || content.hero?.subtitulo || '',
+        subtitulo_EN: content.hero?.subtitulo_EN || '',
         imagen: content.hero?.imagen || null,
-        submitLabel: '', responseMessage: '', mapSrc: '', distribuidores: '', estados: ''
       });
     } else if (section === 'formulario') {
       setForm({
-        badge: '',
-        titulo: content.formulario?.titulo || '',
-        subtitulo: content.formulario?.subtitulo || '',
-        imagen: null,
-        submitLabel: content.formulario?.submitLabel || 'ENVIAR SOLICITUD',
-        responseMessage: content.formulario?.responseMessage || '¡Gracias por tu interés! Nos pondremos en contacto contigo pronto.',
-        responseTime: content.formulario?.responseTime || 'Respuesta en 24-48 hrs',
-        mapSrc: '',
+        ...form,
+        badge_ES: '', badge_EN: '',
+        titulo_ES: content.formulario?.titulo_ES || content.formulario?.titulo || '',
+        titulo_EN: content.formulario?.titulo_EN || '',
+        subtitulo_ES: content.formulario?.subtitulo_ES || content.formulario?.subtitulo || '',
+        subtitulo_EN: content.formulario?.subtitulo_EN || '',
+        submitLabel_ES: content.formulario?.submitLabel_ES || content.formulario?.submitLabel || 'ENVIAR SOLICITUD',
+        submitLabel_EN: content.formulario?.submitLabel_EN || 'SEND REQUEST',
+        responseMessage_ES: content.formulario?.responseMessage_ES || content.formulario?.responseMessage || '¡Gracias por tu interés! Nos pondremos en contacto contigo pronto.',
+        responseMessage_EN: content.formulario?.responseMessage_EN || 'Thank you for your interest! We will contact you soon.',
+        responseTime_ES: content.formulario?.responseTime_ES || content.formulario?.responseTime || 'Respuesta en 24-48 hrs',
+        responseTime_EN: content.formulario?.responseTime_EN || 'Response in 24-48 hrs',
         distribuidores: content.counters?.distribuidores || '',
         estados: content.counters?.estados || ''
       });
     } else if (section === 'mapa') {
-      setForm({ badge: '', titulo: '', subtitulo: '', imagen: null, submitLabel: '', responseMessage: '', mapSrc: content.mapSrc || '', mapTitle: content.mapTitle || '', mapText: content.mapText || '' });
+      setForm({ ...form, mapSrc: content.mapSrc || '', mapTitle_ES: content.mapTitle_ES || content.mapTitle || '', mapTitle_EN: content.mapTitle_EN || '', mapText_ES: content.mapText_ES || content.mapText || '', mapText_EN: content.mapText_EN || '' });
     } else if (section === 'filtros') {
-      setForm({ badge: '', titulo: '', subtitulo: '', imagen: null, submitLabel: '', responseMessage: '', mapSrc: '', purchasePlaceholder: content.filtros?.purchasePlaceholder || '', estadoPlaceholder: content.filtros?.estadoPlaceholder || '' });
+      setForm({ ...form, purchasePlaceholder_ES: content.filtros?.purchasePlaceholder_ES || content.filtros?.purchasePlaceholder || '', purchasePlaceholder_EN: content.filtros?.purchasePlaceholder_EN || '', estadoPlaceholder_ES: content.filtros?.estadoPlaceholder_ES || content.filtros?.estadoPlaceholder || '', estadoPlaceholder_EN: content.filtros?.estadoPlaceholder_EN || '' });
     }
     setActiveEdit(section);
   }
@@ -117,16 +132,13 @@ export default function EditarDistribuidores() {
       const section = detail.section || detail.sectionId || detail.id || detail.sectionName;
       if (section) openEditor(section);
     };
-    const langHandler = (e) => { const l = e && e.detail && e.detail.lang; if (l) setIdioma(l); };
     window.addEventListener('cms:edit-section', handler);
-    window.addEventListener('cms:editor:lang-changed', langHandler);
     try {
       const qp = new URLSearchParams(window.location.search);
       const edit = qp.get('edit');
       if (edit) openEditor(edit);
     } catch (e) { }
-    try { const stored = localStorage.getItem('cms:editor:lang'); if (stored) setIdioma(stored); } catch (e) { }
-    return () => { window.removeEventListener('cms:edit-section', handler); window.removeEventListener('cms:editor:lang-changed', langHandler); };
+    return () => { window.removeEventListener('cms:edit-section', handler); };
   }, [content]);
 
 
@@ -158,9 +170,12 @@ export default function EditarDistribuidores() {
       if (activeEdit === 'hero') {
         const h = {
           ...newContent.hero,
-          badge: form.badge !== undefined ? form.badge : newContent.hero?.badge,
-          titulo: form.titulo !== undefined ? form.titulo : newContent.hero?.titulo,
-          subtitulo: form.subtitulo !== undefined ? form.subtitulo : newContent.hero?.subtitulo,
+          badge_ES: form.badge_ES !== undefined ? form.badge_ES : newContent.hero?.badge_ES,
+          badge_EN: form.badge_EN !== undefined ? form.badge_EN : newContent.hero?.badge_EN,
+          titulo_ES: form.titulo_ES !== undefined ? form.titulo_ES : newContent.hero?.titulo_ES,
+          titulo_EN: form.titulo_EN !== undefined ? form.titulo_EN : newContent.hero?.titulo_EN,
+          subtitulo_ES: form.subtitulo_ES !== undefined ? form.subtitulo_ES : newContent.hero?.subtitulo_ES,
+          subtitulo_EN: form.subtitulo_EN !== undefined ? form.subtitulo_EN : newContent.hero?.subtitulo_EN,
           imagen: form.imagen !== undefined ? form.imagen : newContent.hero?.imagen
         };
         newContent.hero = h;
@@ -168,11 +183,16 @@ export default function EditarDistribuidores() {
       } else if (activeEdit === 'formulario') {
         const f = {
           ...newContent.formulario,
-          titulo: form.titulo !== undefined ? form.titulo : newContent.formulario?.titulo,
-          subtitulo: form.subtitulo !== undefined ? form.subtitulo : newContent.formulario?.subtitulo,
-          submitLabel: form.submitLabel !== undefined ? form.submitLabel : newContent.formulario?.submitLabel,
-          responseMessage: form.responseMessage !== undefined ? form.responseMessage : newContent.formulario?.responseMessage,
-          responseTime: form.responseTime !== undefined ? form.responseTime : newContent.formulario?.responseTime
+          titulo_ES: form.titulo_ES !== undefined ? form.titulo_ES : newContent.formulario?.titulo_ES,
+          titulo_EN: form.titulo_EN !== undefined ? form.titulo_EN : newContent.formulario?.titulo_EN,
+          subtitulo_ES: form.subtitulo_ES !== undefined ? form.subtitulo_ES : newContent.formulario?.subtitulo_ES,
+          subtitulo_EN: form.subtitulo_EN !== undefined ? form.subtitulo_EN : newContent.formulario?.subtitulo_EN,
+          submitLabel_ES: form.submitLabel_ES !== undefined ? form.submitLabel_ES : newContent.formulario?.submitLabel_ES,
+          submitLabel_EN: form.submitLabel_EN !== undefined ? form.submitLabel_EN : newContent.formulario?.submitLabel_EN,
+          responseMessage_ES: form.responseMessage_ES !== undefined ? form.responseMessage_ES : newContent.formulario?.responseMessage_ES,
+          responseMessage_EN: form.responseMessage_EN !== undefined ? form.responseMessage_EN : newContent.formulario?.responseMessage_EN,
+          responseTime_ES: form.responseTime_ES !== undefined ? form.responseTime_ES : newContent.formulario?.responseTime_ES,
+          responseTime_EN: form.responseTime_EN !== undefined ? form.responseTime_EN : newContent.formulario?.responseTime_EN,
         };
         const c = {
           ...newContent.counters,
@@ -184,18 +204,24 @@ export default function EditarDistribuidores() {
         payload = { formulario: f, counters: c };
       } else if (activeEdit === 'mapa') {
         newContent.mapSrc = form.mapSrc !== undefined ? form.mapSrc : newContent.mapSrc;
-        newContent.mapTitle = form.mapTitle !== undefined ? form.mapTitle : newContent.mapTitle;
-        newContent.mapText = form.mapText !== undefined ? form.mapText : newContent.mapText;
+        newContent.mapTitle_ES = form.mapTitle_ES !== undefined ? form.mapTitle_ES : newContent.mapTitle_ES;
+        newContent.mapTitle_EN = form.mapTitle_EN !== undefined ? form.mapTitle_EN : newContent.mapTitle_EN;
+        newContent.mapText_ES = form.mapText_ES !== undefined ? form.mapText_ES : newContent.mapText_ES;
+        newContent.mapText_EN = form.mapText_EN !== undefined ? form.mapText_EN : newContent.mapText_EN;
         payload = {
           mapSrc: newContent.mapSrc,
-          mapTitle: newContent.mapTitle,
-          mapText: newContent.mapText
+          mapTitle_ES: newContent.mapTitle_ES,
+          mapTitle_EN: newContent.mapTitle_EN,
+          mapText_ES: newContent.mapText_ES,
+          mapText_EN: newContent.mapText_EN
         };
       } else if (activeEdit === 'filtros') {
         const filt = {
           ...newContent.filtros,
-          purchasePlaceholder: form.purchasePlaceholder !== undefined ? form.purchasePlaceholder : newContent.filtros?.purchasePlaceholder,
-          estadoPlaceholder: form.estadoPlaceholder !== undefined ? form.estadoPlaceholder : newContent.filtros?.estadoPlaceholder
+          purchasePlaceholder_ES: form.purchasePlaceholder_ES !== undefined ? form.purchasePlaceholder_ES : newContent.filtros?.purchasePlaceholder_ES,
+          purchasePlaceholder_EN: form.purchasePlaceholder_EN !== undefined ? form.purchasePlaceholder_EN : newContent.filtros?.purchasePlaceholder_EN,
+          estadoPlaceholder_ES: form.estadoPlaceholder_ES !== undefined ? form.estadoPlaceholder_ES : newContent.filtros?.estadoPlaceholder_ES,
+          estadoPlaceholder_EN: form.estadoPlaceholder_EN !== undefined ? form.estadoPlaceholder_EN : newContent.filtros?.estadoPlaceholder_EN,
         };
         newContent.filtros = filt;
         payload = { filtros: filt };
@@ -284,14 +310,14 @@ export default function EditarDistribuidores() {
                         }}
                         className="text-sm uppercase"
                       >
-                        {content.hero.badge}
+                        {idioma === 'es' ? content.hero.badge_ES || content.hero.badge : content.hero.badge_EN || content.hero.badge}
                       </span>
                     </div>
-                    <h1 className="font-playfair text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 max-w-3xl mx-auto text-white">
-                      {content.hero.titulo}
+                    <h1 className="font-serif font-bold text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 max-w-3xl mx-auto text-white">
+                      {idioma === 'es' ? content.hero.titulo_ES || content.hero.titulo : content.hero.titulo_EN || content.hero.titulo}
                     </h1>
                     <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto">
-                      {content.hero.subtitulo}
+                      {idioma === 'es' ? content.hero.subtitulo_ES || content.hero.subtitulo : content.hero.subtitulo_EN || content.hero.subtitulo}
                     </p>
                   </div>
                   <EditButton section="hero" onOpen={() => openEditor('hero')} className="absolute top-6 right-6 z-20" />
@@ -314,20 +340,24 @@ export default function EditarDistribuidores() {
                 </button>
               </div>
 
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-2 mb-4 text-xs font-semibold text-yellow-800">
+                Editando en: {idioma === 'es' ? '🇲🇽 ESPAÑOL' : '🇺🇸 INGLÉS'}
+              </div>
+
               <div className="space-y-4">
                 {activeEdit === 'hero' && (
                   <>
                     <label className="block">
                       <div className="text-sm font-semibold text-gray-700 mb-2">Badge</div>
-                      <input name="badge" value={form.badge} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                      <input name={idioma === 'es' ? 'badge_ES' : 'badge_EN'} value={idioma === 'es' ? form.badge_ES : form.badge_EN} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                     </label>
                     <label className="block">
                       <div className="text-sm font-semibold text-gray-700 mb-2">Título</div>
-                      <input name="titulo" value={form.titulo} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                      <input name={idioma === 'es' ? 'titulo_ES' : 'titulo_EN'} value={idioma === 'es' ? form.titulo_ES : form.titulo_EN} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                     </label>
                     <label className="block">
                       <div className="text-sm font-semibold text-gray-700 mb-2">Subtítulo</div>
-                      <input name="subtitulo" value={form.subtitulo} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                      <input name={idioma === 'es' ? 'subtitulo_ES' : 'subtitulo_EN'} value={idioma === 'es' ? form.subtitulo_ES : form.subtitulo_EN} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                     </label>
                     <label className="block">
                       <div className="text-sm font-semibold text-gray-700 mb-2">Imagen (max 1 MB)</div>
@@ -348,20 +378,20 @@ export default function EditarDistribuidores() {
                   <div className="space-y-4">
                     <label className="block">
                       <div className="text-sm font-semibold text-gray-700 mb-2">Título del Formulario</div>
-                      <input name="titulo" value={form.titulo} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                      <input name={idioma === 'es' ? 'titulo_ES' : 'titulo_EN'} value={idioma === 'es' ? form.titulo_ES : form.titulo_EN} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                     </label>
                     <label className="block">
                       <div className="text-sm font-semibold text-gray-700 mb-2">Subtítulo del Formulario</div>
-                      <textarea name="subtitulo" value={form.subtitulo} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows="2" />
+                      <textarea name={idioma === 'es' ? 'subtitulo_ES' : 'subtitulo_EN'} value={idioma === 'es' ? form.subtitulo_ES : form.subtitulo_EN} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows="2" />
                     </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <label className="block">
                         <div className="text-sm font-semibold text-gray-700 mb-2">Texto del Botón</div>
-                        <input name="submitLabel" value={form.submitLabel} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                        <input name={idioma === 'es' ? 'submitLabel_ES' : 'submitLabel_EN'} value={idioma === 'es' ? form.submitLabel_ES : form.submitLabel_EN} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                       </label>
                       <label className="block">
                         <div className="text-sm font-semibold text-gray-700 mb-2">Texto de Respuesta Rápida</div>
-                        <input name="responseTime" value={form.responseTime} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                        <input name={idioma === 'es' ? 'responseTime_ES' : 'responseTime_EN'} value={idioma === 'es' ? form.responseTime_ES : form.responseTime_EN} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                       </label>
                     </div>
 
@@ -391,11 +421,11 @@ export default function EditarDistribuidores() {
                   <>
                     <label className="block">
                       <div className="text-sm font-semibold text-gray-700 mb-2">Placeholder Tipo de compra</div>
-                      <input name="purchasePlaceholder" value={form.purchasePlaceholder} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                      <input name={idioma === 'es' ? 'purchasePlaceholder_ES' : 'purchasePlaceholder_EN'} value={idioma === 'es' ? form.purchasePlaceholder_ES : form.purchasePlaceholder_EN} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                     </label>
                     <label className="block">
                       <div className="text-sm font-semibold text-gray-700 mb-2">Placeholder Estado</div>
-                      <input name="estadoPlaceholder" value={form.estadoPlaceholder} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                      <input name={idioma === 'es' ? 'estadoPlaceholder_ES' : 'estadoPlaceholder_EN'} value={idioma === 'es' ? form.estadoPlaceholder_ES : form.estadoPlaceholder_EN} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                     </label>
                   </>
                 )}
@@ -404,11 +434,11 @@ export default function EditarDistribuidores() {
                   <>
                     <label className="block">
                       <div className="text-sm font-semibold text-gray-700 mb-2">Título</div>
-                      <input name="mapTitle" value={form.mapTitle} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                      <input name={idioma === 'es' ? 'mapTitle_ES' : 'mapTitle_EN'} value={idioma === 'es' ? form.mapTitle_ES : form.mapTitle_EN} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                     </label>
                     <label className="block">
                       <div className="text-sm font-semibold text-gray-700 mb-2">Texto</div>
-                      <textarea name="mapText" value={form.mapText} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows="3" />
+                      <textarea name={idioma === 'es' ? 'mapText_ES' : 'mapText_EN'} value={idioma === 'es' ? form.mapText_ES : form.mapText_EN} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows="3" />
                     </label>
                     <label className="block">
                       <div className="text-sm font-semibold text-gray-700 mb-2">URL del iframe de mapa</div>
@@ -440,8 +470,8 @@ export default function EditarDistribuidores() {
                 <EditButton section="formulario" onOpen={() => openEditor('formulario')} className="absolute top-2 right-4 z-20" />
 
                 <div className="text-center mb-8">
-                  <h2 className="text-3xl md:text-4xl font-serif text-caborca-cafe mb-3">{content.formulario.titulo}</h2>
-                  <p className="text-caborca-cafe/80 text-lg max-w-2xl mx-auto">{content.formulario.subtitulo}</p>
+                  <h2 className="text-3xl md:text-4xl font-serif text-caborca-cafe mb-3">{idioma === 'es' ? content.formulario?.titulo_ES || content.formulario?.titulo : content.formulario?.titulo_EN || content.formulario?.titulo}</h2>
+                  <p className="text-caborca-cafe/80 text-lg max-w-2xl mx-auto">{idioma === 'es' ? content.formulario?.subtitulo_ES || content.formulario?.subtitulo : content.formulario?.subtitulo_EN || content.formulario?.subtitulo}</p>
                 </div>
 
                 <form onSubmit={manejarEnvioFormulario} className="space-y-6">
@@ -525,14 +555,14 @@ export default function EditarDistribuidores() {
                       type="submit"
                       className="bg-caborca-cafe text-white px-8 py-3 rounded-lg font-semibold hover:bg-caborca-negro transition-colors"
                     >
-                      {content.formulario?.submitLabel || 'ENVIAR SOLICITUD'}
+                      {idioma === 'es' ? content.formulario?.submitLabel_ES || content.formulario?.submitLabel || 'ENVIAR SOLICITUD' : content.formulario?.submitLabel_EN || 'SEND REQUEST'}
                     </button>
                     <div className="flex items-center gap-3 text-caborca-cafe/70">
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                         <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                       </svg>
-                      <span className="text-sm">{content.formulario?.responseTime || 'Respuesta en 24-48 hrs'}</span>
+                      <span className="text-sm">{idioma === 'es' ? content.formulario?.responseTime_ES || content.formulario?.responseTime || 'Respuesta en 24-48 hrs' : content.formulario?.responseTime_EN || 'Response in 24-48 hrs'}</span>
                     </div>
                     <div className="flex items-center gap-8">
                       <div className="text-center">
@@ -560,10 +590,10 @@ export default function EditarDistribuidores() {
         <section data-cms-section="mapa" className="py-8 bg-gray-100">
           <div className="container mx-auto px-4">
             <h2 className="text-4xl font-serif mb-8 text-caborca-cafe text-center">
-              {content.mapTitle || 'Encuéntranos en el mapa'}
+              {idioma === 'es' ? content.mapTitle_ES || content.mapTitle || 'Encuéntranos en el mapa' : content.mapTitle_EN || 'Find us on the map'}
             </h2>
             <p className="text-center mb-8 text-black">
-              {content.mapText || 'Visita nuestras tiendas y distribuidores autorizados en todo México.'}
+              {idioma === 'es' ? content.mapText_ES || content.mapText || 'Visita nuestras tiendas y distribuidores autorizados en todo México.' : content.mapText_EN || 'Visit our stores and authorized distributors across Mexico.'}
             </p>
 
             {/* Filtros de Búsqueda */}
@@ -575,7 +605,7 @@ export default function EditarDistribuidores() {
                     <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
                     </svg>
-                    Tipo de compra
+                    {idioma === 'es' ? 'Tipo de compra' : 'Purchase type'}
                   </label>
                   <select
                     id="purchaseType"
@@ -596,7 +626,7 @@ export default function EditarDistribuidores() {
                     <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                     </svg>
-                    Ubicación por Estado
+                    {idioma === 'es' ? 'Ubicación por Estado' : 'Location by State'}
                   </label>
                   <select
                     id="stateFilter"
@@ -627,7 +657,7 @@ export default function EditarDistribuidores() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
-                    Usar mi ubicación
+                    {idioma === 'es' ? 'Usar mi ubicación' : 'Use my location'}
                   </button>
                 </div>
 
@@ -788,8 +818,8 @@ export default function EditarDistribuidores() {
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Badge</label>
                         <input
-                          name="badge"
-                          value={form.badge}
+                          name={idioma === 'es' ? "badge_ES" : "badge_EN"}
+                          value={idioma === 'es' ? form.badge_ES : form.badge_EN}
                           onChange={handleInput}
                           className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                         />
@@ -797,8 +827,8 @@ export default function EditarDistribuidores() {
                       <div className="md:col-span-2">
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Título</label>
                         <input
-                          name="titulo"
-                          value={form.titulo}
+                          name={idioma === 'es' ? "titulo_ES" : "titulo_EN"}
+                          value={idioma === 'es' ? form.titulo_ES : form.titulo_EN}
                           onChange={handleInput}
                           className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
                         />
@@ -807,8 +837,8 @@ export default function EditarDistribuidores() {
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1">Subtítulo</label>
                       <textarea
-                        name="subtitulo"
-                        value={form.subtitulo}
+                        name={idioma === 'es' ? "subtitulo_ES" : "subtitulo_EN"}
+                        value={idioma === 'es' ? form.subtitulo_ES : form.subtitulo_EN}
                         onChange={handleInput}
                         rows={3}
                         className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none resize-none"

@@ -82,10 +82,16 @@ export default function LayoutAdmin() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Mobile Overlay */}
+      <div
+        className={`fixed inset-0 bg-black/50 z-40 transition-opacity md:hidden ${menuAbierto ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setMenuAbierto(false)}
+      />
+
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen bg-[#5C4A3A] text-white transition-all duration-300 ${menuAbierto ? 'w-64' : 'w-20'
-          } flex flex-col z-40 shadow-2xl overflow-hidden`}
+        className={`fixed left-0 top-0 h-screen bg-[#5C4A3A] text-white transition-all duration-300 flex flex-col z-50 shadow-2xl overflow-hidden ${menuAbierto ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0 md:w-20'
+          }`}
       >
         {/* Header del Sidebar */}
         <div className="p-4 border-b border-white/10 bg-[#4A3B2E]">
@@ -94,7 +100,7 @@ export default function LayoutAdmin() {
               {menuAbierto ? (
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-white text-caborca-cafe rounded-lg flex items-center justify-center font-bold text-xl">C</div>
-                  <span className="font-playfair font-bold text-lg tracking-wide">CABORCA</span>
+                  <span className="font-serif font-bold font-bold text-lg tracking-wide">CABORCA</span>
                 </div>
               ) : (
                 <div className="w-8 h-8 bg-white text-caborca-cafe rounded-lg flex items-center justify-center font-bold text-xl">
@@ -182,15 +188,23 @@ export default function LayoutAdmin() {
       </aside>
 
       {/* Contenido principal */}
-      <main className={`flex-1 flex flex-col transition-all duration-300 ${menuAbierto ? 'ml-64' : 'ml-20'
+      <main className={`flex-1 flex flex-col transition-all duration-300 ml-0 ${menuAbierto ? 'md:ml-64' : 'md:ml-20'
         }`}>
         {/* Header superior */}
-        <header className="sticky top-0 z-50 bg-white shadow-sm p-4 w-full border-b border-gray-100">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-playfair text-caborca-cafe">
-              {menuItems.find(item => item.ruta === location.pathname)?.nombre || 'Panel de Administración'}
-            </h2>
-            <div className="flex items-center gap-4">
+        <header className="sticky top-0 z-30 bg-white shadow-sm p-4 w-full border-b border-gray-100">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setMenuAbierto(true)}
+                className="md:hidden p-2 -ml-2 text-caborca-cafe hover:bg-gray-100 rounded"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+              </button>
+              <h2 className="text-xl md:text-2xl font-serif font-bold text-caborca-cafe line-clamp-1">
+                {menuItems.find(item => item.ruta === location.pathname)?.nombre || 'Panel de Administración'}
+              </h2>
+            </div>
+            <div className="flex flex-wrap items-center gap-4">
               {/* Contenedor DOM para el Portal de BotonesPublicar */}
               <div id="top-bar-actions" className="flex items-center gap-3"></div>
 

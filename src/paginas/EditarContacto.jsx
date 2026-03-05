@@ -6,9 +6,11 @@ import BotonesPublicar from '../componentes/BotonesPublicar'
 import { useToast } from '../context/ToastContext'
 import { textosService } from '../api/textosService'
 import { uploadImage } from '../api/uploadService'
+import { useOutletContext } from 'react-router-dom'
 
 export default function EditarContacto() {
   const { success, error: toastError } = useToast();
+  const { idioma } = useOutletContext();
 
   const [info, setInfo] = useState({
     telefono: '+52 123 456 789',
@@ -19,15 +21,22 @@ export default function EditarContacto() {
   })
 
   const [formPreview, setFormPreview] = useState({
-    titulo: 'Contáctanos',
-    descripcion: 'Envía tus dudas o solicitudes y te responderemos a la brevedad.'
+    titulo_ES: 'Envíanos un mensaje',
+    titulo_EN: 'Send us a message',
+    descripcion_ES: 'Completa el formulario y nos pondremos en contacto contigo',
+    descripcion_EN: 'Complete the form and we will get in touch with you',
+    titulo: '', descripcion: ''
   })
 
   const [hero, setHero] = useState({
-    badge: 'ESTAMOS AQUÍ PARA TI',
-    titulo: 'Contacto',
-    subtitulo: 'Nos encantaría saber de ti. Completa el formulario y nos pondremos en contacto contigo',
-    imagen: 'https://blocks.astratic.com/img/general-img-landscape.png'
+    badge_ES: 'ESTAMOS AQUÍ PARA TI',
+    badge_EN: 'WE ARE HERE FOR YOU',
+    titulo_ES: 'Contacto',
+    titulo_EN: 'Contact',
+    subtitulo_ES: 'Nos encantaría saber de ti. Completa el formulario y nos pondremos en contacto contigo',
+    subtitulo_EN: 'We would love to hear from you. Fill out the form and we will get in touch with you',
+    imagen: 'https://blocks.astratic.com/img/general-img-landscape.png',
+    badge: '', titulo: '', subtitulo: ''
   })
 
   const [editarHero, setEditarHero] = useState(false)
@@ -35,19 +44,15 @@ export default function EditarContacto() {
   const [editarForm, setEditarForm] = useState(false)
 
   const [cards, setCards] = useState([
-    { id: 'telefono', title: 'Teléfono', lines: ['+52 (555) 123-4567', 'Lun - Vie: 9:00 AM - 6:00 PM'] },
-    { id: 'email', title: 'Correo Electrónico', lines: ['contacto@caborcaboots.com', 'Respuesta en 24-48 hrs'] },
-    { id: 'ubicacion', title: 'Ubicación', lines: ['León, Guanajuato, México', 'Capital del calzado mexicano'] },
-    { id: 'social', title: 'Síguenos', lines: ['instagram.com/caborca', 'facebook.com/caborca', 'tiktok.com/@caborca'] }
+    { id: 'telefono', title_ES: 'Teléfono', title_EN: 'Phone', lines_ES: ['+52 (555) 123-4567', 'Lun - Vie: 9:00 AM - 6:00 PM'], lines_EN: ['+52 (555) 123-4567', 'Mon - Fri: 9:00 AM - 6:00 PM'] },
+    { id: 'email', title_ES: 'Correo Electrónico', title_EN: 'Email', lines_ES: ['contacto@caborcaboots.com', 'Respuesta en 24-48 hrs'], lines_EN: ['contacto@caborcaboots.com', 'Response in 24-48 hrs'] },
+    { id: 'ubicacion', title_ES: 'Ubicación', title_EN: 'Location', lines_ES: ['León, Guanajuato, México', 'Capital del calzado mexicano'], lines_EN: ['León, Guanajuato, Mexico', 'The Mexican footwear capital'] },
+    { id: 'social', title_ES: 'Síguenos', title_EN: 'Follow Us', lines_ES: ['instagram.com/caborca', 'facebook.com/caborca', 'tiktok.com/@caborca'], lines_EN: ['instagram.com/caborca', 'facebook.com/caborca', 'tiktok.com/@caborca'] }
   ])
 
   const [activeCard, setActiveCard] = useState(null)
-  const [cardForm, setCardForm] = useState({ id: '', title: '', lines: [] })
+  const [cardForm, setCardForm] = useState({ id: '', title_ES: '', title_EN: '', lines_ES: [], lines_EN: [] })
   const [guardando, setGuardando] = useState(false)
-
-  const [idioma, setIdioma] = useState(() => {
-    try { return localStorage.getItem('cms:editor:lang') || 'es'; } catch (e) { return 'es'; }
-  });
 
   // Load from LocalStorage
   useEffect(() => {
@@ -65,10 +70,6 @@ export default function EditarContacto() {
       }
     };
     fetchContacto();
-
-    const handler = (e) => { const l = e && e.detail && e.detail.lang; if (l) setIdioma(l); };
-    window.addEventListener('cms:editor:lang-changed', handler);
-    return () => window.removeEventListener('cms:editor:lang-changed', handler);
   }, []);
 
   const saveToStorage = async (newData) => {
@@ -133,7 +134,7 @@ export default function EditarContacto() {
   }
 
   const aplicarCard = async () => {
-    const newCards = cards.map(c => c.id === cardForm.id ? { ...c, title: cardForm.title, lines: cardForm.lines } : c);
+    const newCards = cards.map(c => c.id === cardForm.id ? { ...c, title_ES: cardForm.title_ES, title_EN: cardForm.title_EN, lines_ES: cardForm.lines_ES, lines_EN: cardForm.lines_EN } : c);
     setCards(newCards);
     await saveToStorage({ cards: newCards });
     success('Cambios guardados correctamente');
@@ -159,12 +160,14 @@ export default function EditarContacto() {
                 <div className="text-center text-white px-4">
                   <div className="inline-block bg-caborca-cafe px-6 py-2 rounded-lg mb-6">
                     <p className="text-sm md:text-base font-medium tracking-widest uppercase text-white">
-                      {hero.badge}
+                      {idioma === 'es' ? hero.badge_ES : hero.badge_EN}
                     </p>
                   </div>
-                  <h1 className="text-5xl md:text-7xl font-serif mb-6">{hero.titulo}</h1>
+                  <h1 className="text-5xl md:text-7xl font-serif mb-6">
+                    {idioma === 'es' ? hero.titulo_ES : hero.titulo_EN}
+                  </h1>
                   <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
-                    {hero.subtitulo}
+                    {idioma === 'es' ? hero.subtitulo_ES : hero.subtitulo_EN}
                   </p>
                 </div>
               </div>
@@ -187,13 +190,13 @@ export default function EditarContacto() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {cards.map(card => (
                 <div key={card.id} className="bg-white p-5 rounded-lg shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow relative">
-                  <EditButton section={`card:${card.id}`} onOpen={() => { setActiveCard(card.id); setCardForm({ ...card, lines: [...card.lines] }); }} className="absolute top-3 right-3 z-10" size="sm" />
+                  <EditButton section={`card:${card.id}`} onOpen={() => { setActiveCard(card.id); setCardForm({ ...card, lines_ES: card.lines_ES || [...(card.lines || [])], lines_EN: card.lines_EN || [...(card.lines || [])] }); }} className="absolute top-3 right-3 z-10" size="sm" />
                   <div className="w-12 h-12 bg-caborca-cafe rounded-full flex items-center justify-center shrink-0">
                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" /></svg>
                   </div>
                   <div>
-                    <h3 className="font-bold text-caborca-cafe text-sm mb-1">{card.title}</h3>
-                    {card.lines.map((ln, i) => (<p key={i} className="text-caborca-cafe text-sm">{ln}</p>))}
+                    <h3 className="font-bold text-caborca-cafe text-sm mb-1">{idioma === 'es' ? card.title_ES : card.title_EN}</h3>
+                    {(idioma === 'es' ? card.lines_ES || card.lines || [] : card.lines_EN || card.lines || []).map((ln, i) => (<p key={i} className="text-caborca-cafe text-sm">{ln}</p>))}
                   </div>
                 </div>
               ))}
@@ -205,8 +208,12 @@ export default function EditarContacto() {
             <div className="container mx-auto px-4 max-w-7xl">
               <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
                 <div className="text-center mb-6">
-                  <h3 className="text-3xl md:text-4xl font-serif text-caborca-cafe mb-2">{formPreview.titulo}</h3>
-                  <p className="text-sm text-caborca-cafe">{formPreview.descripcion}</p>
+                  <h3 className="text-3xl md:text-4xl font-serif text-caborca-cafe mb-2">
+                    {idioma === 'es' ? formPreview.titulo_ES : formPreview.titulo_EN}
+                  </h3>
+                  <p className="text-sm text-caborca-cafe">
+                    {idioma === 'es' ? formPreview.descripcion_ES : formPreview.descripcion_EN}
+                  </p>
                 </div>
 
                 <form onSubmit={(e) => { e.preventDefault(); success('Formulario enviado (demo)') }} className="space-y-6">
@@ -308,14 +315,17 @@ export default function EditarContacto() {
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-2 mb-4 text-xs font-semibold text-yellow-800">
+                Editando en: {idioma === 'es' ? '🇲🇽 ESPAÑOL' : '🇺🇸 INGLÉS'}
+              </div>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Título</label>
-                  <input value={formPreview.titulo} onChange={(e) => setFormPreview(prev => ({ ...prev, titulo: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                  <input value={idioma === 'es' ? formPreview.titulo_ES : formPreview.titulo_EN} onChange={(e) => setFormPreview(prev => ({ ...prev, [idioma === 'es' ? 'titulo_ES' : 'titulo_EN']: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Descripción</label>
-                  <textarea value={formPreview.descripcion} onChange={(e) => setFormPreview(prev => ({ ...prev, descripcion: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows={3} />
+                  <textarea value={idioma === 'es' ? formPreview.descripcion_ES : formPreview.descripcion_EN} onChange={(e) => setFormPreview(prev => ({ ...prev, [idioma === 'es' ? 'descripcion_ES' : 'descripcion_EN']: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows={3} />
                 </div>
               </div>
               <div className="mt-6 flex justify-end gap-3">
@@ -345,14 +355,17 @@ export default function EditarContacto() {
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-2 mb-4 text-xs font-semibold text-yellow-800">
+                Editando en: {idioma === 'es' ? '🇲🇽 ESPAÑOL' : '🇺🇸 INGLÉS'}
+              </div>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Título</label>
-                  <input value={cardForm.title} onChange={(e) => setCardForm(prev => ({ ...prev, title: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                  <input value={idioma === 'es' ? cardForm.title_ES : cardForm.title_EN} onChange={(e) => setCardForm(prev => ({ ...prev, [idioma === 'es' ? 'title_ES' : 'title_EN']: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Líneas (una por renglón)</label>
-                  <textarea value={cardForm.lines.join('\n')} onChange={(e) => setCardForm(prev => ({ ...prev, lines: e.target.value.split('\n') }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows={4} />
+                  <textarea value={(idioma === 'es' ? cardForm.lines_ES : cardForm.lines_EN).join('\n')} onChange={(e) => setCardForm(prev => ({ ...prev, [idioma === 'es' ? 'lines_ES' : 'lines_EN']: e.target.value.split('\n') }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows={4} />
                 </div>
               </div>
               <div className="mt-6 flex justify-end gap-3">
@@ -381,18 +394,21 @@ export default function EditarContacto() {
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-2 mb-4 text-xs font-semibold text-yellow-800">
+                Editando en: {idioma === 'es' ? '🇲🇽 ESPAÑOL' : '🇺🇸 INGLÉS'}
+              </div>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Badge</label>
-                  <input value={hero.badge} onChange={(e) => setHero(prev => ({ ...prev, badge: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                  <input value={idioma === 'es' ? hero.badge_ES : hero.badge_EN} onChange={(e) => setHero(prev => ({ ...prev, [idioma === 'es' ? 'badge_ES' : 'badge_EN']: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Título</label>
-                  <input value={hero.titulo} onChange={(e) => setHero(prev => ({ ...prev, titulo: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
+                  <input value={idioma === 'es' ? hero.titulo_ES : hero.titulo_EN} onChange={(e) => setHero(prev => ({ ...prev, [idioma === 'es' ? 'titulo_ES' : 'titulo_EN']: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Subtítulo</label>
-                  <textarea value={hero.subtitulo} onChange={(e) => setHero(prev => ({ ...prev, subtitulo: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows={3} />
+                  <textarea value={idioma === 'es' ? hero.subtitulo_ES : hero.subtitulo_EN} onChange={(e) => setHero(prev => ({ ...prev, [idioma === 'es' ? 'subtitulo_ES' : 'subtitulo_EN']: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows={3} />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Imagen (URL o archivo)</label>

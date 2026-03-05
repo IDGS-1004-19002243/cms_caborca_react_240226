@@ -174,7 +174,7 @@ export default function CatalogoMujer() {
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-playfair text-caborca-cafe mb-2">
+            <h3 className="text-xl font-serif font-bold text-caborca-cafe mb-2">
               Catálogo Mujer
             </h3>
             <p className="text-sm text-gray-600">
@@ -201,8 +201,8 @@ export default function CatalogoMujer() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Título Principal</label>
                 <input
                   type="text"
-                  value={contenido.titulo}
-                  onChange={(e) => setContenido({ ...contenido, titulo: e.target.value })}
+                  value={idioma === 'es' ? (contenido.titulo_ES || contenido.titulo || '') : (contenido.titulo_EN || contenido.titulo || '')}
+                  onChange={(e) => setContenido(prev => idioma === 'es' ? { ...prev, titulo_ES: e.target.value } : { ...prev, titulo_EN: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-caborca-cafe outline-none"
                   placeholder="Ej. Catálogo Mujer"
                 />
@@ -211,8 +211,8 @@ export default function CatalogoMujer() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Subtítulo / Descripción</label>
                 <textarea
                   rows={2}
-                  value={contenido.subtitulo}
-                  onChange={(e) => setContenido({ ...contenido, subtitulo: e.target.value })}
+                  value={idioma === 'es' ? (contenido.subtitulo_ES || contenido.subtitulo || '') : (contenido.subtitulo_EN || contenido.subtitulo || '')}
+                  onChange={(e) => setContenido(prev => idioma === 'es' ? { ...prev, subtitulo_ES: e.target.value } : { ...prev, subtitulo_EN: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-caborca-cafe outline-none resize-none"
                   placeholder="Ej. Elegancia y tradición en cada paso..."
                 />
@@ -295,7 +295,7 @@ export default function CatalogoMujer() {
                 </div>
               </div>
               <div className="p-4">
-                <h4 className="font-semibold text-caborca-cafe mb-1">{producto.nombre}</h4>
+                <h4 className="font-semibold text-caborca-cafe mb-1">{idioma === 'es' ? (producto.nombre_ES || producto.nombre) : (producto.nombre_EN || producto.nombre)}</h4>
                 <div className="flex items-center justify-between text-sm">
                   <span className="px-2 py-1 bg-caborca-beige-suave text-caborca-cafe rounded capitalize">
                     {producto.categoria === 'botin' ? 'Botín' : producto.categoria}
@@ -313,7 +313,7 @@ export default function CatalogoMujer() {
             <div className="bg-white rounded-xl w-full max-w-7xl shadow-2xl my-8">
               {/* Modal Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                <h3 className="text-2xl font-playfair text-caborca-cafe font-bold">
+                <h3 className="text-2xl font-serif font-bold text-caborca-cafe font-bold">
                   {productoEditando?.nombre ? 'Editar Producto' : 'Nuevo Producto'}
                 </h3>
                 <button
@@ -341,7 +341,7 @@ export default function CatalogoMujer() {
                         <div className="grid grid-cols-12 gap-4">
                           <div className="col-span-12 md:col-span-6">
                             <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Nombre</label>
-                            <input type="text" value={productoEditando?.nombre || ''} onChange={(e) => setProductoEditando({ ...productoEditando, nombre: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-caborca-cafe outline-none" placeholder="Ej. Bota Alta" />
+                            <input type="text" value={idioma === 'es' ? (productoEditando?.nombre_ES || productoEditando?.nombre || '') : (productoEditando?.nombre_EN || productoEditando?.nombre || '')} onChange={(e) => setProductoEditando(prev => idioma === 'es' ? { ...prev, nombre_ES: e.target.value } : { ...prev, nombre_EN: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-caborca-cafe outline-none" placeholder="Ej. Bota Alta" />
                           </div>
                           <div className="col-span-6 md:col-span-3">
                             <label className="block text-xs font-bold text-gray-700 uppercase mb-1">SKU</label>
@@ -349,7 +349,7 @@ export default function CatalogoMujer() {
                           </div>
                           <div className="col-span-6 md:col-span-3">
                             <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Badge</label>
-                            <input type="text" value={productoEditando?.badge || ''} onChange={(e) => setProductoEditando({ ...productoEditando, badge: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-caborca-cafe outline-none" placeholder="NUEVO / OFERTA" />
+                            <input type="text" value={idioma === 'es' ? (productoEditando?.badge_ES || productoEditando?.badge || '') : (productoEditando?.badge_EN || productoEditando?.badge || '')} onChange={(e) => setProductoEditando(prev => idioma === 'es' ? { ...prev, badge_ES: e.target.value } : { ...prev, badge_EN: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-caborca-cafe outline-none" placeholder="NUEVO / OFERTA" />
                           </div>
                         </div>
 
@@ -375,7 +375,7 @@ export default function CatalogoMujer() {
 
                         <div>
                           <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Descripción</label>
-                          <textarea rows={2} value={productoEditando?.descripcion || ''} onChange={(e) => setProductoEditando({ ...productoEditando, descripcion: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-caborca-cafe outline-none resize-none" />
+                          <textarea rows={2} value={idioma === 'es' ? (productoEditando?.descripcion_ES || productoEditando?.descripcion || '') : (productoEditando?.descripcion_EN || productoEditando?.descripcion || '')} onChange={(e) => setProductoEditando(prev => idioma === 'es' ? { ...prev, descripcion_ES: e.target.value } : { ...prev, descripcion_EN: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-caborca-cafe outline-none resize-none" />
                         </div>
                       </div>
                     </div>
@@ -385,19 +385,19 @@ export default function CatalogoMujer() {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                           <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Corte</label>
-                          <input type="text" value={productoEditando?.materialCorte || ''} onChange={(e) => setProductoEditando({ ...productoEditando, materialCorte: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-caborca-cafe outline-none" />
+                          <input type="text" value={idioma === 'es' ? (productoEditando?.materialCorte_ES || productoEditando?.materialCorte || '') : (productoEditando?.materialCorte_EN || productoEditando?.materialCorte || '')} onChange={(e) => setProductoEditando(prev => idioma === 'es' ? { ...prev, materialCorte_ES: e.target.value } : { ...prev, materialCorte_EN: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-caborca-cafe outline-none" />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Suela</label>
-                          <input type="text" value={productoEditando?.suela || ''} onChange={(e) => setProductoEditando({ ...productoEditando, suela: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-caborca-cafe outline-none" />
+                          <input type="text" value={idioma === 'es' ? (productoEditando?.suela_ES || productoEditando?.suela || '') : (productoEditando?.suela_EN || productoEditando?.suela || '')} onChange={(e) => setProductoEditando(prev => idioma === 'es' ? { ...prev, suela_ES: e.target.value } : { ...prev, suela_EN: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-caborca-cafe outline-none" />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Construccion</label>
-                          <input type="text" value={productoEditando?.construccion || ''} onChange={(e) => setProductoEditando({ ...productoEditando, construccion: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-caborca-cafe outline-none" />
+                          <input type="text" value={idioma === 'es' ? (productoEditando?.construccion_ES || productoEditando?.construccion || '') : (productoEditando?.construccion_EN || productoEditando?.construccion || '')} onChange={(e) => setProductoEditando(prev => idioma === 'es' ? { ...prev, construccion_ES: e.target.value } : { ...prev, construccion_EN: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-caborca-cafe outline-none" />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Horma</label>
-                          <input type="text" value={productoEditando?.horma || ''} onChange={(e) => setProductoEditando({ ...productoEditando, horma: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-caborca-cafe outline-none" />
+                          <input type="text" value={idioma === 'es' ? (productoEditando?.horma_ES || productoEditando?.horma || '') : (productoEditando?.horma_EN || productoEditando?.horma || '')} onChange={(e) => setProductoEditando(prev => idioma === 'es' ? { ...prev, horma_ES: e.target.value } : { ...prev, horma_EN: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-caborca-cafe outline-none" />
                         </div>
                       </div>
                     </div>

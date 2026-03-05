@@ -59,18 +59,48 @@ export const authService = {
     },
 
     /**
-     * Cambia la contraseña del usuario actual
+     * Obtiene la lista de usuarios administradores (Solo SuperAdmin)
      */
-    async changePassword(currentPassword, newPassword) {
+    async getAdminUsers() {
         try {
             const token = localStorage.getItem('adminToken');
+            const response = await fetch(`${API_URL}/Auth/users`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al obtener la lista de usuarios');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Error en getAdminUsers:", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Cambia la contraseña (y opcionalmente la de otro usuario si eres SuperAdmin)
+     */
+    async changePassword(currentPassword, newPassword, targetUsername = null) {
+        try {
+            const token = localStorage.getItem('adminToken');
+            const bodyData = { currentPassword, newPassword };
+            if (targetUsername) {
+                bodyData.targetUsername = targetUsername;
+            }
+
             const response = await fetch(`${API_URL}/Auth/change-password`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ currentPassword, newPassword }),
+                body: JSON.stringify(bodyData),
             });
 
             if (!response.ok) {

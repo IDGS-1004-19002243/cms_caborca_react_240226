@@ -75,7 +75,7 @@ export default function Login() {
 
           {/* Mensaje central */}
           <div className="space-y-4 max-w-lg">
-            <h2 className="font-playfair text-4xl xl:text-5xl font-bold leading-tight text-caborca-negro">
+            <h2 className="font-serif font-bold text-4xl xl:text-5xl font-bold leading-tight text-caborca-negro">
               Sistema de Gestión
             </h2>
             <p className="text-caborca-negro/70 text-lg leading-relaxed">
@@ -126,7 +126,7 @@ export default function Login() {
 
           {/* Encabezado */}
           <div className="mb-8">
-            <h2 className="font-playfair text-3xl text-caborca-negro font-bold mb-2">
+            <h2 className="font-serif font-bold text-3xl text-caborca-negro font-bold mb-2">
               Bienvenido de vuelta
             </h2>
             <p className="text-caborca-negro/60">
@@ -134,7 +134,7 @@ export default function Login() {
             </p>
           </div>
 
-          {/* Mensaje de error */}
+          {/* Mensaje de error para Login */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg animate-fadeIn">
               <div className="flex items-center space-x-3">
@@ -237,14 +237,12 @@ export default function Login() {
             </button>
           </form>
 
-          {/* (Información del Sistema movida al panel izquierdo) */}
-
           {/* Acceso protegido */}
           <div className="mt-8 p-4 bg-caborca-cafe/5 rounded-xl border border-caborca-cafe/15 flex items-center gap-3">
             <svg className="w-5 h-5 text-caborca-cafe shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-            <p className="text-sm text-caborca-cafe/80">Acceso restringido a personal autorizado. Contacta al administrador si olvidaste tus credenciales.</p>
+            <p className="text-sm text-caborca-cafe/80">Acceso restringido a personal autorizado. Recuerda no compartir tus credenciales.</p>
           </div>
 
           {/* Información (debajo de credenciales) - alineada a los bordes */}

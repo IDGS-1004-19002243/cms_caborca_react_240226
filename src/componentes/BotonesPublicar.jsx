@@ -148,7 +148,7 @@ const BotonesPublicar = ({ onGuardar, label = 'Guardar Borrador' }) => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                             </div>
-                            <h3 className="text-2xl font-playfair font-bold">Desplegar Cambios</h3>
+                            <h3 className="text-2xl font-serif font-bold font-bold">Desplegar Cambios</h3>
                             <p className="text-white/80 mt-2 text-sm">Publica tus ediciones en el sitio oficial</p>
                         </div>
 
