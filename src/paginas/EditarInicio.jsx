@@ -21,21 +21,27 @@ export default function EditarInicio() {
         titulo: { es: 'Colección Premium', en: 'Premium Collection' },
         subtitulo: { es: 'BOTAS DE LUJO HECHAS A MANO', en: 'LUXURY HANDMADE BOOTS' },
         boton: { es: 'DESCUBRE MÁS', en: 'DISCOVER MORE' },
-        imagen: 'https://blocks.astratic.com/img/general-img-landscape.png'
+        imagen: 'https://blocks.astratic.com/img/general-img-landscape.png',
+        mostrarTitulo: true,
+        mostrarSubtitulo: true
       },
       {
         id: 2,
         titulo: { es: 'Elegancia Mexicana', en: 'Mexican Elegance' },
         subtitulo: { es: 'TRADICIÓN Y ESTILO', en: 'TRADITION AND STYLE' },
         boton: { es: 'DESCUBRE MÁS', en: 'DISCOVER MORE' },
-        imagen: 'https://blocks.astratic.com/img/general-img-landscape.png'
+        imagen: 'https://blocks.astratic.com/img/general-img-landscape.png',
+        mostrarTitulo: true,
+        mostrarSubtitulo: true
       },
       {
         id: 3,
         titulo: { es: 'Botas Caborca', en: 'Caborca Boots' },
         subtitulo: { es: 'SOMOS LO QUE HACEMOS', en: 'WE ARE WHAT WE DO' },
         boton: { es: 'DESCUBRE MÁS', en: 'DISCOVER MORE' },
-        imagen: 'https://blocks.astratic.com/img/general-img-landscape.png'
+        imagen: 'https://blocks.astratic.com/img/general-img-landscape.png',
+        mostrarTitulo: true,
+        mostrarSubtitulo: true
       }
     ],
     productosDestacados: {
@@ -148,7 +154,9 @@ export default function EditarInicio() {
           subtitulo: { es: c.subtitulo_ES, en: c.subtitulo_EN },
           boton: { es: c.textoBoton_ES, en: c.textoBoton_EN },
           link: c.linkBoton,
-          imagen: c.imagenUrl
+          imagen: c.imagenUrl,
+          mostrarTitulo: c.mostrarTitulo !== false,
+          mostrarSubtitulo: c.mostrarSubtitulo !== false
         })) : prev.carousel,
 
         // 2. Formulario Distribuidor
@@ -337,7 +345,7 @@ export default function EditarInicio() {
   const manejarCambioCarousel = (index, campo, valor) => {
     setContenido(prev => {
       const nuevoCarousel = [...prev.carousel];
-      if (campo === 'imagen') {
+      if (campo === 'imagen' || campo === 'mostrarTitulo' || campo === 'mostrarSubtitulo') {
         nuevoCarousel[index][campo] = valor;
       } else {
         nuevoCarousel[index][campo] = {
@@ -601,7 +609,9 @@ export default function EditarInicio() {
           textoBoton_EN: slide.boton.en,
           linkBoton: slide.link || '',
           imagenUrl: finalImageUrl,
-          orden: index
+          orden: index,
+          mostrarTitulo: slide.mostrarTitulo !== false,
+          mostrarSubtitulo: slide.mostrarSubtitulo !== false
         };
       }));
 
@@ -779,15 +789,16 @@ export default function EditarInicio() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col items-center justify-center text-white p-8">
               <div className="backdrop-blur-sm bg-white/10 rounded-2xl p-12 max-w-4xl text-center">
-                <h1 className="text-6xl font-serif mb-6 drop-shadow-lg font-bold">
-                  {contenido.carousel[slideActual].titulo[idioma]}
-                </h1>
-                <p className="text-2xl mb-8 drop-shadow">
-                  {contenido.carousel[slideActual].subtitulo[idioma]}
-                </p>
-                <button className="bg-white text-caborca-cafe px-10 py-4 rounded-lg font-semibold text-lg shadow-xl">
-                  {contenido.carousel[slideActual].boton[idioma]}
-                </button>
+                {contenido.carousel[slideActual].mostrarTitulo !== false && (
+                  <h1 className="text-6xl font-serif mb-6 drop-shadow-lg font-bold">
+                    {contenido.carousel[slideActual].titulo[idioma]}
+                  </h1>
+                )}
+                {contenido.carousel[slideActual].mostrarSubtitulo !== false && (
+                  <p className="text-2xl mb-8 drop-shadow">
+                    {contenido.carousel[slideActual].subtitulo[idioma]}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -1239,16 +1250,27 @@ export default function EditarInicio() {
                         />
                       </div>
 
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">
-                          Texto del Botón ({idioma === 'es' ? 'Español' : 'English'})
+                      {/* Checkboxes de visibilidad */}
+                      <div className="md:col-span-2 flex items-center gap-6 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                        <span className="text-sm font-semibold text-gray-700">Mostrar en carrusel:</span>
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={contenido.carousel[elementoEditando]?.mostrarTitulo !== false}
+                            onChange={(e) => manejarCambioCarousel(elementoEditando, 'mostrarTitulo', e.target.checked)}
+                            className="w-4 h-4 accent-caborca-cafe"
+                          />
+                          <span className="text-sm text-gray-700">Título</span>
                         </label>
-                        <input
-                          type="text"
-                          value={contenido.carousel[elementoEditando]?.boton?.[idioma] || ''}
-                          onChange={(e) => manejarCambioCarousel(elementoEditando, 'boton', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-caborca-cafe focus:outline-none"
-                        />
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={contenido.carousel[elementoEditando]?.mostrarSubtitulo !== false}
+                            onChange={(e) => manejarCambioCarousel(elementoEditando, 'mostrarSubtitulo', e.target.checked)}
+                            className="w-4 h-4 accent-caborca-cafe"
+                          />
+                          <span className="text-sm text-gray-700">Subtítulo</span>
+                        </label>
                       </div>
 
                       <div className="md:col-span-2 bg-gray-50 p-3 rounded border border-gray-200">

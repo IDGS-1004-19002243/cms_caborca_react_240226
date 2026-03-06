@@ -8,7 +8,7 @@ import { useOutletContext } from 'react-router-dom';
 
 export default function EditarNotFound() {
     const { success, error: toastError } = useToast();
-    const { idioma } = useOutletContext();
+    const { lang: idioma } = useOutletContext();
     const [content, setContent] = useState({
         titulo_ES: '¡Esa ruta no existe, vaquero!',
         titulo_EN: 'That route does not exist, cowboy!',
@@ -60,9 +60,6 @@ export default function EditarNotFound() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-2 mb-4 text-xs font-semibold text-yellow-800">
-                        Editando en: {idioma === 'es' ? '🇲🇽 ESPAÑOL' : '🇺🇸 INGLÉS'}
-                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -155,11 +152,10 @@ export default function EditarNotFound() {
                 </div>
             </div>
 
-            {/* Vista Previa (Derecha) - CLON EXACTO DE NOTFOUND.JSX */}
-            <div className="w-full lg:w-3/5 bg-gray-900 rounded-xl overflow-hidden shadow-2xl border border-gray-800 relative group">
+            {/* Vista Previa (Derecha) */}
+            <div className="w-full lg:w-3/5 bg-gray-900 rounded-xl overflow-hidden shadow-2xl border border-gray-800 relative" style={{ minHeight: '460px' }}>
 
-                {/* Contenido Clonado */}
-                <div className="relative w-full h-full flex items-center justify-center bg-gray-900 text-white font-sans overflow-hidden p-6">
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-900 text-white font-sans p-6">
                     {/* Background Image */}
                     <div className="absolute inset-0 z-0">
                         {content.imagenFondo && (
@@ -173,18 +169,18 @@ export default function EditarNotFound() {
                     </div>
 
                     {/* Content */}
-                    <div className="relative z-10 text-center w-full max-w-2xl mx-auto transform scale-75 lg:scale-90 origin-center transition-transform duration-300">
-                        <h1 className="text-[8rem] sm:text-[10rem] md:text-[12rem] font-serif font-bold text-caborca-bronce leading-none select-none opacity-80 animate-pulse" style={{ textShadow: '4px 4px 0px rgba(0,0,0,0.5)' }}>
+                    <div className="relative z-10 text-center w-full max-w-2xl mx-auto">
+                        <h1 className="text-[5rem] sm:text-[7rem] font-serif font-bold text-caborca-bronce leading-none select-none opacity-80" style={{ textShadow: '4px 4px 0px rgba(0,0,0,0.5)' }}>
                             404
                         </h1>
-                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 text-caborca-beige tracking-wide uppercase">
+                        <h2 className="text-xl sm:text-2xl font-bold mb-4 text-white tracking-wide uppercase">
                             {idioma === 'es' ? content.titulo_ES : content.titulo_EN}
                         </h2>
-                        <p className="text-gray-300 text-lg mb-8 max-w-lg mx-auto leading-relaxed whitespace-pre-line">
+                        <p className="text-gray-300 text-sm mb-6 max-w-lg mx-auto leading-relaxed whitespace-pre-line">
                             {idioma === 'es' ? content.mensaje_ES : content.mensaje_EN}
                         </p>
-                        <button className="bg-caborca-cafe hover:bg-caborca-negro text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg hover:shadow-caborca-cafe/50 flex items-center gap-2 mx-auto">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button className="bg-caborca-cafe text-white font-bold py-2 px-6 rounded-full flex items-center gap-2 mx-auto text-sm">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                             </svg>
                             <span>{idioma === 'es' ? content.textoBoton_ES : content.textoBoton_EN}</span>
