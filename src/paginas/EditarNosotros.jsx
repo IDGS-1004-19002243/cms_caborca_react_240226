@@ -632,7 +632,9 @@ const EditarNosotros = () => {
                                                 >
                                                     Seleccionar Imagen
                                                 </label>
-                                                <span className="text-xs text-gray-500">Max 1MB</span>
+                                                <span className="text-xs font-semibold text-gray-500 whitespace-pre-line">
+                                                    {activeEdit === 'hero' ? 'PANORÁMICA 1920 x 1080 px (16:9)\nMax 1MB' : 'APOYO 1200 x 800 px (3:2)\nMax 1MB'}
+                                                </span>
                                                 <input
                                                     type="file"
                                                     name="image"

@@ -417,7 +417,8 @@ export default function EditarContacto() {
                   <textarea value={idioma === 'es' ? hero.subtitulo_ES : hero.subtitulo_EN} onChange={(e) => setHero(prev => ({ ...prev, [idioma === 'es' ? 'subtitulo_ES' : 'subtitulo_EN']: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows={3} />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Imagen (URL o archivo)</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Imagen</label>
+                  <div className="text-xs font-semibold text-gray-500 mb-2 whitespace-pre-line">PANORÁMICA 1920 x 1080 px (16:9){'\n'}Max 1MB</div>
                   <div className="flex gap-2">
                     <input value={hero.imagen} onChange={(e) => setHero(prev => ({ ...prev, imagen: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                     <label htmlFor="contactoHeroImgInput" className="cursor-pointer bg-caborca-cafe text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-caborca-negro whitespace-nowrap">

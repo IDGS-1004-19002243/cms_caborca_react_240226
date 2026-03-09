@@ -95,6 +95,7 @@ export default function EditarNotFound() {
 
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1 uppercase tracking-wide">Imagen de Fondo</label>
+                        <div className="text-xs font-semibold text-gray-500 mb-2 whitespace-pre-line">PANORÁMICA 1920 x 1080 px (16:9){'\n'}Max 1MB</div>
                         <div className="bg-gray-50 p-3 rounded border border-gray-200">
                             <div className="flex gap-4 items-center">
                                 <div className="w-32 h-20 bg-gray-200 rounded overflow-hidden flex-shrink-0 border border-gray-300">

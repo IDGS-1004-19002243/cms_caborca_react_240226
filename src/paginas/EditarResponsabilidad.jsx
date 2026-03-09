@@ -581,6 +581,7 @@ const EditarResponsabilidad = () => {
                     <div className="bg-gray-50 p-3 rounded border flex gap-4 items-center">
                       <div className="flex-1">
                         <label className="block font-semibold text-gray-700 mb-1">Imagen de fondo</label>
+                        <div className="text-xs font-semibold text-gray-500 mb-2 whitespace-pre-line">PANORÁMICA 1920 x 1080 px (16:9){'\n'}Max 1MB</div>
                         <div className="flex gap-2">
                           <input name="image" value={form.image || ''} onChange={handleInput} className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm" />
                           <label className="cursor-pointer bg-caborca-cafe text-white px-3 py-2 rounded text-sm font-medium hover:bg-caborca-negro">
@@ -642,6 +643,7 @@ const EditarResponsabilidad = () => {
                     <div className="bg-gray-50 p-3 rounded border flex gap-4 items-center">
                       <div className="flex-1">
                         <label className="block font-semibold text-gray-700 mb-1">Imagen</label>
+                        <div className="text-xs font-semibold text-gray-500 mb-2 whitespace-pre-line">APOYO 1200 x 800 px (3:2){'\n'}Max 1MB</div>
                         <div className="flex gap-2">
                           <input name="image" value={form.image || ''} onChange={handleInput} className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm" />
                           <label className="cursor-pointer bg-caborca-cafe text-white px-3 py-2 rounded text-sm font-medium hover:bg-caborca-negro">
@@ -703,6 +705,7 @@ const EditarResponsabilidad = () => {
                     <div className="bg-gray-50 p-3 rounded border flex gap-4 items-center">
                       <div className="flex-1">
                         <label className="block font-semibold text-gray-700 mb-1">Imagen</label>
+                        <div className="text-xs font-semibold text-gray-500 mb-2 whitespace-pre-line">APOYO 1200 x 800 px (3:2){'\n'}Max 1MB</div>
                         <div className="flex gap-2">
                           <input name="image" value={form.image || ''} onChange={handleInput} className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm" />
                           <label className="cursor-pointer bg-caborca-cafe text-white px-3 py-2 rounded text-sm font-medium hover:bg-caborca-negro">
@@ -817,6 +820,8 @@ const EditarResponsabilidad = () => {
                       {[{ f: 'image', l: 'Principal' }, { f: 'thumb1', l: 'Miniatura 1' }, { f: 'thumb2', l: 'Miniatura 2' }].map((item) => (
                         <div key={item.f}>
                           <label className="block font-semibold mb-1">{item.l} (URL)</label>
+                          <div className="text-xs font-semibold text-gray-500 mb-2 whitespace-pre-line">APOYO 1200 x 800 px (3:2){'\n'}Max 1MB</div>
+
                           <div className="flex gap-2">
                             <input name={item.f} value={form[item.f] || ''} onChange={handleInput} className="w-full px-2 py-1 border border-gray-300 rounded text-xs" />
                             <label className="cursor-pointer bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded text-xs flex items-center">
@@ -850,6 +855,7 @@ const EditarResponsabilidad = () => {
                     <div className="bg-gray-50 p-3 rounded border flex gap-4 items-center">
                       <div className="flex-1">
                         <label className="block font-semibold text-gray-700 mb-1">Imagen de sección</label>
+                        <div className="text-xs font-semibold text-gray-500 mb-2 whitespace-pre-line">APOYO 1200 x 800 px (3:2){'\n'}Max 1MB</div>
                         <div className="flex gap-2">
                           <input name="image" value={form.image || ''} onChange={handleInput} className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm" />
                           <label className="cursor-pointer bg-caborca-cafe text-white px-3 py-2 rounded text-sm font-medium hover:bg-caborca-negro">

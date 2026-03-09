@@ -1276,6 +1276,7 @@ export default function EditarInicio() {
                       <div className="md:col-span-2 bg-gray-50 p-3 rounded border border-gray-200">
                         <div className="flex justify-between items-center mb-2">
                           <label className="text-sm font-semibold text-gray-700">Imagen de Fondo</label>
+                          <span className="text-xs font-semibold text-gray-500 whitespace-pre-line ml-4 text-center">PANORÁMICA 1920 x 1080 px (16:9){'\n'}Max 1MB</span>
                           <div className="flex gap-2">
                             <input
                               type="text"
@@ -1463,6 +1464,7 @@ export default function EditarInicio() {
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="bg-gray-50 p-3 rounded border border-gray-200">
                       <label className="block text-sm font-semibold text-gray-700 mb-1">Imagen</label>
+                      <div className="text-xs font-semibold text-gray-500 mb-2 whitespace-pre-line">APOYO 1200 x 800 px (3:2){'\n'}Max 1MB</div>
                       <div className="flex gap-2">
                         <input
                           type="text"
@@ -1644,6 +1646,7 @@ export default function EditarInicio() {
                 <div className="space-y-4">
                   <div className="bg-gray-50 p-3 rounded border border-gray-200">
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Imagen de Fondo</label>
+                    <div className="text-xs font-semibold text-gray-500 mb-2 whitespace-pre-line">APOYO 1200 x 800 px (3:2){'\n'}Max 1MB</div>
                     <div className="flex gap-2">
                       <input
                         type="text"

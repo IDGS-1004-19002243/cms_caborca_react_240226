@@ -172,7 +172,8 @@ export default function EditarMantenimiento() {
                     <div className="space-y-3">
                         <h4 className="text-xs font-bold text-gray-500 uppercase border-b pb-1 tracking-wider">Imagen de Fondo</h4>
                         <div className="bg-gray-50 p-3 rounded border border-gray-200">
-                            <label className="block text-sm font-semibold text-gray-700 mb-1">Preview & Carga (URL o Archivo)</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Preview & Carga</label>
+                            <div className="text-xs font-semibold text-gray-500 mb-2 whitespace-pre-line">PANORÁMICA 1920 x 1080 px (16:9){'\n'}Max 1MB</div>
                             <div className="flex gap-4 items-start">
                                 <div className="w-32 h-20 bg-gray-200 rounded overflow-hidden flex-shrink-0 border border-gray-300">
                                     {content.imagenFondo ? (

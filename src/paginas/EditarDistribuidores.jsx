@@ -360,7 +360,8 @@ export default function EditarDistribuidores() {
                       <input name={idioma === 'es' ? 'subtitulo_ES' : 'subtitulo_EN'} value={idioma === 'es' ? form.subtitulo_ES : form.subtitulo_EN} onChange={handleInput} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                     </label>
                     <label className="block">
-                      <div className="text-sm font-semibold text-gray-700 mb-2">Imagen (max 1 MB)</div>
+                      <div className="text-sm font-semibold text-gray-700 mb-2">Imagen</div>
+                      <div className="text-xs font-semibold text-gray-500 mb-2 whitespace-pre-line">PANORÁMICA 1920 x 1080 px (16:9){'\n'}Max 1MB</div>
                       <div className="flex gap-3">
                         <input type="file" name="imagen" accept="image/*" onChange={handleImage} className="hidden" id="hero-img-upload" />
                         <label htmlFor="hero-img-upload" className="px-4 py-2 bg-caborca-beige-suave text-caborca-cafe rounded-lg hover:bg-caborca-cafe hover:text-white transition-colors cursor-pointer text-sm font-semibold">Seleccionar imagen</label>
