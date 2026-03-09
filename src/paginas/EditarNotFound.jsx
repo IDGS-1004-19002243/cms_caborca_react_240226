@@ -155,48 +155,38 @@ export default function EditarNotFound() {
             {/* Vista Previa (Derecha) */}
             <div className="w-full lg:w-3/5 bg-gray-900 rounded-xl overflow-hidden shadow-2xl border border-gray-800 relative" style={{ minHeight: '460px' }}>
 
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-900 text-white font-sans overflow-hidden">
-                    {/* Background Image */}
-                    <div className="absolute inset-0 z-0">
-                        {content.imagenFondo ? (
-                            <img
-                                src={content.imagenFondo}
-                                alt="Fondo preview"
-                                className="w-full h-full object-cover opacity-50 transition-all duration-500"
-                            />
-                        ) : (
-                            <div className="w-full h-full bg-gray-800"></div>
-                        )}
-                        <div className="absolute inset-0 bg-black/60"></div>
-                    </div>
-
+                <div className="absolute inset-0 flex items-center justify-center font-sans overflow-hidden" style={{ backgroundColor: '#0B0D11' }}>
                     {/* Preview Content */}
-                    <div className="relative z-10 text-center w-full px-4 flex flex-col items-center justify-center min-h-[460px]">
+                    <div className="relative z-10 w-full px-4 flex justify-center items-center min-h-[460px]">
 
-                        {/* 404 background number scaled for preview */}
-                        <div className="absolute inset-x-0 inset-y-0 flex items-center justify-center select-none pointer-events-none -mt-20 z-0">
-                            <h1 className="text-[10rem] md:text-[16rem] font-serif font-bold text-[#b58e5a] leading-none opacity-90 drop-shadow-2xl brightness-90">
+                        {/* 404 Central Display Area matching image design */}
+                        <div className="relative flex justify-center items-center">
+                            <h1
+                                className="text-[10rem] md:text-[14rem] lg:text-[18rem] font-serif font-black leading-none uppercase select-none tracking-tighter"
+                                style={{
+                                    color: '#A07E52',
+                                    textShadow: '3px 3px 0px rgba(0,0,0,1), 6px 6px 12px rgba(0,0,0,0.4)',
+                                    WebkitTextStroke: '2px rgba(160, 126, 82, 0.4)'
+                                }}
+                            >
                                 404
                             </h1>
+
+                            {/* Overlay elements positioned exactly over the '0' */}
+                            <div className="absolute inset-0 flex flex-col justify-end items-center pb-[18%] md:pb-[14%]">
+
+                                {/* Horizontal Line overlapping the zero */}
+                                <div className="w-[60px] md:w-[100px] h-2 md:h-3 lg:h-4 bg-[#A07E52] shadow-xl z-20 mb-1 translate-y-1/2"></div>
+
+                                {/* Return Button inside the bottom of the zero */}
+                                <div className="bg-[#A07E52] flex items-center justify-center py-2 md:py-3 px-6 md:px-8 z-30 shadow-xl mt-4 md:mt-8 cursor-not-allowed">
+                                    <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Front Content */}
-                        <div className="relative z-10 mt-10">
-                            <h2 className="text-2xl md:text-3xl font-serif font-bold mb-4 text-white tracking-widest uppercase" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                                {idioma === 'es' ? (content.titulo_ES || content.titulo || '¡Esa ruta no existe, vaquero!') : (content.titulo_EN || 'That route does not exist, cowboy!')}
-                            </h2>
-
-                            <div className="w-16 md:w-20 h-1 bg-[#b58e5a] mx-auto mb-6 shadow-lg"></div>
-
-                            <p className="text-base md:text-lg text-white max-w-lg mx-auto mb-8 leading-relaxed font-serif font-medium whitespace-pre-wrap" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}>
-                                {idioma === 'es' ? (content.mensaje_ES || content.mensaje || 'Parece que te has alejado demasiado del camino.\nNo te preocupes, endereza las riendas y vuelve con nosotros.') : (content.mensaje_EN || 'It seems you have strayed too far off the path.\nDon\'t worry, straighten the reins and come back to us.')}
-                            </p>
-
-                            <button className="inline-flex items-center gap-2 bg-[#b58e5a] text-white font-bold tracking-widest text-xs md:text-sm px-6 py-3 shadow-xl hover:bg-[#99764a] transition-colors uppercase">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                                <span>{idioma === 'es' ? (content.textoBoton_ES || content.textoBoton || 'Volver al pueblito') : (content.textoBoton_EN || 'Return to town')}</span>
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
