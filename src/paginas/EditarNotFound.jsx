@@ -155,38 +155,48 @@ export default function EditarNotFound() {
             {/* Vista Previa (Derecha) */}
             <div className="w-full lg:w-3/5 bg-gray-900 rounded-xl overflow-hidden shadow-2xl border border-gray-800 relative" style={{ minHeight: '460px' }}>
 
-                <div className="absolute inset-0 flex items-center justify-center font-sans overflow-hidden" style={{ backgroundColor: '#0B0D11' }}>
-                    {/* Preview Content */}
-                    <div className="relative z-10 w-full px-4 flex justify-center items-center min-h-[460px]">
+                <div className="absolute inset-0 flex items-center justify-center font-sans overflow-hidden bg-[#0B0D11]">
 
-                        {/* 404 Central Display Area matching image design */}
-                        <div className="relative flex justify-center items-center">
-                            <h1
-                                className="text-[10rem] md:text-[14rem] lg:text-[18rem] font-serif font-black leading-none uppercase select-none tracking-tighter"
-                                style={{
-                                    color: '#A07E52',
-                                    textShadow: '3px 3px 0px rgba(0,0,0,1), 6px 6px 12px rgba(0,0,0,0.4)',
-                                    WebkitTextStroke: '2px rgba(160, 126, 82, 0.4)'
-                                }}
-                            >
-                                404
-                            </h1>
+                    {/* The giant 404 in the background */}
+                    <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none z-0">
+                        <h1
+                            className="text-[10rem] md:text-[14rem] lg:text-[18rem] font-serif font-black leading-none uppercase tracking-tighter"
+                            style={{
+                                color: '#A07E52',
+                                textShadow: '4px 4px 0px rgba(0,0,0,1)'
+                            }}
+                        >
+                            404
+                        </h1>
+                    </div>
 
-                            {/* Overlay elements positioned exactly over the '0' */}
-                            <div className="absolute inset-0 flex flex-col justify-end items-center pb-[18%] md:pb-[14%]">
+                    {/* The Foreground Content overlays exactly over the 404 middle */}
+                    <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 w-full h-full mt-4 md:mt-8 scale-[0.8] md:scale-90 transform-origin-center">
 
-                                {/* Horizontal Line overlapping the zero */}
-                                <div className="w-[60px] md:w-[100px] h-2 md:h-3 lg:h-4 bg-[#A07E52] shadow-xl z-20 mb-1 translate-y-1/2"></div>
+                        {/* Title */}
+                        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-serif font-black mb-4 lg:mb-6 text-white tracking-widest uppercase"
+                            style={{
+                                textShadow: '0 4px 8px rgba(0,0,0,0.9), 0 2px 4px rgba(0,0,0,1), 0 0 15px rgba(0,0,0,0.8)'
+                            }}>
+                            {idioma === 'es' ? (content.titulo_ES || content.titulo || '¡Esa ruta no existe, vaquero!') : (content.titulo_EN || 'That route does not exist, cowboy!')}
+                        </h2>
 
-                                {/* Return Button inside the bottom of the zero */}
-                                <div className="bg-[#A07E52] flex items-center justify-center py-2 md:py-3 px-6 md:px-8 z-30 shadow-xl mt-4 md:mt-8 cursor-not-allowed">
-                                    <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                                    </svg>
-                                </div>
-                            </div>
+                        {/* Section Separator Line */}
+                        <div className="w-16 md:w-24 lg:w-32 h-1 md:h-1.5 bg-[#A07E52] shadow-[0_2px_4px_rgba(0,0,0,0.8)] mb-6 lg:mb-8"></div>
+
+                        {/* Multiline description */}
+                        <p className="text-sm sm:text-base md:text-lg text-white max-w-xl mx-auto mb-8 lg:mb-10 leading-relaxed font-serif font-bold whitespace-pre-wrap"
+                            style={{ textShadow: '0 2px 6px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,1)' }}>
+                            {idioma === 'es' ? (content.mensaje_ES || content.mensaje || 'Parece que te has alejado demasiado del camino.\nNo te preocupes, endereza las riendas y vuelve con nosotros.') : (content.mensaje_EN || 'It seems you have strayed too far off the path.\nDon\'t worry, straighten the reins and come back to us.')}
+                        </p>
+
+                        {/* Return Button */}
+                        <div className="inline-flex items-center gap-2 bg-[#A07E52] text-white font-bold tracking-widest text-xs md:text-sm px-6 py-2 md:py-3 shadow-[0_4px_10px_rgba(0,0,0,0.6)] uppercase cursor-not-allowed">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            <span>{idioma === 'es' ? (content.textoBoton_ES || content.textoBoton || 'Volver al pueblito') : (content.textoBoton_EN || 'Return to town')}</span>
                         </div>
-
                     </div>
                 </div>
             </div>
