@@ -253,7 +253,7 @@ const EditarResponsabilidad = () => {
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                   <div className="text-center text-white px-4">
                     <div className="inline-block bg-caborca-cafe px-6 py-2 rounded-lg mb-6">
-                      <p className="text-sm md:text-base font-medium tracking-widest uppercase text-white">{idioma === 'es' ? content.hero.badge_ES || content.hero.badge : content.hero.badge_EN || content.hero.badge}</p>
+                      <p className="text-sm md:text-base font-bold tracking-widest uppercase text-white">{idioma === 'es' ? content.hero.badge_ES || content.hero.badge : content.hero.badge_EN || content.hero.badge}</p>
                     </div>
                     <h1 className="text-5xl md:text-7xl font-serif mb-6">{idioma === 'es' ? content.hero.title_ES || content.hero.title : content.hero.title_EN || content.hero.title}</h1>
                     <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto">{idioma === 'es' ? content.hero.subtitle_ES || content.hero.subtitle : content.hero.subtitle_EN || content.hero.subtitle}</p>
