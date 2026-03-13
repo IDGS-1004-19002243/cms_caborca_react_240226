@@ -7,10 +7,20 @@ import { useToast } from '../context/ToastContext'
 import { textosService } from '../api/textosService'
 import { uploadImage } from '../api/uploadService'
 import { useOutletContext } from 'react-router-dom'
+import { settingsService } from '../api/settingsService'
 
 export default function EditarContacto() {
   const { success, error: toastError } = useToast();
   const { lang: idioma = 'es' } = useOutletContext();
+  const [socials, setSocials] = useState(null);
+
+  useEffect(() => {
+    settingsService.getConfiguracionGeneral().then(data => {
+      if (data && data.redesSociales) {
+        setSocials(data.redesSociales);
+      }
+    }).catch(console.error);
+  }, []);
 
   const [info, setInfo] = useState({
     telefono: '+52 123 456 789',
@@ -202,7 +212,22 @@ export default function EditarContacto() {
                   </div>
                   <div>
                     <h3 className="font-bold text-caborca-cafe text-sm mb-1">{idioma === 'es' ? card.title_ES : card.title_EN}</h3>
-                    {(idioma === 'es' ? card.lines_ES || card.lines || [] : card.lines_EN || card.lines || []).map((ln, i) => (<p key={i} className="text-caborca-cafe text-sm">{ln}</p>))}
+                    {card.id === 'social' && socials
+                      ? Object.entries(socials)
+                          .filter(([key, data]) => data && data.show && key !== 'whatsapp' && key !== 'email')
+                          .map(([key, data]) => {
+                             const fallbackUrl = '#';
+                             const rawUrl = data.url || fallbackUrl;
+                             const displayUrl = rawUrl === fallbackUrl ? '' : rawUrl.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+                             if (!displayUrl) return null;
+                             return (
+                               <a key={key} href={rawUrl} target="_blank" rel="noopener noreferrer" className="block text-sm text-gray-500 hover:text-caborca-cafe transition-colors mt-1 pointer-events-none">
+                                 {displayUrl}
+                               </a>
+                             );
+                          })
+                      : (idioma === 'es' ? card.lines_ES || card.lines || [] : card.lines_EN || card.lines || []).map((ln, i) => (<p key={i} className="text-caborca-cafe text-sm">{ln}</p>))
+                    }
                   </div>
                 </div>
               ))}
