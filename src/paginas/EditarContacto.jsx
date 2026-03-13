@@ -21,6 +21,7 @@ export default function EditarContacto() {
   const { success, error: toastError } = useToast();
   const { lang: idioma = 'es' } = useOutletContext();
   const [socials, setSocials] = useState(null);
+  const [generalConfig, setGeneralConfig] = useState(null);
 
   const iconoPorCard = (id) => {
     if (id === 'telefono') return (
@@ -42,8 +43,9 @@ export default function EditarContacto() {
 
   useEffect(() => {
     settingsService.getConfiguracionGeneral().then(data => {
-      if (data && data.redesSociales) {
-        setSocials(data.redesSociales);
+      if (data) {
+        if (data.redesSociales) setSocials(data.redesSociales);
+        if (data.general) setGeneralConfig(data.general);
       }
     }).catch(console.error);
   }, []);
@@ -258,7 +260,8 @@ export default function EditarContacto() {
                         </div>
                       : (idioma === 'es' ? card.lines_ES || card.lines || [] : card.lines_EN || card.lines || []).map((ln, i) => (
                            <p key={i} className="text-caborca-cafe text-sm mt-1">
-                             {card.id === 'email' && i === 0 && socials?.email?.url ? socials.email.url : ln}
+                             {card.id === 'telefono' && i === 0 && generalConfig?.telefono ? generalConfig.telefono :
+                              card.id === 'email' && i === 0 && socials?.email?.url ? socials.email.url : ln}
                            </p>
                         ))
                     }
@@ -428,7 +431,7 @@ export default function EditarContacto() {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Título</label>
                   <input value={idioma === 'es' ? cardForm.title_ES : cardForm.title_EN} onChange={(e) => setCardForm(prev => ({ ...prev, [idioma === 'es' ? 'title_ES' : 'title_EN']: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                 </div>
-                {cardForm.id !== 'email' && cardForm.id !== 'social' ? (
+                {cardForm.id !== 'email' && cardForm.id !== 'social' && cardForm.id !== 'telefono' ? (
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Líneas (una por renglón)</label>
                     <textarea value={(idioma === 'es' ? cardForm.lines_ES : cardForm.lines_EN).join('\n')} onChange={(e) => setCardForm(prev => ({ ...prev, [idioma === 'es' ? 'lines_ES' : 'lines_EN']: e.target.value.split('\n') }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows={4} />
