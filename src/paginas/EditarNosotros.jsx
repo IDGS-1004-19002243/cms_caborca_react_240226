@@ -322,7 +322,7 @@ const EditarNosotros = () => {
                                     <div className="text-center text-white px-4 relative flex flex-col items-center">
                                         <EditButton section="hero" onOpen={() => openEditor('hero')} className="absolute -top-16 -right-16" size="sm" />
                                         <div className="inline-block bg-caborca-cafe px-6 py-2 rounded-lg mb-6 shadow-md mt-16 z-20">
-                                            <p className="text-sm md:text-base font-serif font-bold tracking-widest uppercase text-white">
+                                            <p className="text-sm md:text-base font-bold tracking-widest uppercase text-white">
                                                 {idioma === 'es' ? content.hero?.badge_ES : content.hero?.badge_EN}
                                             </p>
                                         </div>
@@ -345,7 +345,7 @@ const EditarNosotros = () => {
                                 <div>
                                     <div className="inline-block bg-caborca-beige-suave px-4 py-2 rounded-full mb-6 relative">
                                         <EditButton section="origen" onOpen={() => openEditor('origen')} className="absolute -right-12 top-0" size="sm" />
-                                        <span className="text-caborca-cafe text-sm font-serif font-bold tracking-wider">{currentProp(content.origen, 'badge')}</span>
+                                        <span className="text-caborca-cafe text-sm font-bold tracking-wider">{currentProp(content.origen, 'badge')}</span>
                                     </div>
                                     <h2 className="text-4xl md:text-5xl font-serif mb-6 text-caborca-cafe">{currentProp(content.origen, 'title')}</h2>
                                     <div className="space-y-4 text-caborca-negro/80 leading-relaxed">
@@ -381,7 +381,7 @@ const EditarNosotros = () => {
                                 <div>
                                     <div className="inline-block bg-white rounded-full px-4 py-2 mb-6 relative shadow-sm">
                                         <EditButton section="crecimiento" onOpen={() => openEditor('crecimiento')} className="absolute -right-12 top-0" size="sm" />
-                                        <span className="text-sm font-serif font-bold tracking-wider text-caborca-cafe">{currentProp(content.crecimiento, 'badge')}</span>
+                                        <span className="text-sm font-bold tracking-wider text-caborca-cafe">{currentProp(content.crecimiento, 'badge')}</span>
                                     </div>
                                     <h2 className="text-5xl md:text-6xl font-serif mb-6 text-caborca-cafe">{currentProp(content.crecimiento, 'title')}</h2>
                                     <div className="space-y-4 text-caborca-negro/80 leading-relaxed">
@@ -409,7 +409,7 @@ const EditarNosotros = () => {
                                 {content.caborcaHoy.stats.map((s, i) => (
                                     <div key={i}>
                                         <div className="text-5xl md:text-6xl font-bold">{s.value}</div>
-                                        <div className="uppercase text-sm font-serif tracking-wider mt-2">{currentProp(s, 'label')}</div>
+                                        <div className="uppercase text-sm tracking-wider mt-2">{currentProp(s, 'label')}</div>
                                     </div>
                                 ))}
                             </div>
@@ -426,7 +426,7 @@ const EditarNosotros = () => {
                                 <div>
                                     <div className="inline-block bg-caborca-beige-suave px-4 py-2 rounded-full mb-6 relative">
                                         <EditButton section="artesania" onOpen={() => openEditor('artesania')} className="absolute -right-12 top-0" size="sm" />
-                                        <span className="text-caborca-cafe text-sm font-serif font-bold tracking-wider">{currentProp(content.artesania, 'badge')}</span>
+                                        <span className="text-caborca-cafe text-sm font-bold tracking-wider">{currentProp(content.artesania, 'badge')}</span>
                                     </div>
                                     <h2 className="text-5xl md:text-6xl font-serif mb-4 text-caborca-cafe">{currentProp(content.artesania, 'title')}</h2>
                                     <p className="text-2xl text-caborca-negro/80 mb-6">{currentProp(content.artesania, 'subtitle')}</p>
@@ -463,7 +463,7 @@ const EditarNosotros = () => {
                                 <div>
                                     <div className="inline-block bg-white rounded-full px-4 py-2 mb-6 shadow-sm relative">
                                         <EditButton section="proceso" onOpen={() => openEditor('proceso')} className="absolute -right-12 top-0" size="sm" />
-                                        <span className="text-sm font-serif font-bold tracking-wider text-caborca-cafe">{currentProp(content.proceso, 'badge')}</span>
+                                        <span className="text-sm font-bold tracking-wider text-caborca-cafe">{currentProp(content.proceso, 'badge')}</span>
                                     </div>
                                     <h2 className="text-5xl md:text-6xl font-serif mb-6 text-caborca-cafe">{currentProp(content.proceso, 'title')}</h2>
                                     <div className="space-y-4 text-caborca-negro/80 leading-relaxed">
