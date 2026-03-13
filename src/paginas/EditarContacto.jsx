@@ -22,6 +22,24 @@ export default function EditarContacto() {
   const { lang: idioma = 'es' } = useOutletContext();
   const [socials, setSocials] = useState(null);
 
+  const iconoPorCard = (id) => {
+    if (id === 'telefono') return (
+      <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+    );
+    if (id === 'email') return (
+       <>
+          <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+          <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+       </>
+    );
+    if (id === 'ubicacion') return (
+       <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+    );
+    return (
+       <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+    );
+  };
+
   useEffect(() => {
     settingsService.getConfiguracionGeneral().then(data => {
       if (data && data.redesSociales) {
@@ -216,7 +234,9 @@ export default function EditarContacto() {
                 <div key={card.id} className="bg-white p-5 rounded-lg shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow relative">
                   <EditButton section={`card:${card.id}`} onOpen={() => { setActiveCard(card.id); setCardForm({ ...card, lines_ES: card.lines_ES || [...(card.lines || [])], lines_EN: card.lines_EN || [...(card.lines || [])] }); }} className="absolute top-3 right-3 z-10" size="sm" />
                   <div className="w-12 h-12 bg-caborca-cafe rounded-full flex items-center justify-center shrink-0">
-                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" /></svg>
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      {iconoPorCard(card.id)}
+                    </svg>
                   </div>
                   <div className="w-full">
                     <h3 className="font-bold text-caborca-cafe text-sm mb-2">{idioma === 'es' ? card.title_ES : card.title_EN}</h3>
@@ -236,7 +256,11 @@ export default function EditarContacto() {
                               );
                            })}
                         </div>
-                      : (idioma === 'es' ? card.lines_ES || card.lines || [] : card.lines_EN || card.lines || []).map((ln, i) => (<p key={i} className="text-caborca-cafe text-sm mt-1">{ln}</p>))
+                      : (idioma === 'es' ? card.lines_ES || card.lines || [] : card.lines_EN || card.lines || []).map((ln, i) => (
+                           <p key={i} className="text-caborca-cafe text-sm mt-1">
+                             {card.id === 'email' && i === 0 && socials?.email?.url ? socials.email.url : ln}
+                           </p>
+                        ))
                     }
                   </div>
                 </div>
@@ -404,10 +428,17 @@ export default function EditarContacto() {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Título</label>
                   <input value={idioma === 'es' ? cardForm.title_ES : cardForm.title_EN} onChange={(e) => setCardForm(prev => ({ ...prev, [idioma === 'es' ? 'title_ES' : 'title_EN']: e.target.value }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none" />
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Líneas (una por renglón)</label>
-                  <textarea value={(idioma === 'es' ? cardForm.lines_ES : cardForm.lines_EN).join('\n')} onChange={(e) => setCardForm(prev => ({ ...prev, [idioma === 'es' ? 'lines_ES' : 'lines_EN']: e.target.value.split('\n') }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows={4} />
-                </div>
+                {cardForm.id !== 'email' && cardForm.id !== 'social' ? (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Líneas (una por renglón)</label>
+                    <textarea value={(idioma === 'es' ? cardForm.lines_ES : cardForm.lines_EN).join('\n')} onChange={(e) => setCardForm(prev => ({ ...prev, [idioma === 'es' ? 'lines_ES' : 'lines_EN']: e.target.value.split('\n') }))} className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none resize-none" rows={4} />
+                  </div>
+                ) : (
+                  <div className="bg-gray-100 p-4 rounded-lg text-sm text-gray-600 border border-gray-200">
+                    <p className="font-semibold mb-1">Nota:</p>
+                    <p>La información que se mostrará aquí se obtiene automáticamente de la <strong>Configuración General</strong> del sistema para mantener tu sitio siempre consistente.</p>
+                  </div>
+                )}
               </div>
               <div className="mt-6 flex justify-end gap-3">
                 <button onClick={() => setActiveCard(null)} className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-semibold flex items-center gap-2">
