@@ -535,7 +535,24 @@ export default function Configuracion() {
                     Sección: Medio de Contacto
                   </h4>
 
-                  <p className="text-sm text-gray-600">Elige qué iconos sociales se muestran en el pie de página y edita sus enlaces.</p>
+                  <p className="text-sm text-gray-600">Configura tu teléfono principal, y elige qué iconos sociales se muestran en el pie de página y página de contacto.</p>
+
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6">
+                    <h5 className="text-md font-semibold text-caborca-cafe mb-3 flex items-center gap-2">
+                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                       Teléfono Principal
+                    </h5>
+                    <input
+                      type="text"
+                      className="w-full md:w-1/2 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-caborca-cafe focus:outline-none transition-colors"
+                      value={config.general?.telefono || ''}
+                      onChange={(e) => setConfig({ ...config, general: { ...config.general, telefono: e.target.value } })}
+                      placeholder="Ej. +52 662 123 4567"
+                    />
+                    <p className="text-xs text-gray-500 mt-2">Este teléfono aparecerá automáticamente en las tarjetas de contacto.</p>
+                  </div>
+
+                  <h5 className="text-md font-semibold text-caborca-cafe mb-3">Redes Sociales y Email</h5>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {Object.entries(config.redesSociales).map(([red, data]) => (
