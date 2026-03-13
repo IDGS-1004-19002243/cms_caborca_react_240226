@@ -238,10 +238,6 @@ export default function EditarDistribuidores() {
   };
 
   const guardarCambios = () => {
-    // Already saved in saveChanges? 
-    // This function seems unused or for external save button. 
-    // But saveChanges is called by the modal "Guardar" button.
-    // If there is a global save button, we might need this.
     try {
       localStorage.setItem('cms:distribuidores', JSON.stringify(content));
       success('Cambios guardados correctamente');
@@ -281,7 +277,6 @@ export default function EditarDistribuidores() {
       <BotonesPublicar onGuardar={async () => {
         await textosService.updateTextos('distribuidores', content);
       }} />
-      {/* Barra de editor removida intencionalmente */}
 
       <main>
         {/* HERO IMAGE SECTION */}

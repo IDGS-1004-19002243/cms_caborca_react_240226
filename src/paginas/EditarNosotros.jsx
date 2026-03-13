@@ -322,9 +322,9 @@ const EditarNosotros = () => {
                                     <div className="text-center text-white px-4 relative flex flex-col items-center">
                                         <EditButton section="hero" onOpen={() => openEditor('hero')} className="absolute -top-16 -right-16" size="sm" />
                                         <div className="inline-block bg-caborca-cafe px-6 py-2 rounded-lg mb-6 shadow-md mt-16 z-20">
-                                            <p className="text-sm md:text-base font-bold tracking-widest uppercase text-white">
+                                            <span className="text-sm md:text-base font-bold tracking-widest uppercase text-white block">
                                                 {idioma === 'es' ? content.hero?.badge_ES : content.hero?.badge_EN}
-                                            </p>
+                                            </span>
                                         </div>
                                         <h1 className="text-5xl md:text-7xl font-serif mb-6 z-20">{currentProp(content.hero, 'title')}</h1>
                                         <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto z-20">

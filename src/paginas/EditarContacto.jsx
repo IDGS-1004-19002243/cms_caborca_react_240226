@@ -159,9 +159,9 @@ export default function EditarContacto() {
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                 <div className="text-center text-white px-4">
                   <div className="inline-block bg-caborca-cafe px-6 py-2 rounded-lg mb-6">
-                    <p className="text-sm md:text-base font-bold tracking-widest uppercase text-white">
+                    <span className="text-sm md:text-base font-bold tracking-widest uppercase text-white block">
                       {idioma === 'es' ? hero.badge_ES : hero.badge_EN}
-                    </p>
+                    </span>
                   </div>
                   <h1 className="text-5xl md:text-7xl font-serif mb-6">
                     {idioma === 'es' ? hero.titulo_ES : hero.titulo_EN}
