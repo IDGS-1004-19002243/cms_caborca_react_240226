@@ -505,3 +505,9 @@
 .login-input::placeholder {
   color: #9ca3af;
 }
+/* FIX VARIABLE FONT HOLLOW BUG ON WINDOWS CHROME */
+span.tracking-widest, span.tracking-wider, p.tracking-widest, p.tracking-wider, a.tracking-widest, a.tracking-wider {
+    -webkit-text-stroke: 0.3px currentColor;
+    text-shadow: 0 0 1px currentColor;
+    -webkit-font-smoothing: antialiased;
+}

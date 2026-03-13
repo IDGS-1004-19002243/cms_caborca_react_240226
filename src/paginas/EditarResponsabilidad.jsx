@@ -277,7 +277,7 @@ const EditarResponsabilidad = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
-                    <span className="text-caborca-cafe font-semibold tracking-wider text-sm uppercase">{idioma === 'es' ? 'Empresa Socialmente Responsable' : 'Socially Responsible Company'}</span>
+                    <span className="text-caborca-cafe font-bold tracking-wider text-sm uppercase">{idioma === 'es' ? 'Empresa Socialmente Responsable' : 'Socially Responsible Company'}</span>
                   </div>
                   <h2 className="text-4xl md:text-5xl font-serif text-caborca-cafe leading-tight">{renderTitle(idioma === 'es' ? content.compania.title_ES || content.compania.title : content.compania.title_EN || content.compania.title)}</h2>
                   <div className="w-24 h-1 bg-caborca-cafe"></div>
@@ -330,7 +330,7 @@ const EditarResponsabilidad = () => {
                         <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z" />
                       </svg>
                     </div>
-                    <span className="text-caborca-cafe font-semibold tracking-wider text-sm uppercase">{idioma === 'es' ? 'Energía Limpia' : 'Clean Energy'}</span>
+                    <span className="text-caborca-cafe font-bold tracking-wider text-sm uppercase">{idioma === 'es' ? 'Energía Limpia' : 'Clean Energy'}</span>
                   </div>
                   <div className="flex items-start justify-between">
                     <div>
@@ -377,7 +377,7 @@ const EditarResponsabilidad = () => {
                       <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
                     </svg>
                   </div>
-                  <span className="text-white/80 font-semibold tracking-wider text-sm uppercase">{idioma === 'es' ? 'Nuestro Compromiso' : 'Our Commitment'}</span>
+                  <span className="text-white/80 font-bold tracking-wider text-sm uppercase">{idioma === 'es' ? 'Nuestro Compromiso' : 'Our Commitment'}</span>
                 </div>
                 <div className="flex items-center justify-center gap-4 mb-4">
                   <h2 className="text-4xl md:text-5xl font-serif mb-4 text-white">{idioma === 'es' ? content.video.title_ES || content.video.title : content.video.title_EN || content.video.title}</h2>
@@ -407,7 +407,7 @@ const EditarResponsabilidad = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                       </svg>
                     </div>
-                    <span className="text-caborca-cafe font-semibold tracking-wider text-sm uppercase">{idioma === 'es' ? 'Tecnología Avanzada' : 'Advanced Technology'}</span>
+                    <span className="text-caborca-cafe font-bold tracking-wider text-sm uppercase">{idioma === 'es' ? 'Tecnología Avanzada' : 'Advanced Technology'}</span>
                   </div>
                   <h2 className="text-4xl md:text-5xl font-serif text-caborca-cafe leading-tight">{renderTitle(idioma === 'es' ? content.pieles.title_ES || content.pieles.title : content.pieles.title_EN || content.pieles.title)}</h2>
                   <div className="w-24 h-1 bg-green-500"></div>
@@ -455,7 +455,7 @@ const EditarResponsabilidad = () => {
                 <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.5 6.5L21 9l-5 3.6L17.5 20 12 16.9 6.5 20 7 12.6 2 9l6.5-0.5L12 2z" fill="currentColor" /></svg>
                 </div>
-                <span className="text-green-700 font-semibold tracking-wider text-sm uppercase">{idioma === 'es' ? 'PROYECTO AGROECOLÓGICO' : 'AGROECOLOGICAL PROJECT'}</span>
+                <span className="text-green-700 font-bold tracking-wider text-sm uppercase">{idioma === 'es' ? 'PROYECTO AGROECOLÓGICO' : 'AGROECOLOGICAL PROJECT'}</span>
               </div>
               <h2 className="text-4xl md:text-5xl font-serif text-caborca-cafe leading-tight mb-3">{renderTitle(idioma === 'es' ? content.shambhala.title_ES || content.shambhala.title : content.shambhala.title_EN || content.shambhala.title)}</h2>
               <div className="w-24 h-1 bg-green-600 mx-auto mb-6"></div>

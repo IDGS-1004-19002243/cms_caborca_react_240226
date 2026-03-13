@@ -345,7 +345,7 @@ const EditarNosotros = () => {
                                 <div>
                                     <div className="inline-block bg-caborca-beige-suave px-4 py-2 rounded-full mb-6 relative">
                                         <EditButton section="origen" onOpen={() => openEditor('origen')} className="absolute -right-12 top-0" size="sm" />
-                                        <span className="text-caborca-cafe text-sm font-semibold tracking-wider">{currentProp(content.origen, 'badge')}</span>
+                                        <span className="text-caborca-cafe text-sm font-bold tracking-wider">{currentProp(content.origen, 'badge')}</span>
                                     </div>
                                     <h2 className="text-4xl md:text-5xl font-serif mb-6 text-caborca-cafe">{currentProp(content.origen, 'title')}</h2>
                                     <div className="space-y-4 text-caborca-negro/80 leading-relaxed">
@@ -381,7 +381,7 @@ const EditarNosotros = () => {
                                 <div>
                                     <div className="inline-block bg-white rounded-full px-4 py-2 mb-6 relative shadow-sm">
                                         <EditButton section="crecimiento" onOpen={() => openEditor('crecimiento')} className="absolute -right-12 top-0" size="sm" />
-                                        <span className="text-sm font-semibold tracking-wider text-caborca-cafe">{currentProp(content.crecimiento, 'badge')}</span>
+                                        <span className="text-sm font-bold tracking-wider text-caborca-cafe">{currentProp(content.crecimiento, 'badge')}</span>
                                     </div>
                                     <h2 className="text-5xl md:text-6xl font-serif mb-6 text-caborca-cafe">{currentProp(content.crecimiento, 'title')}</h2>
                                     <div className="space-y-4 text-caborca-negro/80 leading-relaxed">
@@ -426,7 +426,7 @@ const EditarNosotros = () => {
                                 <div>
                                     <div className="inline-block bg-caborca-beige-suave px-4 py-2 rounded-full mb-6 relative">
                                         <EditButton section="artesania" onOpen={() => openEditor('artesania')} className="absolute -right-12 top-0" size="sm" />
-                                        <span className="text-caborca-cafe text-sm font-semibold tracking-wider">{currentProp(content.artesania, 'badge')}</span>
+                                        <span className="text-caborca-cafe text-sm font-bold tracking-wider">{currentProp(content.artesania, 'badge')}</span>
                                     </div>
                                     <h2 className="text-5xl md:text-6xl font-serif mb-4 text-caborca-cafe">{currentProp(content.artesania, 'title')}</h2>
                                     <p className="text-2xl text-caborca-negro/80 mb-6">{currentProp(content.artesania, 'subtitle')}</p>
@@ -463,7 +463,7 @@ const EditarNosotros = () => {
                                 <div>
                                     <div className="inline-block bg-white rounded-full px-4 py-2 mb-6 shadow-sm relative">
                                         <EditButton section="proceso" onOpen={() => openEditor('proceso')} className="absolute -right-12 top-0" size="sm" />
-                                        <span className="text-sm font-semibold tracking-wider text-caborca-cafe">{currentProp(content.proceso, 'badge')}</span>
+                                        <span className="text-sm font-bold tracking-wider text-caborca-cafe">{currentProp(content.proceso, 'badge')}</span>
                                     </div>
                                     <h2 className="text-5xl md:text-6xl font-serif mb-6 text-caborca-cafe">{currentProp(content.proceso, 'title')}</h2>
                                     <div className="space-y-4 text-caborca-negro/80 leading-relaxed">
