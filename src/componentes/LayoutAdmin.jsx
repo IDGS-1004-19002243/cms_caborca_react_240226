@@ -99,13 +99,11 @@ export default function LayoutAdmin() {
             <div className={`flex items-center transition-all duration-300 ${!menuAbierto && 'justify-center w-full'}`}>
               {menuAbierto ? (
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-white text-caborca-cafe rounded-lg flex items-center justify-center font-bold text-xl">C</div>
-                  <span className="font-serif font-bold font-bold text-lg tracking-wide">CABORCA</span>
+                  <img src="/favicon-32x32.png" alt="Logo" className="w-8 h-8 rounded-lg" />
+                  <span className="font-serif font-bold text-lg tracking-wide uppercase">CABORCA</span>
                 </div>
               ) : (
-                <div className="w-8 h-8 bg-white text-caborca-cafe rounded-lg flex items-center justify-center font-bold text-xl">
-                  C
-                </div>
+                <img src="/favicon-32x32.png" alt="Logo" className="w-8 h-8 rounded-lg" />
               )}
             </div>
             {menuAbierto && (
